@@ -85,11 +85,15 @@ const Reading = styled(Frame).attrs({ variant: 'field' })`
   font-size: 14px;
 `;
 
+/** Same face as the letter body, all bold — the envelope, set apart. */
 const Headers = styled.div`
   border-bottom: 1px solid #ccc;
   margin-bottom: 8px;
   padding-bottom: 6px;
-  font-size: 13px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: bold;
   color: #333;
 `;
 
