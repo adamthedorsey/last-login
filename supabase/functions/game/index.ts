@@ -43,6 +43,8 @@ const VALID_ACTIONS = new Set([
   'visit',
   'search',
   'getBuddies',
+  'getConversation',
+  'say',
   'saveDocument',
   'createFolder',
   'moveDocument',
@@ -61,6 +63,8 @@ const FIELD_LIMITS: Record<string, number> = {
   docId: 100,
   folderId: 100,
   name: 100,
+  screenname: 100,
+  promptId: 100,
   text: 20000,
 };
 

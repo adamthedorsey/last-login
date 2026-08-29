@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { ActionResult, DiscoveryView, GameAction, StateView } from '@gamecore/types.ts';
 import { createGameClient, type GameClient } from './client';
 import { GameContext, type GameContextValue, type Toast } from './gameContext';
-import { playNotify } from '../os/sounds';
+import { playBuddyOn, playNotify } from '../os/sounds';
 
 let toastId = 0;
 
@@ -13,6 +13,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [contentEpoch, setContentEpoch] = useState(0);
   const [showEndCard, setShowEndCard] = useState(false);
+  const endCardSeenRef = useRef(false);
+  useEffect(() => {
+    if (showEndCard) endCardSeenRef.current = true;
+  }, [showEndCard]);
 
   const refreshView = useCallback(async () => {
     const client = clientRef.current;
@@ -49,8 +53,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
         void refreshView();
       }
       if (ended) {
-        // A quiet delay: let the player finish reading before the card appears.
-        window.setTimeout(() => setShowEndCard(true), 4500);
+        // The season doesn't end with a dialog. It ends with a sign-on.
+        // (No name in the client copy — the roster itself does the telling.)
+        window.setTimeout(() => {
+          playBuddyOn();
+          setToasts((prev) => [
+            ...prev,
+            { id: ++toastId, title: 'Chat', description: 'Someone just signed on.' },
+          ]);
+          setContentEpoch((e) => e + 1);
+        }, 4500);
+        // If the player never takes the bait, the season card still arrives.
+        window.setTimeout(() => {
+          if (!endCardSeenRef.current) setShowEndCard(true);
+        }, 120000);
       }
     },
     [refreshView],
@@ -61,7 +77,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const client = clientRef.current;
       if (!client) return { type: 'error', error: 'not_ready' };
       const res = await client.send(action);
-      if (res.type === 'open' || res.type === 'visit') {
+      if (res.type === 'open' || res.type === 'visit' || res.type === 'chat') {
         noteDiscoveries(res.newDiscoveries, res.ended);
       }
       if (res.type === 'document' && res.ok) {

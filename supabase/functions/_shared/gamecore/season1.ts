@@ -11,11 +11,18 @@
  * Friday, October 10. The in-world clock is frozen at Saturday, October 18,
  * 9:47 PM — the night someone finally sits down at her computer.
  *
- * Clue chain (see docs/clue-graph.md, regenerated from this file):
- *  ACT 1  sadie's email -> the-meeting -> recovered IM log -> stolen-intimacy
- *  ACT 2  sadie again -> chads-window -> aunt ruth -> the-clean-truck
- *  ACT 3  hidden ledger copy -> the-pipeline -> rebecca -> who-shaped
- *         -> the deleted diary -> the-house (END OF SEASON)
+ * Clue chain (see docs/clue-graph.md, regenerated from this file). Every
+ * non-finale discovery has TWO independent routes (two-path rule) — path A
+ * is the mail/file spine, path B spreads across live chat, the web, and
+ * the filesystem so missing one app never soft-locks the season:
+ *  ACT 1  the-meeting        A: sadie's email          B: live chat w/ sadie
+ *         stolen-intimacy    A: recovered IM log       B: "poem drafts 2.txt"
+ *  ACT 2  chads-window       A: sadie's 2nd email      B: Register timeline page
+ *         the-clean-truck    A: aunt ruth's email      B: live chat (sadie saw frank)
+ *  ACT 3  the-pipeline       A: hidden ledger copy     B: sam reed's 2nd letter
+ *         who-shaped         A: rebecca's email        B: live chat (woman at the vigil)
+ *         the-house          the deleted diary — single-path finale, by design
+ *  EPILOGUE  GhostBridge signs on. Say the word. Watch him run.
  */
 
 import type { SeasonContent } from './types.ts';
@@ -42,6 +49,7 @@ export const SEASON1: SeasonContent = {
     // Casey set her screen saver text herself. It floats there whenever the
     // machine idles — which means everyone in the house has seen it.
     saverText: 'junebug',
+    imScreenname: 'SunflwrC81',
   },
   passwords: {
     'login.casey': { password: 'sunflower97' },
@@ -62,13 +70,13 @@ export const SEASON1: SeasonContent = {
       id: 'stolen-intimacy',
       title: 'Stolen intimacy',
       description:
-        'GhostBridge proved himself with a word only Sadie should know. Whoever he is, he had been reading Casey’s private world.',
+        'GhostBridge proved himself with things from inside Casey’s private world — words nobody outside it could know. He didn’t earn her trust. He read it.',
     },
     {
       id: 'chads-window',
       title: 'Chad’s window',
       description:
-        'Chad spent that whole week jealous of “some guy she talks to online at 2am.” You don’t get jealous of yourself.',
+        'Chad spent that whole week begging to know who Casey was talking to online — and spent the night of the 10th on a barstool at Gene’s. You don’t get jealous of yourself.',
     },
     {
       id: 'the-clean-truck',
@@ -80,7 +88,7 @@ export const SEASON1: SeasonContent = {
       id: 'the-pipeline',
       title: 'The pipeline',
       description:
-        'Dr. Sparks writes them. Value-Med fills them. Casey copied a page of the ledger — dates, initials, cash — and hid it where nobody would look.',
+        'Dr. Sparks writes them. Value-Med fills them. Cash, strangers’ initials, license plates from three counties away. That’s what Casey found — and what somebody needed her not to have found.',
     },
     {
       id: 'who-shaped',
@@ -125,6 +133,149 @@ export const SEASON1: SeasonContent = {
       status: 'offline',
       // His logs are gone from the messenger. One copy survived elsewhere.
       requires: { discovery: 'stolen-intimacy' },
+      // The epilogue: minutes after the player learns about the 2:14 AM
+      // login, he signs on — someone noticed activity on this machine.
+      // Say the word to him and he signs off for good.
+      overrides: [
+        { requires: { discovery: 'the-house' }, status: 'online' },
+        { requires: { flag: 'ghost-signoff' }, status: 'offline' },
+      ],
+    },
+  ],
+
+  // =========================================================================
+  // LIVE CONVERSATIONS — Oct 18, 9:47 PM. The player is signed on as Casey.
+  // Sadie has spent the week investigating on her own (see story docs); her
+  // branches are path B for three discoveries. Every prompt is one-shot.
+  // =========================================================================
+  conversations: [
+    {
+      screenname: 'sadiedraws77',
+      // She has been watching that buddy list all week. The second
+      // SunflwrC81 goes active, she messages.
+      opener: [
+        'casey???',
+        'casey oh my god. ur online. say something',
+        '…you’re not her. are you. she never just sits there.',
+      ],
+      prompts: [
+        {
+          id: 'intro',
+          text: 'this isn’t casey. i’m at her computer, trying to find out what happened.',
+          setFlags: { 'sadie-talking': true },
+          discover: ['the-meeting'],
+          replies: [
+            'ok.',
+            'ok. i don’t know who you are. police, family, whoever.',
+            'if you’re at her desk you’re in her HOUSE. i’m deciding right now not to think too hard about that. because nobody else is LOOKING. the police think she ran off or fell in the river and they’re wrong both times.',
+            'so listen. thursday night, on her porch, she told me she was meeting someone friday. down by the river. she wouldn’t say who. “it’s a whole thing, i’ll tell you saturday.” she was excited and scared at the same time.',
+            'she tells me everything. since second grade. and she wouldn’t tell me this. that’s the part that keeps me up.',
+          ],
+        },
+        {
+          id: 'online-guy',
+          text: 'did she say anything about who she was talking to online?',
+          requires: { all: [{ flag: 'sadie-talking' }, { discovery: 'the-meeting' }] },
+          replies: [
+            'no. and i ASKED. she’d go all careful. “i want to be sure first.”',
+            'chad was losing his mind about it. kept cornering me in the hall like i was hiding a guy in my backpack.',
+            'whoever it was, she didn’t act like it was romantic. she acted like it was important. those are different faces on casey.',
+          ],
+        },
+        {
+          id: 'frank',
+          text: 'could it have been her dad she was meeting?',
+          requires: { all: [{ flag: 'sadie-talking' }, { discovery: 'chads-window' }] },
+          discover: ['the-clean-truck'],
+          replies: [
+            'frank? no. and i can sort of prove it.',
+            'i biked out to his trailer wednesday. everybody acts like he’s a monster. he’s just sad, and drunk, and he skips rocks at the river alone like it still counts.',
+            'he told me something he won’t tell the sheriff. friday night, around ten, he watched a vehicle come up the fire road and stop at the bend. dark 4x4. CLEAN. quiet. sat there with the lights off.',
+            'he said “it wasn’t the daniels boy. that truck of his you can hear from the church.” he knows every engine in this county. it’s his one thing.',
+            'somebody who washes his car was at the bend that night. write that down, whoever you are.',
+          ],
+        },
+        {
+          id: 'vigil',
+          text: 'has anyone strange been around since she disappeared?',
+          requires: { all: [{ flag: 'sadie-talking' }, { discovery: 'the-pipeline' }] },
+          discover: ['who-shaped'],
+          replies: [
+            'how did you— ok. yes. one thing.',
+            'friday at st mark’s a woman stood at the very back. older. nice coat. not from here. and after, she came up to ME. of everybody.',
+            'she asked if casey had been “writing to someone who sounded exactly right.” word for word. EXACTLY RIGHT.',
+            'she said to watch casey’s mail, and if a letter ever comes from an r. wright — believe it. then she left before the last hymn.',
+            'i didn’t understand it then. i think maybe you do.',
+          ],
+        },
+        {
+          id: 'about-her',
+          text: 'what was casey like?',
+          requires: { flag: 'sadie-talking' },
+          replies: [
+            'the kind of person who keeps the drawing you made her in second grade.',
+            'she has a code word with me. for if things ever got Actually Bad. i’m not telling you what it is. it’s ours.',
+            'just don’t stop halfway, ok? whatever you find. she wouldn’t.',
+          ],
+        },
+      ],
+    },
+    {
+      screenname: 'AngelJx',
+      opener: [
+        'Auto response from AngelJx: grounded. 4ever apparently.',
+        'ok i’m actually here. if my mom hears typing i’m dead. who is this. casey’s mom??',
+      ],
+      prompts: [
+        {
+          id: 'friday',
+          text: 'i’m looking through casey’s computer. what really happened friday?',
+          setFlags: { 'angel-talking': true },
+          replies: [
+            'did sadie put you up to this. whatever. i already told the police the real version, ok.',
+            'we were at the back lot behind gene’s. wine coolers. my cousin got them for us. i said i dropped her home at 8 instead of 7 because of his JOB, and now the whole town acts like i buried her.',
+            'i dropped her at 7. i WATCHED her walk in her own front door. whatever happened to casey happened after her own front door. nobody wants to think about that. but it’s true.',
+          ],
+        },
+        {
+          id: 'chain-letter',
+          text: 'she kept your chain letter. it’s still on the computer.',
+          requires: { flag: 'angel-talking' },
+          replies: [
+            'the good luck angel?? she SAVED it???',
+            'ok. i’m crying at the computer desk. great. cool.',
+            'when she comes back i’m sending her ten more. tell her that. word for word.',
+          ],
+        },
+      ],
+    },
+    {
+      // THE EPILOGUE. He signs on minutes after the player learns about the
+      // 2:14 AM login. He noticed someone on this machine. He always notices.
+      screenname: 'GhostBridge',
+      requires: { discovery: 'the-house' },
+      opener: ['you’re up late.'],
+      prompts: [
+        {
+          id: 'pretend',
+          text: 'couldn’t sleep.',
+          replies: ['no. i don’t imagine you could.', 'whoever you are.'],
+        },
+        {
+          id: 'who',
+          text: 'who is this?',
+          replies: ['a friend of the family.'],
+        },
+        {
+          // The code word means "come get me, no questions." In his mouth it
+          // was a leash. In yours it's a mirror. He runs from it.
+          id: 'junebug',
+          text: 'junebug.',
+          replies: [],
+          signOff: true,
+          setFlags: { 'ghost-signoff': true },
+        },
+      ],
     },
   ],
 
@@ -388,6 +539,39 @@ The boy arrived on a Tuesday, soaked through, holding a shoebox.
 
 [chapter 2 goes here. marta fixes the bird. the bird is NOT a
 metaphor ms. combs, sometimes a bird is a bird]`,
+      },
+    },
+    {
+      // PATH B for stolen-intimacy. On Oct 8 GhostBridge proved himself by
+      // quoting her PRIVATE files. She pasted the log here, disguised as
+      // more poems — same camouflage instinct as the ledger copy.
+      id: 'file.gb-log-oct8',
+      kind: 'document',
+      name: 'poem drafts 2.txt',
+      icon: 'doc',
+      parentId: 'folder.writing',
+      meta: { createdAt: '1997-10-08', modifiedAt: '1997-10-08', sizeKb: 2 },
+      requires: { discovery: 'the-meeting' },
+      onOpen: { discover: ['stolen-intimacy'] },
+      body: {
+        text: `[not poems. pasted 10/8. if i'm ever wrong about him, this is
+how you'll know. he doesn't just know ABOUT me. he knows my STUFF.]
+
+GhostBridge: you still don't trust me
+SunflwrC81: i don't KNOW you. big difference
+GhostBridge: you know me better than you think. "the porch light
+  stays on all night now. moths keep faith better than people do."
+SunflwrC81: ...
+SunflwrC81: where did you get that
+GhostBridge: you wrote it. it's good. you should finish the chorus.
+SunflwrC81: that file is ON MY COMPUTER. it's not on my page. it's
+  not ANYWHERE
+GhostBridge: casey. calm down. people who do what i do have ways of
+  knowing things. it's why i can help you when nobody else can.
+GhostBridge: your dad can still skip eleven, right? you got to six.
+SunflwrC81: stop
+GhostBridge: i'm not trying to scare you. i'm showing you i'm real.
+SunflwrC81: ok. you're real. that's the part that scares me`,
       },
     },
 
@@ -930,6 +1114,51 @@ If anyone reads this who loves her: look after what she was carrying.
       },
     },
     {
+      // PATH B for the-pipeline. Sam stops being careful.
+      id: 'email.sam.plain',
+      kind: 'email',
+      name: 'what i should have said',
+      icon: 'mail',
+      parentId: 'mailbox.inbox',
+      requires: { discovery: 'the-clean-truck' },
+      onOpen: { discover: ['the-pipeline'] },
+      meta: {
+        from: 'Samuel Reed <sreed@reedsdrug.westwind.net>',
+        to: 'casey_t@westwind.net',
+        date: '1997-10-18T07:12:00',
+      },
+      body: {
+        text: `Dear Casey,
+
+I wrote to you yesterday and I have not slept since. I was careful in
+that letter. Fifty-eight years in this town teaches you careful like
+a trade. I am done with it.
+
+Here is what I know, plainly, and I will say it to any officer of
+the law who finally asks.
+
+Since March, one local practice has written more scheduled-narcotic
+prescriptions than the rest of this county combined. Nearly all of
+them are filled at one pharmacy — not mine. The patients pay cash.
+The plates out front are from three counties away. Saturday hours,
+from a doctor who wouldn't open on a Saturday for a heart attack ten
+years running.
+
+A pharmacist who fills a script isn't required to ask why. A doctor
+who writes one isn't required to answer. That is the machine, and it
+runs on nobody-checks.
+
+You stood at my counter and asked me who checks. You already knew,
+didn't you. You had found something, and you were deciding who was
+safe to hand it to.
+
+Whoever reads this: she was sixteen, and she was the only one in
+this county doing my job. Look at where the money goes.
+
+- Sam Reed`,
+      },
+    },
+    {
       // ACT 3. Rebecca names the shape.
       id: 'email.rebecca',
       kind: 'email',
@@ -1389,6 +1618,38 @@ and things go back to nor
           { t: 'hr' },
           { t: 'sub', text: 'ALSO THIS WEEK' },
           { t: 'list', items: ['County board delays Route 9 guardrail project a third time', 'Wildcats fall to Man 21-14; Logan up next', 'Harvest Festival parking: what to know (bring quarters)'] },
+          { t: 'link', text: 'SPECIAL REPORT: A timeline of Friday, Oct. 10 — what we can pin down', url: 'www.humbleregister.net/timeline' },
+          { t: 'hr' },
+          { t: 'small', text: 'The Register Online is a service of Humble Printing & Copy. Story tips: tips@humbleregister.net' },
+        ],
+      },
+    },
+    {
+      // PATH B for chads-window: the barstool alibi, on the record.
+      id: 'web.register-timeline',
+      kind: 'webpage',
+      name: 'The Humble Register: Timeline of Oct. 10',
+      meta: { url: 'www.humbleregister.net/timeline', siteTitle: 'The Humble Register — A Timeline of Friday, Oct. 10' },
+      searchText: 'chad daniels timeline genes bar alibi barstool last day friday october 10 casey taylor',
+      requires: { discovery: 'stolen-intimacy' },
+      onOpen: { discover: ['chads-window'] },
+      body: {
+        style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'The Humble Register' },
+          { t: 'small', text: 'Online Edition — SPECIAL REPORT, posted Oct. 17, 1997' },
+          { t: 'hr' },
+          { t: 'sub', text: 'THE LAST DAY: WHAT WE CAN PIN DOWN' },
+          { t: 'p', text: 'The Register has assembled the following from public statements and our own interviews. Times are approximate except where noted.' },
+          { t: 'list', items: [
+            '3:30 PM — Franklin Walker lets out. Multiple students describe an argument in the parking lot between Casey Taylor and her boyfriend, Chad Daniels, 19.',
+            '4 to 7 PM — Taylor is with a friend; investigators say her movements in this window are now accounted for.',
+            'About 7 PM — Taylor is dropped off at home. A neighbor recalls seeing her at the mailbox.',
+            '6 PM to closing — Daniels is at Gene’s Bar. "That boy was on the same stool from six until we shut the kitchen," said Earl Prater, who tends bar there. "Used the bar phone twice trying to call the Taylor girl’s house. I dialed it for him the second time." The bar’s phone records are consistent with that account, the sheriff’s office confirmed Thursday.',
+            'About 9:50 PM — A resident along Route 9 reports hearing a single vehicle on the fire road. The report is unverified.',
+            '7:05 AM Saturday — Taylor’s bicycle is found at the Route 9 trailhead.',
+          ] },
+          { t: 'p', text: 'Sheriff Dale Purvis declined to name any person of interest. "Folks want it to be simple," Purvis said. "Simple has an alibi."' },
           { t: 'hr' },
           { t: 'small', text: 'The Register Online is a service of Humble Printing & Copy. Story tips: tips@humbleregister.net' },
         ],

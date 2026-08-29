@@ -10,12 +10,16 @@
 import type {
   ActionResult,
   Buddy,
+  BuddyStatus,
   BuddyView,
+  ChatConversation,
+  ChatView,
   ContentItem,
   Discovery,
   DiscoveryView,
   EngineOutcome,
   GameAction,
+  ImMessage,
   ItemContent,
   ItemSummary,
   PlayerDocument,
@@ -107,6 +111,7 @@ export function toStateView(content: SeasonContent, state: PlayerState): StateVi
     loginUser: content.computer.loginUser,
     loginHint: content.computer.loginHint,
     saverText: content.computer.saverText,
+    imScreenname: content.computer.imScreenname,
     wallpaper: content.wallpaper,
     homeUrl: content.homeUrl,
     loggedIn: state.loggedIn,
@@ -169,37 +174,129 @@ function checkPassword(
 // Open effects (discoveries, flags, demo end)
 // ---------------------------------------------------------------------------
 
+function grantDiscoveries(
+  content: SeasonContent,
+  state: PlayerState,
+  ids: string[],
+  events: EngineOutcome['events'],
+): { newDiscoveries: DiscoveryView[]; ended: boolean } {
+  const newDiscoveries: DiscoveryView[] = [];
+  let ended = false;
+  for (const id of ids) {
+    if (state.discoveries.includes(id)) continue;
+    const d = discoveryById(content, id);
+    if (!d) continue;
+    state.discoveries.push(id);
+    newDiscoveries.push(toDiscoveryView(d));
+    events.push({ type: 'discovery', payload: { discoveryId: id } });
+    if (d.endsDemo && !state.ended) {
+      state.ended = true;
+      ended = true;
+      events.push({ type: 'season_ended' });
+    }
+  }
+  return { newDiscoveries, ended };
+}
+
 function applyOpenEffects(
   content: SeasonContent,
   state: PlayerState,
   item: ContentItem,
   events: EngineOutcome['events'],
 ): { newDiscoveries: DiscoveryView[]; ended: boolean } {
-  const newDiscoveries: DiscoveryView[] = [];
-  let ended = false;
+  if (state.opened.includes(item.id)) return { newDiscoveries: [], ended: false };
+  state.opened.push(item.id);
+  events.push({ type: 'open', payload: { itemId: item.id, kind: item.kind } });
+  if (item.onOpen?.setFlags) {
+    Object.assign(state.flags, item.onOpen.setFlags);
+  }
+  return grantDiscoveries(content, state, item.onOpen?.discover ?? [], events);
+}
 
-  if (!state.opened.includes(item.id)) {
-    state.opened.push(item.id);
-    events.push({ type: 'open', payload: { itemId: item.id, kind: item.kind } });
+// ---------------------------------------------------------------------------
+// Buddies & live conversations
+// ---------------------------------------------------------------------------
 
-    if (item.onOpen?.setFlags) {
-      Object.assign(state.flags, item.onOpen.setFlags);
-    }
-    for (const id of item.onOpen?.discover ?? []) {
-      if (state.discoveries.includes(id)) continue;
-      const d = discoveryById(content, id);
-      if (!d) continue;
-      state.discoveries.push(id);
-      newDiscoveries.push(toDiscoveryView(d));
-      events.push({ type: 'discovery', payload: { discoveryId: id } });
-      if (d.endsDemo && !state.ended) {
-        state.ended = true;
-        ended = true;
-        events.push({ type: 'season_ended' });
-      }
+/** Resolve a buddy's presence: base status, then overrides (last match wins). */
+export function resolvePresence(
+  state: PlayerState,
+  buddy: Buddy,
+): { status: BuddyStatus; awayMessage?: string } {
+  let status = buddy.status;
+  let awayMessage = buddy.awayMessage;
+  for (const o of buddy.overrides ?? []) {
+    if (meetsRequirement(state, o.requires)) {
+      status = o.status;
+      awayMessage = o.awayMessage;
     }
   }
-  return { newDiscoveries, ended };
+  return { status, awayMessage };
+}
+
+function conversationFor(
+  content: SeasonContent,
+  state: PlayerState,
+  screenname: string,
+): { convo: ChatConversation; buddy: Buddy } | null {
+  const convo = (content.conversations ?? []).find((c) => c.screenname === screenname);
+  if (!convo || !meetsRequirement(state, convo.requires)) return null;
+  const buddy = content.buddies.find((b) => b.screenname === screenname);
+  if (!buddy || !meetsRequirement(state, buddy.requires)) return null;
+  if (resolvePresence(state, buddy).status === 'offline') return null;
+  return { convo, buddy };
+}
+
+function usedPrompts(state: PlayerState, screenname: string): string[] {
+  return state.chats?.[screenname] ?? [];
+}
+
+function availablePrompts(state: PlayerState, convo: ChatConversation) {
+  const used = usedPrompts(state, convo.screenname);
+  return convo.prompts.filter((p) => !used.includes(p.id) && meetsRequirement(state, p.requires));
+}
+
+/** Deterministic in-world timestamps for the live transcript (frozen clock + n minutes). */
+function chatClock(content: SeasonContent, minutesAfter: number): string {
+  const base = new Date(`${content.clock.now}Z`);
+  const t = new Date(base.getTime() + minutesAfter * 60_000);
+  const h = t.getUTCHours();
+  const h12 = ((h + 11) % 12) + 1;
+  return `${h12}:${String(t.getUTCMinutes()).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
+/** Rebuild the whole transcript from content + the ordered list of said prompts. */
+function toChatView(
+  content: SeasonContent,
+  state: PlayerState,
+  convo: ChatConversation,
+  buddy: Buddy,
+): ChatView {
+  const self = content.computer.imScreenname ?? 'me';
+  const messages: ImMessage[] = [];
+  let minute = 0;
+  for (const text of convo.opener) {
+    messages.push({ from: convo.screenname, at: chatClock(content, minute), text });
+  }
+  let signedOff = false;
+  for (const id of usedPrompts(state, convo.screenname)) {
+    const p = convo.prompts.find((x) => x.id === id);
+    if (!p) continue;
+    minute += 1;
+    messages.push({ from: self, at: chatClock(content, minute), text: p.text });
+    for (const reply of p.replies) {
+      messages.push({ from: convo.screenname, at: chatClock(content, minute), text: reply });
+    }
+    if (p.signOff) signedOff = true;
+  }
+  return {
+    screenname: convo.screenname,
+    alias: buddy.alias,
+    messages,
+    prompts: signedOff
+      ? []
+      : availablePrompts(state, convo).map((p) => ({ id: p.id, text: p.text })),
+    signedOff: signedOff || undefined,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -555,15 +652,47 @@ export function handleAction(
     case 'getBuddies': {
       const buddies: BuddyView[] = content.buddies
         .filter((b) => meetsRequirement(state, b.requires))
-        .map((b: Buddy) => ({
-          screenname: b.screenname,
-          alias: b.alias,
-          group: b.group,
-          status: b.status,
-          awayMessage: b.awayMessage,
-          conversationId: b.conversationId,
-        }));
+        .map((b: Buddy) => {
+          const presence = resolvePresence(state, b);
+          return {
+            screenname: b.screenname,
+            alias: b.alias,
+            group: b.group,
+            status: presence.status,
+            awayMessage: presence.awayMessage,
+            conversationId: b.conversationId,
+            canChat: conversationFor(content, state, b.screenname) ? true : undefined,
+          };
+        });
       return done({ type: 'buddies', buddies });
+    }
+
+    case 'getConversation': {
+      const found = conversationFor(content, state, action.screenname);
+      if (!found) return done({ type: 'chat', ok: false, error: 'not_available' });
+      return done({ type: 'chat', ok: true, chat: toChatView(content, state, found.convo, found.buddy) });
+    }
+
+    case 'say': {
+      const found = conversationFor(content, state, action.screenname);
+      if (!found) return done({ type: 'chat', ok: false, error: 'not_available' });
+      const { convo, buddy } = found;
+      const prompt = availablePrompts(state, convo).find((p) => p.id === action.promptId);
+      if (!prompt) return done({ type: 'chat', ok: false, error: 'not_available' });
+
+      const chats = (state.chats ??= {});
+      (chats[convo.screenname] ??= []).push(prompt.id);
+      events.push({ type: 'chat', payload: { screenname: convo.screenname, promptId: prompt.id } });
+      if (prompt.setFlags) Object.assign(state.flags, prompt.setFlags);
+      const { newDiscoveries, ended } = grantDiscoveries(content, state, prompt.discover ?? [], events);
+
+      return done({
+        type: 'chat',
+        ok: true,
+        chat: toChatView(content, state, convo, buddy),
+        newDiscoveries: newDiscoveries.length ? newDiscoveries : undefined,
+        ended: ended || undefined,
+      });
     }
 
     default:

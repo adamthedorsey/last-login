@@ -60,6 +60,17 @@ export function playError(): void {
   tone(196, 0, 160, 'sawtooth', 0.03);
 }
 
+/** A buddy signing on: two rising notes, the era's doorbell. */
+export function playBuddyOn(): void {
+  tone(523, 0, 120, 'square', 0.03);
+  tone(784, 130, 200, 'square', 0.025);
+}
+
+/** One incoming instant-message blip. Quiet — it can fire in a row. */
+export function playImMsg(): void {
+  tone(740, 0, 70, 'square', 0.018);
+}
+
 export function playStartup(): void {
   tone(392, 0, 180, 'triangle', 0.035);
   tone(523, 160, 180, 'triangle', 0.035);

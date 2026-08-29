@@ -44,15 +44,24 @@
 | S3 arranged online | K (too late) | P ("someone new") | · | P (jealous of "online guy") | · | · | **K** | K | · | · | · |
 | S4 GhostBridge = Jonathan | · | · | · | · | · | · | **K** | K | · | · | P (pattern) |
 | S5 the bend | — | · | · | · | P (saw lights) | · | **K** | **K** | · | · | · |
-| S6 Frank saw the 4x4 | — | · | · | · | **K** | · | · | · | · | P (Frank hints in a low moment) | · |
+| S6 Frank saw the 4x4 | — | K† | · | · | **K** | · | · | · | · | P (Frank hints in a low moment) | · |
 | S7 Angel's evening | K | P | **K** | · | · | · | · | · | · | · | · |
 | S8 Chad's alibi hole | · | · | · | **K** | · | · | · | P (his buyer list) | · | · | · |
 | S9 the code word | **K** | **K** | · | · | · | · | K (stolen) | · | · | · | · |
 | S10 Leslie's blindness | P | · | · | · | · | **K** | K | · | · | · | · |
-| S11 Jonathan's pattern | · | · | · | · | · | P (uneasy) | **K** | P | · | · | **K** |
+| S11 Jonathan's pattern | · | P† | · | · | · | P (uneasy) | **K** | P | · | · | **K** |
 | S12 the 2:14 login | — | · | · | · | · | · | **K** | K | · | · | · |
 
 \* Chad P on S1: he buys occasionally; he knows Value-Med is "easy," not why.
+
+† **Sadie's week (Oct 11–18).** The matrix above is the disappearance-night
+snapshot; by the playable present (Oct 18) Sadie has been investigating on
+her own — she biked to Frank's trailer Wednesday (he told her about the 4x4:
+S6 → K) and was approached by Rebecca Wright at Friday's vigil ("was she
+writing to someone who sounded *exactly right*?": S11 → P). This is why her
+LIVE Chat conversation can carry second-path reveals the emails also carry —
+she is the player's parallel investigator, always half a step ahead of the
+inbox. She still holds S9 back ("i'm not telling you it. it's ours").
 
 ## Reveal moves (secret → wrong mouth → discovery)
 
@@ -85,17 +94,30 @@ The core mechanic: a secret is inert until it appears where it shouldn't.
 
 ## Evidence ledger seed (matrix → PC content)
 
+Every non-finale discovery now has TWO independent routes (path A / path B),
+per the two-path rule. Sadie's live Chat conversation is path B for three of
+them (see † above); the rest spread across file / web / email so missing one
+app never soft-locks the season.
+
 | Evidence (on the PC) | Proves | App | Gate (requires) | Grants |
 |---|---|---|---|---|
-| Sadie IM logs (Oct 3) w/ code word | S9 exists | Chat | open from start | — (retro-ignites after #1) |
-| Recycle Bin: deleted GhostBridge log | S3, S9 used | Recycle Bin | Act 1 discovery chain | `stolen-intimacy` |
-| Chad's unread apology email, 6:02 PM | S8 window | Mail | open | exoneration half |
-| Angel's apology email | S7 | Mail | Act 2 | witness conversion |
-| Frank email thread (via aunt? sheriff CC?) [PROPOSED route] | S6 | Mail | Act 2 | `the-clean-truck` |
-| Hidden ledger copy in homework folder | S1, S2 | Notepad/Explorer | Act 3 opener | `the-pipeline` |
-| Sam's forwarded letter (arrives Oct 17) | S1 corroboration | Mail | Act 3 | motive confirmed |
-| Rebecca's message | S11 | Mail | Act 3 | `who-shaped` |
-| File timestamps + diary last-modified | S12 | Explorer metadata | finale gate (all of Act 3) | `the-house` — END |
+| Sadie IM logs (Oct 3) w/ code word | S9 exists | Chat | open from start | — (retro-ignites after the log) |
+| Sadie's email "please write back" | S3 half | Mail | open | `the-meeting` (A) |
+| LIVE chat: Sadie's porch story | S3 half | Chat | talk to her | `the-meeting` (B) |
+| Recycle Bin: deleted GhostBridge log (Oct 10) | S3, S9 used | Recycle Bin | the-meeting | `stolen-intimacy` (A) |
+| "poem drafts 2.txt" — Oct 8 log Casey hid in Writing!! | S3, S11 shape | Explorer | the-meeting | `stolen-intimacy` (B) |
+| Sadie's email "it's not chad" (jealousy logic) | S8 window | Mail | stolen-intimacy | `chads-window` (A) |
+| Register "Timeline of the 10th" (Gene's barstool alibi) | S8 window | NetVoyager | stolen-intimacy | `chads-window` (B) |
+| Aunt Ruth's email (Frank's sighting) | S6 | Mail | chads-window | `the-clean-truck` (A) |
+| LIVE chat: Sadie's trailer visit | S6 | Chat | chads-window | `the-clean-truck` (B) |
+| Hidden ledger copy in homework folder | S1, S2 | Explorer | the-clean-truck | `the-pipeline` (A) |
+| Sam Reed's second letter "what i should have said" | S1 | Mail | the-clean-truck | `the-pipeline` (B) |
+| Rebecca's message | S11 | Mail | the-pipeline | `who-shaped` (A) |
+| LIVE chat: the woman at the vigil | S11 | Chat | the-pipeline | `who-shaped` (B) |
+| File timestamps + diary last-modified | S12 | Explorer metadata | finale gate (all of Act 3) | `the-house` — END (single-path by design) |
+| Chad's unread apology email, 6:02 PM | S8 window | Mail | open | exoneration texture |
+| Angel's apology email + live chat guilt | S7 | Mail/Chat | open / talk | witness conversion |
+| EPILOGUE: GhostBridge signs on; "junebug." makes him run | S4 felt, not proven | Chat | the-house | season sting |
 
 Notes for writing: Father Mike and Leslie carry no ledger rows — they are
 texture and tragedy, not clues; that's deliberate (not everyone who knows

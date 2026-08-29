@@ -22,6 +22,11 @@ const FORBIDDEN = [
   'SEASON1', // content export name
   'generateNeighborhood', // web generator (server-side content tooling)
   'radioactive_dave', // generated-web identity pool
+  'poem drafts 2', // hidden Oct 8 log (path B, stolen-intimacy)
+  'Simple has an alibi', // Register timeline page (path B, chads-window)
+  'a friend of the family', // GhostBridge's epilogue line
+  'sadie-talking', // conversation flag
+  'ghost-signoff', // epilogue flag
 ];
 
 function* walk(dir) {

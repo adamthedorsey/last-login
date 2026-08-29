@@ -138,14 +138,55 @@ export interface Discovery {
   endsDemo?: boolean;
 }
 
+export type BuddyStatus = 'online' | 'offline' | 'away';
+
 export interface Buddy {
   screenname: string;
   alias?: string;
   group: string;
-  status: 'online' | 'offline' | 'away';
+  status: BuddyStatus;
   awayMessage?: string;
   conversationId?: string;
   requires?: Requirement; // SERVER ONLY
+  /**
+   * Conditional presence changes, evaluated in order; the LAST matching
+   * override wins (e.g. GhostBridge signs on after the finale, then signs
+   * back off once spoken to). SERVER ONLY — only the resolved status ships.
+   */
+  overrides?: Array<{ requires: Requirement; status: BuddyStatus; awayMessage?: string }>;
+}
+
+// ---------------------------------------------------------------------------
+// Live conversations (server-authored prompt trees; the player never types
+// free text — they choose from prompts the server currently offers)
+// ---------------------------------------------------------------------------
+
+export interface ChatPrompt {
+  /** Unique within its conversation. */
+  id: string;
+  /** The line the player sends. */
+  text: string;
+  /** The buddy's reply lines, delivered in order. */
+  replies: string[];
+  /** When this prompt is offered. SERVER ONLY. */
+  requires?: Requirement;
+  /** Discoveries granted when the player says it. SERVER ONLY. */
+  discover?: string[];
+  /** Flags set when the player says it. SERVER ONLY. */
+  setFlags?: Record<string, boolean>;
+  /** The buddy signs off after replying (roster status via overrides). */
+  signOff?: boolean;
+}
+
+export interface ChatConversation {
+  /** The buddy this conversation belongs to (must match a roster entry). */
+  screenname: string;
+  /** When live chat with this buddy is available at all. SERVER ONLY. */
+  requires?: Requirement;
+  /** Lines the buddy sends when the window first opens. */
+  opener: string[];
+  /** Every prompt is one-shot: once said, it never re-offers. */
+  prompts: ChatPrompt[];
 }
 
 export interface SeasonContent {
@@ -161,6 +202,8 @@ export interface SeasonContent {
     loginHint?: string;
     /** The word the owner set in their screen saver. Sometimes a clue. */
     saverText?: string;
+    /** The owner's instant-messenger screen name (the player chats as it). */
+    imScreenname?: string;
   };
   /** Standalone password targets (e.g. the OS login itself). SERVER ONLY values. */
   passwords: Record<string, { password: string; hint?: string }>;
@@ -169,6 +212,8 @@ export interface SeasonContent {
   items: ContentItem[];
   discoveries: Discovery[];
   buddies: Buddy[];
+  /** Live prompt-tree conversations (see ChatConversation). SERVER ONLY. */
+  conversations?: ChatConversation[];
   maxPasswordAttempts: number;
   lockoutSeconds: number;
 }
@@ -210,6 +255,8 @@ export interface PlayerState {
   docSeq?: number;
   folders?: PlayerFolder[];
   folderSeq?: number;
+  /** Per-buddy list of prompt ids the player has said, in order. */
+  chats?: Record<string, string[]>;
 }
 
 export function newPlayerState(): PlayerState {
@@ -241,6 +288,8 @@ export type GameAction =
   | { type: 'visit'; url: string }
   | { type: 'search'; query: string }
   | { type: 'getBuddies' }
+  | { type: 'getConversation'; screenname: string }
+  | { type: 'say'; screenname: string; promptId: string }
   | { type: 'saveDocument'; docId?: string; name: string; text: string }
   | { type: 'createFolder'; name: string }
   | { type: 'moveDocument'; docId: string; folderId?: string }
@@ -285,6 +334,7 @@ export interface StateView {
   loginUser: string;
   loginHint?: string;
   saverText?: string;
+  imScreenname?: string;
   wallpaper: string;
   homeUrl: string;
   loggedIn: boolean;
@@ -298,9 +348,28 @@ export interface BuddyView {
   screenname: string;
   alias?: string;
   group: string;
-  status: 'online' | 'offline' | 'away';
+  status: BuddyStatus;
   awayMessage?: string;
   conversationId?: string;
+  /** True when a live conversation is currently available with this buddy. */
+  canChat?: boolean;
+}
+
+/** A prompt the player may say right now. Never carries gates or effects. */
+export interface ChatPromptView {
+  id: string;
+  text: string;
+}
+
+export interface ChatView {
+  screenname: string;
+  alias?: string;
+  /** Reconstructed transcript: opener + every exchange so far. */
+  messages: ImMessage[];
+  /** Prompts currently on offer (already-said ones never reappear). */
+  prompts: ChatPromptView[];
+  /** The buddy signed off at the end of this exchange. */
+  signedOff?: boolean;
 }
 
 export interface SearchResult {
@@ -338,6 +407,14 @@ export type ActionResult =
     }
   | { type: 'search'; results: SearchResult[] }
   | { type: 'buddies'; buddies: BuddyView[] }
+  | {
+      type: 'chat';
+      ok: boolean;
+      chat?: ChatView;
+      newDiscoveries?: DiscoveryView[];
+      ended?: boolean;
+      error?: string;
+    }
   | { type: 'document'; ok: boolean; item?: ItemSummary; error?: string }
   | { type: 'reset'; view: StateView }
   | { type: 'error'; error: string };

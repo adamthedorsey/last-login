@@ -115,8 +115,12 @@ describe('DTO redaction', () => {
     for (const folder of ['folder.c', 'folder.my-documents', 'folder.school', 'folder.recycle', 'mailbox.inbox']) {
       record({ type: 'listChildren', parentId: folder });
     }
+    record({ type: 'getConversation', screenname: 'sadiedraws77' });
+    record({ type: 'say', screenname: 'sadiedraws77', promptId: 'intro' });
     for (const id of CHAIN_OPENS) record({ type: 'open', itemId: id });
     record({ type: 'getBuddies' });
+    record({ type: 'getConversation', screenname: 'GhostBridge' });
+    record({ type: 'say', screenname: 'GhostBridge', promptId: 'junebug' });
     record({ type: 'visit', url: 'www.humbleregister.net' });
     record({ type: 'search', query: 'humble' });
     record({ type: 'getState' });
@@ -126,7 +130,33 @@ describe('DTO redaction', () => {
     expect(flat).not.toContain('"password"');
     expect(flat).not.toContain('"onOpen"');
     expect(flat).not.toContain('"searchText"');
+    expect(flat).not.toContain('"discover"');
+    expect(flat).not.toContain('"setFlags"');
+    expect(flat).not.toContain('"signOff"'); // signedOff (past tense) is the DTO
     expect(flat).not.toContain('sunflower97');
+  });
+
+  it('gated chat branches never leak their text before they are earned', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'say', screenname: 'sadiedraws77', promptId: 'intro' }).state;
+    const res = run(s, { type: 'getConversation', screenname: 'sadiedraws77' }).result;
+    const flat = JSON.stringify(res);
+    // The vigil branch (who-shaped) requires the-pipeline; the frank branch
+    // (the-clean-truck) requires chads-window. Neither may appear yet.
+    expect(flat).not.toContain('vigil');
+    expect(flat).not.toContain('exactly right');
+    expect(flat).not.toContain('washes his car');
+
+    const denied = run(s, { type: 'say', screenname: 'sadiedraws77', promptId: 'vigil' }).result;
+    expect(denied).toMatchObject({ type: 'chat', ok: false });
+    expect(JSON.stringify(denied)).not.toContain('exactly right');
+  });
+
+  it('the epilogue conversation does not exist before the finale', () => {
+    const s = loggedInState();
+    const res = run(s, { type: 'getConversation', screenname: 'GhostBridge' }).result;
+    expect(res).toMatchObject({ type: 'chat', ok: false });
+    expect(JSON.stringify(res)).not.toContain('up late');
   });
 
   it('getState exposes only earned discoveries and no future titles', () => {

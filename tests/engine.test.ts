@@ -147,6 +147,90 @@ describe('clue chain progression', () => {
   });
 });
 
+describe('live conversations', () => {
+  function saySadie(s: PlayerState, promptId: string) {
+    return run(s, { type: 'say', screenname: 'sadiedraws77', promptId });
+  }
+
+  it('offers only ungated prompts, and grants the-meeting through chat', () => {
+    let s = loggedInState();
+    let res = run(s, { type: 'getConversation', screenname: 'sadiedraws77' }).result;
+    if (res.type !== 'chat' || !res.chat) throw new Error('bad result');
+    expect(res.chat.prompts.map((p) => p.id)).toEqual(['intro']);
+    expect(res.chat.messages.length).toBeGreaterThan(0); // the opener
+
+    const said = saySadie(s, 'intro');
+    s = said.state;
+    expect(s.discoveries).toContain('the-meeting');
+    if (said.result.type !== 'chat' || !said.result.chat) throw new Error('bad result');
+    // Follow-ups unlock; the gated late-act branches stay hidden.
+    const ids = said.result.chat.prompts.map((p) => p.id);
+    expect(ids).toContain('online-guy');
+    expect(ids).toContain('about-her');
+    expect(ids).not.toContain('frank');
+    expect(ids).not.toContain('vigil');
+  });
+
+  it('prompts are one-shot and unavailable prompts are refused', () => {
+    let s = loggedInState();
+    s = saySadie(s, 'intro').state;
+    expect(saySadie(s, 'intro').result).toMatchObject({ type: 'chat', ok: false });
+    expect(saySadie(s, 'vigil').result).toMatchObject({ type: 'chat', ok: false });
+  });
+
+  it('walks the whole season on PATH B: chat, file, web, email alternates', () => {
+    let s = loggedInState();
+    s = saySadie(s, 'intro').state; // -> the-meeting
+    s = run(s, { type: 'open', itemId: 'file.gb-log-oct8' }).state; // -> stolen-intimacy
+    s = run(s, { type: 'visit', url: 'www.humbleregister.net/timeline' }).state; // -> chads-window
+    s = saySadie(s, 'frank').state; // -> the-clean-truck
+    s = run(s, { type: 'open', itemId: 'email.sam.plain' }).state; // -> the-pipeline
+    s = saySadie(s, 'vigil').state; // -> who-shaped
+    const fin = run(s, { type: 'open', itemId: 'trash.diary' });
+    expect(fin.result).toMatchObject({ type: 'open', ok: true, ended: true });
+    expect(fin.state.discoveries).toHaveLength(CHAIN.length);
+  });
+});
+
+describe('the epilogue', () => {
+  function finishedState(): PlayerState {
+    let s = loggedInState();
+    for (const step of CHAIN) s = run(s, { type: 'open', itemId: step.open }).state;
+    return s;
+  }
+
+  it('GhostBridge is unreachable before the finale', () => {
+    const s = loggedInState();
+    const res = run(s, { type: 'getConversation', screenname: 'GhostBridge' }).result;
+    expect(res).toMatchObject({ type: 'chat', ok: false });
+  });
+
+  it('he signs on after the finale, and the word makes him sign off for good', () => {
+    let s = finishedState();
+    let buddies = run(s, { type: 'getBuddies' }).result;
+    if (buddies.type !== 'buddies') throw new Error('bad result');
+    expect(buddies.buddies.find((b) => b.screenname === 'GhostBridge')?.status).toBe('online');
+
+    const opened = run(s, { type: 'getConversation', screenname: 'GhostBridge' }).result;
+    if (opened.type !== 'chat' || !opened.chat) throw new Error('bad result');
+    expect(opened.chat.messages[0].text).toContain('up late');
+
+    const sting = run(s, { type: 'say', screenname: 'GhostBridge', promptId: 'junebug' });
+    s = sting.state;
+    if (sting.result.type !== 'chat' || !sting.result.chat) throw new Error('bad result');
+    expect(sting.result.chat.signedOff).toBe(true);
+    expect(sting.result.chat.prompts).toHaveLength(0);
+
+    buddies = run(s, { type: 'getBuddies' }).result;
+    if (buddies.type !== 'buddies') throw new Error('bad result');
+    expect(buddies.buddies.find((b) => b.screenname === 'GhostBridge')?.status).toBe('offline');
+    expect(run(s, { type: 'getConversation', screenname: 'GhostBridge' }).result).toMatchObject({
+      type: 'chat',
+      ok: false,
+    });
+  });
+});
+
 describe('analytics events', () => {
   it('emits open/discovery events for meaningful actions only', () => {
     const s = loggedInState();

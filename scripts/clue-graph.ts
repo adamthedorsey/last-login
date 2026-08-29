@@ -122,6 +122,23 @@ function generate(content: SeasonContent): string {
     }
   }
 
+  // Live-chat prompts that grant discoveries (the conversation layer).
+  // Flag leaves are intra-conversation bookkeeping and stay off the chart.
+  for (const convo of content.conversations ?? []) {
+    for (const p of convo.prompts) {
+      if ((p.discover?.length ?? 0) === 0) continue;
+      const pid = nid('c', `${convo.screenname}_${p.id}`);
+      const ask = p.text.length > 44 ? `${p.text.slice(0, 44)}…` : p.text;
+      declare(pid, `${pid}["ask ${esc(convo.screenname)}:<br/>“${esc(ask)}”<br/><i>live chat</i>"]:::item`);
+      for (const d of p.discover ?? []) add(`${pid} ==>|grants| ${nid('d', d)}`);
+      const gates = [...leaves(convo.requires ?? { all: [] }), ...leaves(p.requires ?? { all: [] })];
+      for (const { combinator, leaf } of gates) {
+        const label = combinator === 'REQ' ? 'requires' : combinator;
+        if ('discovery' in leaf) add(`${nid('d', leaf.discovery)} -->|${label}| ${pid}`);
+      }
+    }
+  }
+
   const gated = content.items.filter((i) => i.requires).length;
   const granting = content.items.filter((i) => (i.onOpen?.discover?.length ?? 0) > 0).length;
   const mundane = content.items.length - gated - granting;

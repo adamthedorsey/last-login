@@ -62,12 +62,12 @@ the confirmed move]. He arranged a meeting: bring the ledger page, come
 alone, tell no one, delete the logs. The spot: the bend above the river off
 Route 9 — **chosen because it points at Frank.**
 
-Friday, Oct 10, ~10 PM: Casey rode her bike to the bend. [DECISION POINT —
-default:] Jonathan came to scare her and take the page; it went wrong; she
-went into the river in the dark. Not premeditated murder — a shove, a fall, a
-panic. Sparks handled everything after: the story, the silence, the calm.
-[Alternative if you want a colder season: Sparks premeditated it and Jonathan
-only learned afterward — flips their Act 3 dynamic.]
+Friday, Oct 10, ~10 PM: Casey rode her bike to the bend. [CANON — RESOLVED
+AMBIGUOUS:] Season 1 proves **whose hands** (Jonathan at the bend, Sparks
+running everything after) but deliberately does NOT establish what happened
+in the dark — panic-shove or plan. Both men's Act 3 behavior is written to
+support either reading. The shove-vs-premeditation question is held back as
+a future season's engine; nothing in shipped Season 1 content may settle it.
 
 **Without a trace:** she is not found in Season 1. The season's final reveal
 is the pipeline + the impersonation + *whose hands* — not the body.
@@ -130,13 +130,19 @@ The player never leaves the machine, so only this column becomes content.
   Oct 11, 2:14 AM → discovery: *GhostBridge knew her secrets because he lives
   here — and he touched this machine after she vanished.* Season ends.
 
-## Open decisions for Adam
+## Decisions — RESOLVED (Adam, 2026-08-29)
 
-1. Jonathan panicking vs. Sparks premeditating (default: Jonathan's hands,
-   Sparks' cover-up).
-2. Does Season 1 end with the player's knowledge only, or an in-world
-   consequence (a final email arriving — from whom)?
-3. Angel's reason for lying (default: the wine coolers + fear for her cousin).
-4. Whether Leslie gets a redemption beat (finding the courage to look) or
-   stays willfully blind through the finale.
-5. Frank/place: trailer confirmed over cabin? (Docs assume trailer.)
+1. **The bend: deliberately ambiguous.** Season 1 proves *who*, never *what*.
+   Jonathan's hands, Sparks' cover-up — but shove-vs-plan stays unwritten and
+   unresolvable from shipped content. Future-season material.
+2. **Season-end beat: GhostBridge signs on.** Moments after the player earns
+   `the-house`, the Chat roster flickers and GhostBridge appears online — he
+   knows someone has been on the machine. He answers exactly three things
+   ("casey?" → "no. we both know that." / "who is this?" → "a friend of the
+   family." / "junebug." → silence, then sign-off). The code word, used as a
+   weapon, is what makes him run. Then the season card.
+3. **Angel lied about the wine coolers** (protecting her cousin's job).
+   Canon; her apology email and her live-chat guilt both carry it.
+4. **Leslie stays willfully blind through the finale.** Her mail stays warm
+   and oblivious — devastating on re-read. Her awakening is Season 2 fuel.
+5. **Frank's trailer confirmed** (over the character-page "cabin").

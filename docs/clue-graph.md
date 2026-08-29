@@ -2,8 +2,8 @@
 
 > GENERATED — do not edit. Source of truth: `season1.ts`. Regenerate: `npm run graph`
 >
-> In-world date: 1997-10-18 · 95 items
-> (7 gated · 7 granting · ~81 mundane camouflage) ·
+> In-world date: 1997-10-18 · 98 items
+> (10 gated · 10 granting · ~78 mundane camouflage) ·
 > 7 discoveries
 
 ```mermaid
@@ -25,6 +25,9 @@ flowchart TD
   i_file_ledger_copy["wv history extra notes.txt<br/><i>file</i>"]:::item
   i_file_ledger_copy ==>|grants| d_the_pipeline
   d_the_clean_truck -->|requires| i_file_ledger_copy
+  i_file_gb_log_oct8["poem drafts 2.txt<br/><i>file</i>"]:::item
+  i_file_gb_log_oct8 ==>|grants| d_stolen_intimacy
+  d_the_meeting -->|requires| i_file_gb_log_oct8
   i_email_sadie_please["please write back<br/><i>email</i>"]:::item
   i_email_sadie_please ==>|grants| d_the_meeting
   i_email_sadie_notchad["it’s not chad<br/><i>email</i>"]:::item
@@ -33,6 +36,9 @@ flowchart TD
   i_email_ruth_yourdad["about your daddy<br/><i>email</i>"]:::item
   i_email_ruth_yourdad ==>|grants| d_the_clean_truck
   d_chads_window -->|requires| i_email_ruth_yourdad
+  i_email_sam_plain["what i should have said<br/><i>email</i>"]:::item
+  i_email_sam_plain ==>|grants| d_the_pipeline
+  d_the_clean_truck -->|requires| i_email_sam_plain
   i_email_rebecca["to whoever is going through her things<br/><i>email</i>"]:::item
   i_email_rebecca ==>|grants| d_who_shaped
   d_the_pipeline -->|requires| i_email_rebecca
@@ -42,10 +48,21 @@ flowchart TD
   i_trash_diary["diary.doc<br/><i>recycle bin</i>"]:::item
   i_trash_diary ==>|grants| d_the_house
   d_who_shaped -->|requires| i_trash_diary
+  i_web_register_timeline["The Humble Register: Timeline of Oct. 10<br/><i>web</i>"]:::item
+  i_web_register_timeline ==>|grants| d_chads_window
+  d_stolen_intimacy -->|requires| i_web_register_timeline
   i_web_mapfinder_bend["MapFinder: Route 9 river bend<br/><i>web</i>"]:::item
   d_the_meeting -->|requires| i_web_mapfinder_bend
   b_GhostBridge["GhostBridge<br/><i>buddy appears</i>"]:::item
   d_stolen_intimacy -->|requires| b_GhostBridge
+  c_sadiedraws77_intro["ask sadiedraws77:<br/>“this isn’t casey. i’m at her computer, tryin…”<br/><i>live chat</i>"]:::item
+  c_sadiedraws77_intro ==>|grants| d_the_meeting
+  c_sadiedraws77_frank["ask sadiedraws77:<br/>“could it have been her dad she was meeting?”<br/><i>live chat</i>"]:::item
+  c_sadiedraws77_frank ==>|grants| d_the_clean_truck
+  d_chads_window -->|AND| c_sadiedraws77_frank
+  c_sadiedraws77_vigil["ask sadiedraws77:<br/>“has anyone strange been around since she dis…”<br/><i>live chat</i>"]:::item
+  c_sadiedraws77_vigil ==>|grants| d_who_shaped
+  d_the_pipeline -->|AND| c_sadiedraws77_vigil
 ```
 
 Legend: rectangles are evidence items · stadiums are discoveries · slashed boxes

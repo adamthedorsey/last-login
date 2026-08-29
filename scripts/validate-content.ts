@@ -8,7 +8,7 @@
  * password-locked items (listed so they're reviewed as puzzles).
  */
 import { SEASON1 } from '../supabase/functions/_shared/gamecore/season1.ts';
-import { isAccessible } from '../supabase/functions/_shared/gamecore/engine.ts';
+import { isAccessible, meetsRequirement, resolvePresence } from '../supabase/functions/_shared/gamecore/engine.ts';
 import {
   newPlayerState,
   type ContentItem,
@@ -69,23 +69,69 @@ function validate(content: SeasonContent): void {
   }
   for (const buddy of content.buddies) {
     checkReq(`buddy ${buddy.screenname}`, buddy.requires);
+    for (const o of buddy.overrides ?? []) checkReq(`buddy ${buddy.screenname} override`, o.requires);
     if (buddy.conversationId && !itemIds.has(buddy.conversationId))
       errors.push(`buddy ${buddy.screenname}: unknown conversationId "${buddy.conversationId}"`);
   }
   if (!passwordTargets.has(content.computer.loginTargetId))
     errors.push(`computer.loginTargetId "${content.computer.loginTargetId}" has no password`);
 
+  // --- Conversations: references, prompt uniqueness, flag integrity ---
+  const buddyNames = new Set(content.buddies.map((b) => b.screenname));
+  const settableFlags = new Set<string>();
+  for (const item of content.items)
+    for (const f of Object.keys(item.onOpen?.setFlags ?? {})) settableFlags.add(f);
+  for (const convo of content.conversations ?? [])
+    for (const p of convo.prompts)
+      for (const f of Object.keys(p.setFlags ?? {})) settableFlags.add(f);
+
+  for (const convo of content.conversations ?? []) {
+    const who = `conversation ${convo.screenname}`;
+    if (!buddyNames.has(convo.screenname)) errors.push(`${who}: no such buddy on the roster`);
+    checkReq(who, convo.requires);
+    const pids = new Set<string>();
+    for (const p of convo.prompts) {
+      if (pids.has(p.id)) errors.push(`${who}: duplicate prompt id "${p.id}"`);
+      pids.add(p.id);
+      checkReq(`${who}#${p.id}`, p.requires);
+      for (const d of p.discover ?? [])
+        if (!discoveryIds.has(d)) errors.push(`${who}#${p.id}: grants unknown discovery "${d}"`);
+    }
+  }
+  // A `flag` requirement that nothing can ever set is a dead gate.
+  const checkFlags = (owner: string, req: Requirement | undefined) => {
+    if (!req) return;
+    for (const leaf of leaves(req))
+      if ('flag' in leaf && !settableFlags.has(leaf.flag))
+        errors.push(`${owner}: requires flag "${leaf.flag}" which nothing ever sets`);
+  };
+  for (const item of content.items) checkFlags(item.id, item.requires);
+  for (const buddy of content.buddies) {
+    checkFlags(`buddy ${buddy.screenname}`, buddy.requires);
+    for (const o of buddy.overrides ?? []) checkFlags(`buddy ${buddy.screenname} override`, o.requires);
+  }
+  for (const convo of content.conversations ?? []) {
+    checkFlags(`conversation ${convo.screenname}`, convo.requires);
+    for (const p of convo.prompts) checkFlags(`conversation ${convo.screenname}#${p.id}`, p.requires);
+  }
+
   // --- Every discovery must be grantable, finale must exist ---
-  const granters = new Map<string, ContentItem[]>();
+  // Granters are items AND chat prompts (a live-conversation reveal counts
+  // as a full path for the two-path rule).
+  const granters = new Map<string, string[]>();
   for (const item of content.items)
     for (const d of item.onOpen?.discover ?? [])
-      granters.set(d, [...(granters.get(d) ?? []), item]);
+      granters.set(d, [...(granters.get(d) ?? []), item.id]);
+  for (const convo of content.conversations ?? [])
+    for (const p of convo.prompts)
+      for (const d of p.discover ?? [])
+        granters.set(d, [...(granters.get(d) ?? []), `chat:${convo.screenname}#${p.id}`]);
   for (const d of content.discoveries) {
     const g = granters.get(d.id) ?? [];
     if (g.length === 0) errors.push(`discovery "${d.id}" is granted by nothing`);
     else if (g.length === 1 && !d.endsDemo)
       warnings.push(
-        `discovery "${d.id}" has a single granting item (${g[0].id}) — two-path rule`,
+        `discovery "${d.id}" has a single granting source (${g[0]}) — two-path rule`,
       );
   }
   if (!content.discoveries.some((d) => d.endsDemo))
@@ -95,6 +141,7 @@ function validate(content: SeasonContent): void {
   const state = newPlayerState();
   state.loggedIn = true;
   state.unlocked = [...Object.keys(content.passwords)]; // authored passwords are solvable
+  const said = new Set<string>();
   let changed = true;
   let rounds = 0;
   while (changed && rounds++ < 1000) {
@@ -109,10 +156,30 @@ function validate(content: SeasonContent): void {
         if (!state.discoveries.includes(d)) state.discoveries.push(d);
       changed = true;
     }
+    // Live chat: a buddy who is visible and not offline will answer prompts.
+    for (const convo of content.conversations ?? []) {
+      const buddy = content.buddies.find((b) => b.screenname === convo.screenname);
+      if (!buddy) continue;
+      if (!meetsRequirement(state, buddy.requires) || !meetsRequirement(state, convo.requires)) continue;
+      if (resolvePresence(state, buddy).status === 'offline') continue;
+      for (const p of convo.prompts) {
+        const key = `${convo.screenname}#${p.id}`;
+        if (said.has(key) || !meetsRequirement(state, p.requires)) continue;
+        said.add(key);
+        if (p.setFlags) Object.assign(state.flags, p.setFlags);
+        for (const d of p.discover ?? [])
+          if (!state.discoveries.includes(d)) state.discoveries.push(d);
+        changed = true;
+      }
+    }
   }
   for (const item of content.items)
     if (!state.opened.includes(item.id))
       errors.push(`item "${item.id}" is unreachable (requirements can never be met)`);
+  for (const convo of content.conversations ?? [])
+    for (const p of convo.prompts)
+      if (!said.has(`${convo.screenname}#${p.id}`))
+        errors.push(`chat prompt "${convo.screenname}#${p.id}" can never be said`);
   for (const d of content.discoveries)
     if (!state.discoveries.includes(d.id))
       errors.push(`discovery "${d.id}" can never be earned`);
@@ -136,9 +203,11 @@ function validate(content: SeasonContent): void {
 validate(SEASON1);
 
 const gated = SEASON1.items.filter((i) => i.requires).length;
+const prompts = (SEASON1.conversations ?? []).reduce((n, c) => n + c.prompts.length, 0);
 console.log(
   `content: ${SEASON1.items.length} items (${gated} gated), ` +
-    `${SEASON1.discoveries.length} discoveries, ${SEASON1.buddies.length} buddies`,
+    `${SEASON1.discoveries.length} discoveries, ${SEASON1.buddies.length} buddies, ` +
+    `${(SEASON1.conversations ?? []).length} conversations (${prompts} prompts)`,
 );
 for (const w of warnings) console.log(`  warn: ${w}`);
 if (errors.length) {

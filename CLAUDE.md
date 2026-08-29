@@ -88,6 +88,19 @@ If not, don't build it that way.
 - Keep 1997 web texture: visitor counters, "best viewed at 800x600",
   under-construction energy, table-era layouts, blue/underlined links.
 
+### Live chat (in-game)
+- Conversations are server-authored prompt trees (`ChatConversation` in
+  season content). The player never types free text; the client only ever
+  receives the prompts currently on offer, and the full transcript is
+  rebuilt server-side from the ordered prompt history — never stored or
+  invented client-side.
+- Incoming lines appear stepped on a fixed clock (no typing animations, no
+  easing). Chat notification copy in CLIENT code stays generic ("Someone
+  just signed on.") — buddy names in client strings are spoiler leaks; the
+  roster itself, populated from the server, does the telling.
+- Buddy presence changes are authored as `overrides` on the roster entry
+  (requirement → status), never client-side logic.
+
 ## Security model (non-negotiable, see README for detail)
 - Story content lives ONLY in `supabase/functions/_shared/gamecore/` and the
   private `game` DB schema. It may reach the client exclusively through the
