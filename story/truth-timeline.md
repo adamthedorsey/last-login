@@ -105,10 +105,10 @@ The player never leaves the machine, so only this column becomes content.
 | Oct 10, 7:40 AM | Normal school morning; algebra quiz | Calendar: "algebra quiz" + the unexplained "★ 10pm" |
 | Oct 10, 3:30 PM | **Public parking-lot argument with Chad** — he grabbed her arm about "some guy she's been talking to online at all hours" (he'd noticed; he was jealous of GhostBridge without knowing it) | Witness accounts arrive later via email/gossip; Chad's apology email sent 6:02 PM, unread [PROPOSED — this email is the Act 2 pivot: read closely, it's an alibi] |
 | Oct 10, 4–7 PM | With Angel: they drive to the Gene's Bar back lot where Angel's cousin sells them wine coolers [PROPOSED]; Angel drops her home ~7 | Angel's later emails contradict her first police statement about the time |
-| Oct 10, 9:31 PM | Final GhostBridge session: "the bend. 10 pm. bring the page. come alone. delete the logs." | THE log. She half-obeys: deletes it — **to the Trash** |
+| Oct 10, 9:31 PM | Final GhostBridge session: "the bend. 10 pm. bring the page. come alone. delete the logs." | THE log. She half-obeys: deletes it — **to the Recycle Bin** |
 | Oct 10, ~9:50 PM | Rides her bike toward Route 9; Frank, drunk on his porch, sees headlights stop at the bend — a clean dark 4x4, NOT Chad's lifted truck [PROPOSED: it's Sparks' Bronco, lent to Jonathan] | Nothing on the PC — Frank's knowledge surfaces via an Act 3 email thread (see matrix S6) |
 | Oct 10, ~10:10 PM | The bend. The shove/fall/river. Jonathan takes her backpack — but the ledger page in it is a decoy; the real copy is on the PC | — |
-| **Oct 11, 2:14 AM** | **Jonathan uses her PC**: reads the diary, empties what he finds, deletes the diary file and the IM logs — but misses the hidden ledger copy and doesn't empty the Trash. At **2:31 AM** he cuts the power at the wall rather than shut down — no goodbye chime, no trace, he thinks | File timestamps postdating her disappearance; Trash remnants; the diary's "last modified" is AFTER she was gone — **the smoking gun**. And every cold boot since prints: *"WARNING: This computer was not shut down properly. Last session ended: 10/11/97 2:31 AM"* — the machine tattles before the player even logs in [CANON] |
+| **Oct 11, 2:14 AM** | **Jonathan uses her PC**: reads the diary, empties what he finds, deletes the diary file and the IM logs — but misses the hidden ledger copy and doesn't empty the Recycle Bin. At **2:31 AM** he cuts the power at the wall rather than shut down — no goodbye chime, no trace, he thinks | File timestamps postdating her disappearance; Recycle Bin remnants; the diary's "last modified" is AFTER she was gone — **the smoking gun**. And every cold boot since prints: *"WARNING: This computer was not shut down properly. Last session ended: 10/11/97 2:31 AM"* — the machine tattles before the player even logs in [CANON] |
 | Oct 11, 7 AM | Bike found at the Route 9 trailhead | News site story |
 | Oct 12–13 | Search parties; Chad questioned publicly (the fight); Frank questioned (proximity, drunk, no alibi) | Emails flood in: Sadie's "please write back," church chain of prayer, school notice |
 | Oct 14 | Angel breaks down, changes her statement about the timeline; town turns on her a little | Angel's raw apology email to Casey's account |
@@ -119,7 +119,7 @@ The player never leaves the machine, so only this column becomes content.
 ## Act skeleton (feeds the clue graph)
 
 - **Act 1 — "The story doesn't hold":** login → mundane life → the Chad fight
-  and the ★ 10pm → Sadie's email → the recovered Trash log fragment →
+  and the ★ 10pm → Sadie's email → the recovered Recycle Bin log fragment →
   discovery: *she was meeting someone she trusted, arranged online.*
 - **Act 2 — "The obvious suspects can't be it":** Chad's apology email
   timestamped during the meeting window + Gene's Bar corroboration → Angel's

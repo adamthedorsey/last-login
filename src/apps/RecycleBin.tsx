@@ -59,7 +59,7 @@ export function RecycleBin() {
           Restore
         </Button>
         <Button disabled title="Better not.">
-          Empty Trash
+          Empty Recycle Bin
         </Button>
       </Toolbar>
       <ScrollView style={{ flex: 1, marginTop: 4, background: '#fff' }}>
@@ -82,7 +82,7 @@ export function RecycleBin() {
             <span>{item.meta?.deletedAt}</span>
           </Row>
         ))}
-        {items.length === 0 && <div style={{ padding: 10, color: '#777' }}>(the trash is empty)</div>}
+        {items.length === 0 && <div style={{ padding: 10, color: '#777' }}>(the bin is empty)</div>}
       </ScrollView>
       <Frame variant="well" style={{ marginTop: 4, padding: '2px 8px', fontSize: 12, flexShrink: 0 }}>
         {items.length} deleted object(s). Double-click to peek inside.

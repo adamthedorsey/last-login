@@ -6,6 +6,13 @@ illusion or the security model. Follow them for EVERY change.
 
 ## The Period Guard: it must look, sound, and behave like 1997
 
+**The north star: we are building a system that FUNCTIONS like Windows 95 —
+but it IS Horizons 95.** Behavior, interaction patterns, and conventions
+follow real Win95 faithfully (double-click to open, rubber-band selection,
+Start menu structure, tray behavior, shutdown flow); names, logos, and
+branding are always Horizons/fictional, never Microsoft's. When unsure how
+something should behave, the answer is "whatever Windows 95 actually did."
+
 The bar for any UI change: "could this have shipped on a consumer PC in 1997?"
 If not, don't build it that way.
 

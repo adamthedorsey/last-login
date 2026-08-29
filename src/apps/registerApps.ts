@@ -69,7 +69,7 @@ export function registerAllApps(): void {
   });
   registerApp({
     id: 'recycle',
-    name: 'Trash',
+    name: 'Recycle Bin',
     icon: 'trash',
     component: RecycleBin,
     defaultSize: { w: 540, h: 360 },
