@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame, ScrollView, Toolbar, Window, WindowContent, WindowHeader } from 'react95';
+import { Button, Frame, ScrollView, Toolbar } from 'react95';
 import type { ItemContent, ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
-import { useWindowStore } from '../os/windowStore';
 import { playError } from '../os/sounds';
+import { OfflineAlert } from '../os/OfflineAlert';
 import { Icon } from '../os/icons';
 
 const MAILBOXES = [
@@ -122,7 +122,6 @@ function fmtDate(iso?: string): string {
 
 export function MailApp() {
   const { send, view, contentEpoch } = useGame();
-  const openApp = useWindowStore((s) => s.open);
   const [mailbox, setMailbox] = useState('mailbox.inbox');
   const [messages, setMessages] = useState<ItemSummary[]>([]);
   const [openMsg, setOpenMsg] = useState<ItemContent | null>(null);
@@ -238,42 +237,11 @@ export function MailApp() {
       </Frame>
 
       {offlineAlert && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 100007,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0, 0, 0, 0.2)',
-          }}
-          data-no-deskmenu
-        >
-          <Window shadow style={{ width: 380 }}>
-            <WindowHeader style={{ fontSize: 13 }}>Mail</WindowHeader>
-            <WindowContent style={{ fontSize: 13 }}>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                <Icon name="warning" size={32} />
-                <p style={{ margin: 0 }}>
-                  Mail could not check for new messages because this computer
-                  is not connected to the Internet. Would you like to connect
-                  now?
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
-                <Button
-                  onClick={() => {
-                    setOfflineAlert(false);
-                    openApp('dialup');
-                  }}
-                  style={{ width: 110 }}
-                >
-                  Connect...
-                </Button>
-                <Button onClick={() => setOfflineAlert(false)} style={{ width: 90 }}>
-                  Cancel
-                </Button>
-              </div>
-            </WindowContent>
-          </Window>
-        </div>
+        <OfflineAlert
+          title="Mail"
+          message="Mail could not check for new messages because this computer is not connected to the Internet. Would you like to connect now?"
+          onClose={() => setOfflineAlert(false)}
+        />
       )}
     </>
   );

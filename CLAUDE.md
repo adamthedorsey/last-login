@@ -96,6 +96,10 @@ If not, don't build it that way.
 ### Sound
 - Synthesized chip-style tones only (`src/os/sounds.ts`). Short, quiet,
   mutable. No sampled audio, no music beds, no modern notification sounds.
+  ONE owner-approved exception: the dial-up handshake plays a real sampled
+  modem recording (`src/assets/sounds/dial-up-modem.mp3`) — nostalgia is
+  the point there. It stops cleanly on connect/skip and falls back to the
+  chip-tone version if playback is blocked. No other samples.
 
 ### Language & content
 - In-world text never references anything after 1997 (no smartphones, social

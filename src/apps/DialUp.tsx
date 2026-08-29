@@ -11,7 +11,7 @@ import styled from 'styled-components';
 import { Button, Frame, TextInput } from 'react95';
 import { useGame } from '../game/gameContext';
 import { useWindowStore } from '../os/windowStore';
-import { playDialup, playError } from '../os/sounds';
+import { playError, startDialupSound, stopDialupSound } from '../os/sounds';
 import { Icon } from '../os/icons';
 import type { AppWindowProps } from '../os/appRegistry';
 
@@ -33,12 +33,12 @@ const StatusWell = styled(Frame).attrs({ variant: 'well' })`
   min-height: 44px;
 `;
 
-// The classic staging. Short enough to stay fun; a click skips ahead.
+// The classic staging — paced to let the modem sing, still click-skippable.
 const STAGES = [
-  { text: 'Dialing 555-0134 ...', ms: 1100 },
-  { text: 'Connecting ...', ms: 1200 },
-  { text: 'Verifying user name and password ...', ms: 1100 },
-  { text: 'Connected at 33,600 bps.', ms: 700 },
+  { text: 'Dialing 555-0134 ...', ms: 1600 },
+  { text: 'Connecting ...', ms: 2300 },
+  { text: 'Verifying user name and password ...', ms: 1600 },
+  { text: 'Connected at 33,600 bps.', ms: 800 },
 ];
 
 export function DialUp({ windowId }: AppWindowProps) {
@@ -50,9 +50,16 @@ export function DialUp({ windowId }: AppWindowProps) {
 
   const online = view?.online === true;
 
-  useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
+  useEffect(
+    () => () => {
+      timers.current.forEach((t) => window.clearTimeout(t));
+      stopDialupSound();
+    },
+    [],
+  );
 
   const finishConnect = async () => {
+    stopDialupSound();
     const res = await send({ type: 'connect' });
     await refreshView();
     setPhase('done');
@@ -67,7 +74,7 @@ export function DialUp({ windowId }: AppWindowProps) {
   const startDialing = () => {
     setPhase('dialing');
     setStage(0);
-    playDialup();
+    startDialupSound();
     let at = 0;
     STAGES.forEach((_stage, i) => {
       at += i === 0 ? 0 : STAGES[i - 1].ms;

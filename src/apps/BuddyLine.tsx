@@ -4,7 +4,8 @@ import { Button, Frame, TextInput } from 'react95';
 import type { BuddyView, ChatView, ItemContent } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import type { AppWindowProps } from '../os/appRegistry';
-import { playImMsg } from '../os/sounds';
+import { playImMsg, playError } from '../os/sounds';
+import { OfflineAlert } from '../os/OfflineAlert';
 
 const Layout = styled.div`
   flex: 1;
@@ -119,6 +120,7 @@ export function BuddyLine({ props }: AppWindowProps) {
   const [chat, setChat] = useState<ChatView | null>(null); // live conversation
   const [visible, setVisible] = useState(0); // stepped message reveal
   const [notice, setNotice] = useState<string | null>(null);
+  const [offlineAlert, setOfflineAlert] = useState(false);
   const [activeBuddy, setActiveBuddy] = useState<BuddyView | null>(null);
   const requestedConvo = props.conversationId as string | undefined;
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -196,7 +198,14 @@ export function BuddyLine({ props }: AppWindowProps) {
     setActiveBuddy(b);
     if (b.canChat && (await openLive(b))) return;
     if (b.conversationId) {
+      // Saved logs are on the disk — they read fine offline.
       void openLog(b.conversationId);
+      return;
+    }
+    if (!view?.online) {
+      // Nothing local for this buddy and no line to reach them on.
+      playError();
+      setOfflineAlert(true);
       return;
     }
     setChat(null);
@@ -333,6 +342,13 @@ export function BuddyLine({ props }: AppWindowProps) {
           )}
         </ChatPane>
       </Layout>
+      {offlineAlert && (
+        <OfflineAlert
+          title="Chat"
+          message="Chat could not sign on to BuddyLine because this computer is not connected to the Internet. Would you like to connect now?"
+          onClose={() => setOfflineAlert(false)}
+        />
+      )}
     </>
   );
 }

@@ -3,6 +3,8 @@
  * fully disableable — the mute state persists in localStorage.
  */
 
+import dialupMp3 from '../assets/sounds/dial-up-modem.mp3';
+
 const MUTE_KEY = 'lastlogin.muted';
 
 let ctx: AudioContext | null = null;
@@ -61,9 +63,39 @@ export function playError(): void {
 }
 
 /**
- * A stylized dial-up handshake, all chip tones (~3.2s, quiet): dial tone,
- * DTMF chatter, carrier warble, then the answering screech. Not a sample —
- * a cartoon of the real thing, per the synth-only sound rule.
+ * The real thing: a sampled dial-up handshake (owner-approved exception to
+ * the synth-only rule — nostalgia is the point). Stopped cleanly when the
+ * connection completes or the player skips; the chip-tone cartoon below is
+ * the fallback if playback is blocked.
+ */
+let dialupAudio: HTMLAudioElement | null = null;
+
+export function startDialupSound(): void {
+  if (isMuted()) return;
+  try {
+    stopDialupSound();
+    const a = new Audio(dialupMp3);
+    a.volume = 0.45;
+    dialupAudio = a;
+    void a.play().catch(() => {
+      dialupAudio = null;
+      playDialup();
+    });
+  } catch {
+    playDialup();
+  }
+}
+
+export function stopDialupSound(): void {
+  if (dialupAudio) {
+    dialupAudio.pause();
+    dialupAudio = null;
+  }
+}
+
+/**
+ * A stylized chip-tone handshake — the fallback when sampled audio can't
+ * play (autoplay policy, missing file).
  */
 export function playDialup(): void {
   // dial tone
