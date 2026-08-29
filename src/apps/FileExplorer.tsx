@@ -282,7 +282,11 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
                 onPointerUp={onItemPointerUp}
                 style={canDragOut(item) ? { touchAction: 'none' } : undefined}
               >
-                <Icon name={item.icon ?? 'doc'} size={32} />
+                <Icon
+                  name={item.icon ?? 'doc'}
+                  size={32}
+                  shortcut={item.kind === 'shortcut' && item.meta?.appId !== 'recycle'}
+                />
                 <span>{item.name}</span>
               </Cell>
             ))}

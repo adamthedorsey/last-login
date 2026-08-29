@@ -408,7 +408,11 @@ export function DesktopIcons() {
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
           >
-            <Icon name={item.icon ?? 'doc'} size={34} />
+            <Icon
+              name={item.icon ?? 'doc'}
+              size={34}
+              shortcut={item.kind === 'shortcut' && item.meta?.appId !== 'recycle'}
+            />
             {renaming?.id === item.id ? (
               <RenameInput
                 value={renaming.value}

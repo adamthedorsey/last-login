@@ -94,6 +94,32 @@ const R95 = {
 interface IconProps {
   name?: string;
   size?: number;
+  /** Win95 shortcut overlay: the little white box + black arrow, bottom-left. */
+  shortcut?: boolean;
+}
+
+/** The .lnk arrow, drawn blocky in a 10x10 box. */
+function ShortcutArrow({ size }: { size: number }) {
+  const s = Math.max(10, Math.round(size * 0.38));
+  return (
+    <svg
+      width={s}
+      height={s}
+      viewBox="0 0 10 10"
+      shapeRendering="crispEdges"
+      style={{ position: 'absolute', left: 0, bottom: 0 }}
+      aria-hidden
+    >
+      <rect x={0} y={0} width={10} height={10} fill="#ffffff" />
+      <rect x={5} y={1} width={4} height={1} fill="#000" />
+      <rect x={6} y={2} width={3} height={1} fill="#000" />
+      <rect x={7} y={3} width={2} height={1} fill="#000" />
+      <rect x={8} y={4} width={1} height={1} fill="#000" />
+      <rect x={4} y={5} width={1} height={1} fill="#000" />
+      <rect x={3} y={6} width={1} height={1} fill="#000" />
+      <rect x={2} y={7} width={1} height={1} fill="#000" />
+    </svg>
+  );
 }
 
 type Px = [x: number, y: number, w: number, h: number, fill: string];
@@ -400,23 +426,35 @@ const ICONS: Record<string, Px[]> = {
   ],
 };
 
-export function Icon({ name = 'doc', size = 32 }: IconProps) {
+export function Icon({ name = 'doc', size = 32, shortcut = false }: IconProps) {
+  // The overlay only reads at desktop/explorer sizes; menus stay clean
+  // (real Win95 Start menu items showed no arrows either).
+  const withArrow = (inner: React.ReactNode) =>
+    shortcut && size >= 24 ? (
+      <span style={{ position: 'relative', display: 'inline-block', width: size, height: size }}>
+        {inner}
+        <ShortcutArrow size={size} />
+      </span>
+    ) : (
+      inner
+    );
+
   const R = R95[name];
   if (R) {
     // Serve the 16px frame when rendering small — it's the art Win95 drew
     // at that size, and it stays crisp instead of a shrunken 32px frame.
     const variant = size <= 20 && R.v16 ? '16x16_4' : '32x32_4';
-    return (
+    return withArrow(
       <R.C
         variant={variant}
         width={size}
         height={size}
         style={{ display: 'block', imageRendering: 'pixelated' }}
-      />
+      />,
     );
   }
   const shape = ICONS[name] ?? ICONS.doc;
-  return (
+  return withArrow(
     <svg
       width={size}
       height={size}
@@ -426,6 +464,6 @@ export function Icon({ name = 'doc', size = 32 }: IconProps) {
       aria-hidden
     >
       {px(shape)}
-    </svg>
+    </svg>,
   );
 }
