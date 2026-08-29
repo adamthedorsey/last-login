@@ -4,6 +4,7 @@ import { Button, Frame, MenuList, MenuListItem, Separator, TextInput } from 'rea
 import type { ItemContent, ItemSummary, PageBlock, SearchResult } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { useWindowStore } from '../os/windowStore';
+import { READABLE_TEXT } from '../theme';
 import type { AppWindowProps } from '../os/appRegistry';
 
 const FONTS: Record<string, string> = {
@@ -180,6 +181,8 @@ const Page = styled(Frame).attrs({ variant: 'field' })`
   user-select: text;
   padding: 0;
   margin-top: 3px;
+  /* Web-page text is Times/Arial — smooth it for comfortable reading. */
+  ${READABLE_TEXT}
 `;
 
 const StatusRow = styled(Frame).attrs({ variant: 'well' })`
@@ -394,7 +397,7 @@ function Blocks({
         fontFamily: FONTS[style?.font ?? 'serif'],
         textAlign: style?.centered ? 'center' : 'left',
         padding: '18px 26px',
-        fontSize: 15,
+        fontSize: 16,
       }}
     >
       {page.body?.blocks?.map((b, i) => (
@@ -429,9 +432,9 @@ function Block({
     case 'sub':
       return <h3 style={{ fontSize: 19, margin: '14px 0 6px' }}>{b.text}</h3>;
     case 'p':
-      return <p style={{ margin: '8px 0', lineHeight: 1.4 }}>{b.text}</p>;
+      return <p style={{ margin: '8px 0', lineHeight: 1.5 }}>{b.text}</p>;
     case 'small':
-      return <p style={{ fontSize: 12, opacity: 0.8, margin: '6px 0' }}>{b.text}</p>;
+      return <p style={{ fontSize: 12.5, opacity: 0.8, margin: '6px 0' }}>{b.text}</p>;
     case 'link':
       return (
         <p style={{ margin: '6px 0' }}>

@@ -16,7 +16,7 @@ const Paper = styled(Frame).attrs({ variant: 'field' })`
   white-space: pre-wrap;
   user-select: text;
   cursor: text;
-  line-height: 1.35;
+  line-height: 1.45;
 `;
 
 const Meta = styled.div`

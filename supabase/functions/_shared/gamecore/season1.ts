@@ -397,7 +397,7 @@ and her modem was struck by LIGHTNING. Do not risk it!!!
         createdAt: '1997-08-30',
         modifiedAt: '1997-08-30',
         sizeKb: 1,
-        desktop: { x: 24, y: 312 },
+        desktop: { x: 312, y: 24 },
       },
       body: {
         text: `casey —
@@ -929,21 +929,21 @@ The Civil War was a war that happened in America between 1861 and
       kind: 'shortcut',
       name: 'WestWind Mail',
       icon: 'mail-app',
-      meta: { appId: 'mail', desktop: { x: 120, y: 24 } },
+      meta: { appId: 'mail', desktop: { x: 120, y: 120 } },
     },
     {
       id: 'shortcut.buddyline',
       kind: 'shortcut',
       name: 'BuddyLine',
       icon: 'im-app',
-      meta: { appId: 'buddyline', desktop: { x: 120, y: 120 } },
+      meta: { appId: 'buddyline', desktop: { x: 120, y: 216 } },
     },
     {
       id: 'shortcut.browser',
       kind: 'shortcut',
       name: 'NetVoyager',
       icon: 'browser',
-      meta: { appId: 'browser', desktop: { x: 120, y: 216 } },
+      meta: { appId: 'browser', desktop: { x: 120, y: 24 } },
     },
     {
       id: 'shortcut.notepad',
@@ -957,7 +957,7 @@ The Civil War was a war that happened in America between 1861 and
       kind: 'shortcut',
       name: 'Recycle Bin',
       icon: 'trash',
-      meta: { appId: 'recycle', desktop: { x: 216, y: 312 } },
+      meta: { appId: 'recycle', desktop: { x: 24, y: 408 } },
     },
     {
       id: 'shortcut.cardshark',

@@ -37,8 +37,14 @@ If not, don't build it that way.
   multiples of 16 only).
 - In-game web pages: Times New Roman / Arial / Courier New via the `PageBlock`
   style system — that's what the 1997 web actually used.
-- Font smoothing is globally OFF (`-webkit-font-smoothing: none`). Never
-  re-enable it, globally or per-element.
+- Font smoothing is two-tier, on purpose: bitmap fonts (ms_sans_serif,
+  Fixedsys) render ALIASED (smoothing off inherits from body — their crisp,
+  correct form). Vector reading faces (Times/Arial content surfaces) opt back
+  into antialiasing via `READABLE_TEXT` from `src/theme.tsx` — period feel
+  must not make long story text hard to read. Never smooth the bitmap fonts;
+  never leave a long-form vector-text surface aliased.
+- Reading surfaces get comfortable line-height (1.45–1.55) and ≥14px sizes;
+  chrome stays compact at 13–14px.
 - No webfonts beyond the three above. No variable fonts, no Inter/Roboto/system
   UI stacks.
 

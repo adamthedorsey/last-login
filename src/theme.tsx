@@ -14,6 +14,17 @@ import type { ReactNode } from 'react';
  */
 export const PIXEL_MONO = "'Fixedsys', 'Courier New', monospace";
 
+/**
+ * Legibility carve-out: bitmap fonts (ms_sans_serif, Fixedsys) render aliased
+ * — that's their correct, crisp form. But vector reading faces (Times/Arial
+ * on web pages, splash serif) get modern antialiasing back so long-form story
+ * text stays comfortable on today's displays. Apply this on those surfaces.
+ */
+export const READABLE_TEXT = `
+  -webkit-font-smoothing: auto;
+  text-rendering: auto;
+`;
+
 const GlobalStyles = createGlobalStyle`
   ${styleReset}
   @font-face {
@@ -45,9 +56,9 @@ const GlobalStyles = createGlobalStyle`
     background: #000;
     /* Desktop chrome is not selectable; readable panes opt back in. */
     user-select: none;
-    /* 1997 had no font smoothing: render ALL text aliased where the platform
-       allows (macOS/Chrome; ignored elsewhere). This keeps the bitmap UI font
-       and the serif/mono "content" fonts in the same crunchy CRT-era world. */
+    /* Bitmap fonts (the OS chrome + Fixedsys) render aliased — their crisp,
+       correct form. Reading surfaces with vector faces opt back into
+       antialiasing via READABLE_TEXT for today's eyes. */
     -webkit-font-smoothing: none;
     text-rendering: optimizeSpeed;
   }

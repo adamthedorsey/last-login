@@ -62,9 +62,9 @@ const Messages = styled(Frame).attrs({ variant: 'field' })`
   overflow: auto;
   background: #fff;
   padding: 6px 8px;
-  font-size: 13px;
+  font-size: 14px;
   user-select: text;
-  line-height: 1.4;
+  line-height: 1.55;
 `;
 
 const Line = styled.div<{ $self: boolean }>`

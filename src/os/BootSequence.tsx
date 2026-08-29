@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Button, Frame, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
 import { playError, playStartup } from './sounds';
-import { PIXEL_MONO } from '../theme';
+import { PIXEL_MONO, READABLE_TEXT } from '../theme';
 
 const BootScreen = styled.div`
   height: 100vh;
@@ -51,6 +51,7 @@ const StickyNote = styled.div`
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
   transform: rotate(-1.6deg);
   font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+  ${READABLE_TEXT}
 `;
 
 const Row = styled.div`

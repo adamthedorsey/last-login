@@ -194,7 +194,7 @@ export function MailApp() {
                   <b>Date:</b> {fmtDate(openMsg.meta?.date)}
                 </div>
               </Headers>
-              <div style={{ whiteSpace: 'pre-wrap', fontFamily: PIXEL_MONO, fontSize: 16 }}>
+              <div style={{ whiteSpace: 'pre-wrap', fontFamily: PIXEL_MONO, fontSize: 16, lineHeight: 1.45 }}>
                 {openMsg.body?.text}
               </div>
             </>

@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { READABLE_TEXT } from '../theme';
 
 export function VoyagerLogo({ size = 32 }: { size?: number }) {
   return (
@@ -38,6 +39,7 @@ const SplashPanel = styled.div`
   padding: 26px 28px 14px;
   cursor: pointer;
   font-family: 'Times New Roman', serif;
+  ${READABLE_TEXT}
 `;
 
 const SPLASH_LINES = [
