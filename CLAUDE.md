@@ -32,7 +32,7 @@ If not, don't build it that way.
 ### Typography
 - OS chrome: `ms_sans_serif` bitmap font (from react95). Don't introduce other
   UI fonts.
-- Machine-local text (Jotter, boot/shutdown screens, email bodies): Fixedsys —
+- Machine-local text (Notepad, boot/shutdown screens, email bodies): Fixedsys —
   use `PIXEL_MONO` from `src/theme.tsx`, at 16px (its crisp native size;
   multiples of 16 only).
 - In-game web pages: Times New Roman / Arial / Courier New via the `PageBlock`
@@ -61,7 +61,7 @@ If not, don't build it that way.
   Viewer). Fictional brands are only for things that were branded products or
   services in 1997: Microtech Horizons (OS), WestWind (ISP/email service),
   BuddyLine (IM), NetVoyager (browser), SearchHound (search), CityPages,
-  MapFinder, CardShark (retail game), Solar Flare (band), Meridian Digital
+  MapFinder, Solar Flare (band), Meridian Digital
   Systems, Kava/Helios, Cosmoid/Prism.
 
 ### Sound

@@ -983,11 +983,11 @@ The Civil War was a war that happened in America between 1861 and
       meta: { appId: 'recycle', desktop: { x: 24, y: 408 } },
     },
     {
-      id: 'shortcut.cardshark',
+      id: 'shortcut.solitaire',
       kind: 'shortcut',
-      name: 'CardShark 2',
+      name: 'Solitaire',
       icon: 'game',
-      meta: { appId: 'cardshark', desktop: { x: 216, y: 120 } },
+      meta: { appId: 'solitaire', desktop: { x: 216, y: 120 } },
     },
 
     // =====================================================================

@@ -79,9 +79,10 @@ src/
                Taskbar + Start menu, desktop icons, boot/login sequence,
                original pixel icon set, synthesized UI sounds (mutable)
   apps/        applications registered in a small AppDefinition registry:
-               File Explorer, Jotter (notepad), PicturePost (photos),
-               WestWind Mail, BuddyLine (IM), NetVoyager (browser),
-               Recycle Bin, Case Notes, CardShark 2 (a broken game, for flavor)
+               File Explorer, Notepad, Picture Viewer, Mail,
+               BuddyLine (IM), NetVoyager (browser), Recycle Bin,
+               Case Notes, and accessories: Calculator, Calendar,
+               Solitaire, Minefield, Paint, CD Player, Clock
   dev/         DEV-only panel (reset, state dump, grant discovery, skip login)
 ```
 
@@ -240,7 +241,7 @@ supabase test db      # pgTAP RLS tests (needs local stack)
    from the night of Oct 10 shows someone arranging the meeting, proving identity
    with a secret only Mel should know, and demanding the logs be deleted. →
    **GhostBridge**.
-5. **Jotter** — `My Documents\personal stuff\oct_pages.txt` (now visible): Casey's
+5. **Notepad** — `My Documents\personal stuff\oct_pages.txt` (now visible): Casey's
    diary doubts — "GhostBridge types like someone doing an impression of a person…
    it has to be mel. unless somehow it isn't." → **The third screen name**, end of
    demo. The desktop stays explorable.

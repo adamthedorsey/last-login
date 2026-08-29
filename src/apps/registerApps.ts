@@ -6,7 +6,7 @@ import { MailApp } from './MailApp';
 import { BuddyLine } from './BuddyLine';
 import { Browser } from './Browser';
 import { RecycleBin } from './RecycleBin';
-import { CardShark } from './CardShark';
+import { Solitaire } from './Solitaire';
 import { CaseNotes } from './CaseNotes';
 import { VoyagerSplash } from './VoyagerSplash';
 import { Calculator } from './Calculator';
@@ -72,11 +72,11 @@ export function registerAllApps(): void {
     singleton: true,
   });
   registerApp({
-    id: 'cardshark',
-    name: 'CardShark 2',
+    id: 'solitaire',
+    name: 'Solitaire',
     icon: 'game',
-    component: CardShark,
-    defaultSize: { w: 340, h: 250 },
+    component: Solitaire,
+    defaultSize: { w: 640, h: 560 },
     singleton: true,
   });
   registerApp({
