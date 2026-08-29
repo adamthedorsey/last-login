@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Window, WindowContent, WindowHeader } from 'react95';
 import { topWindowId, useWindowStore, TASKBAR_HEIGHT } from './windowStore';
@@ -10,12 +10,6 @@ import { useGame } from '../game/gameContext';
 import { PIXEL_MONO } from '../theme';
 import { Screensaver } from './Screensaver';
 import { useSettingsStore } from './settingsStore';
-
-// Dev tooling is lazy-loaded strictly behind the DEV flag so neither the
-// panel nor anything it references can reach a production bundle.
-const DevPanel = import.meta.env.DEV
-  ? lazy(() => import('../dev/DevPanel').then((m) => ({ default: m.DevPanel })))
-  : null;
 
 const Desk = styled.div`
   position: fixed;
@@ -190,11 +184,6 @@ export function DesktopShell() {
       {saverOn && <Screensaver />}
 
       <Taskbar onShutDown={() => setShutDown(true)} onScreenSaver={startSaver} />
-      {DevPanel && (
-        <Suspense fallback={null}>
-          <DevPanel />
-        </Suspense>
-      )}
     </Desk>
   );
 }
