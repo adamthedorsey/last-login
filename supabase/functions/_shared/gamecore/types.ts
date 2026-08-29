@@ -343,6 +343,8 @@ export interface StateView {
   owner: string;
   loginUser: string;
   loginHint?: string;
+  /** Seconds until the login accepts attempts again (present while frozen). */
+  loginLockSeconds?: number;
   saverText?: string;
   imScreenname?: string;
   bootWarning?: string[];

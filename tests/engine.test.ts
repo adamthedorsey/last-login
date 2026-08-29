@@ -105,6 +105,16 @@ describe('computer login', () => {
     expect(result.lockedOut).toBe(true);
     expect(result.retryAfterSeconds).toBeGreaterThan(0);
     expect(result.retryAfterSeconds).toBeLessThanOrEqual(SEASON1.lockoutSeconds);
+
+    // The state view carries the freeze too, so a reload arrives locked...
+    const frozen = run(s, { type: 'getState' }).result;
+    if (frozen.type !== 'state') throw new Error('bad result');
+    expect(frozen.view.loginLockSeconds).toBeGreaterThan(0);
+
+    // ...and it clears once the engine's clock says so.
+    const later = run(s, { type: 'getState' }, NOW + (SEASON1.lockoutSeconds + 1) * 1000).result;
+    if (later.type !== 'state') throw new Error('bad result');
+    expect(later.view.loginLockSeconds).toBeUndefined();
   });
 
   it('refuses every game action before login', () => {

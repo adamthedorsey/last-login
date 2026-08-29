@@ -110,7 +110,15 @@ function toDiscoveryView(d: Discovery): DiscoveryView {
 const HINT_AFTER_ATTEMPTS = 3;
 const HINT_REVEALED_FLAG = 'login-hint-revealed';
 
-export function toStateView(content: SeasonContent, state: PlayerState): StateView {
+export function toStateView(
+  content: SeasonContent,
+  state: PlayerState,
+  /** Real-time clock for lock countdowns; omit and the view carries none. */
+  nowMs?: number,
+): StateView {
+  const lockedUntil = state.lockedUntil[content.computer.loginTargetId] ?? 0;
+  const lockSeconds =
+    nowMs !== undefined && lockedUntil > nowMs ? Math.ceil((lockedUntil - nowMs) / 1000) : undefined;
   return {
     seasonSlug: content.slug,
     seasonTitle: content.title,
@@ -118,6 +126,7 @@ export function toStateView(content: SeasonContent, state: PlayerState): StateVi
     owner: content.computer.owner,
     loginUser: content.computer.loginUser,
     loginHint: state.flags[HINT_REVEALED_FLAG] ? content.computer.loginHint : undefined,
+    loginLockSeconds: lockSeconds,
     saverText: content.computer.saverText,
     imScreenname: content.computer.imScreenname,
     bootWarning: content.computer.bootWarning,
@@ -428,7 +437,7 @@ export function handleAction(
 
   switch (action.type) {
     case 'getState':
-      return done({ type: 'state', view: toStateView(content, state) });
+      return done({ type: 'state', view: toStateView(content, state, nowMs) });
 
     case 'resetSeason': {
       const fresh = newPlayerState();
@@ -436,21 +445,21 @@ export function handleAction(
       return {
         state: fresh,
         changed: true,
-        result: { type: 'reset', view: toStateView(content, fresh) },
+        result: { type: 'reset', view: toStateView(content, fresh, nowMs) },
         events,
       };
     }
 
     case 'login': {
       if (state.loggedIn) {
-        return done({ type: 'login', ok: true, view: toStateView(content, state) });
+        return done({ type: 'login', ok: true, view: toStateView(content, state, nowMs) });
       }
       const targetId = content.computer.loginTargetId;
       const check = checkPassword(content, state, targetId, action.password, nowMs);
       events.push({ type: 'login_attempt', payload: { ok: check.ok } });
       if (check.ok) {
         state.loggedIn = true;
-        return done({ type: 'login', ok: true, view: toStateView(content, state) });
+        return done({ type: 'login', ok: true, view: toStateView(content, state, nowMs) });
       }
       // Enough failures earn the owner's own hint — permanently.
       const attempts = state.passwordAttempts[targetId] ?? 0;

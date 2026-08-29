@@ -131,7 +131,9 @@ export function BootSequence() {
   // The owner's password hint, revealed by the server after failed attempts
   // (view.loginHint covers a reload after it was already earned).
   const [hint, setHint] = useState<string | null>(null);
-  const [lockSeconds, setLockSeconds] = useState(0);
+  // An active freeze survives reloads: the state view carries the remaining
+  // seconds, so the form arrives already locked and counting down.
+  const [lockSeconds, setLockSeconds] = useState(() => view?.loginLockSeconds ?? 0);
 
   // The freeze: while locked, count the seconds down on screen.
   useEffect(() => {
