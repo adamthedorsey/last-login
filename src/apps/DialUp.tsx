@@ -41,6 +41,13 @@ const STAGES = [
   { text: 'Connected at 33,600 bps.', ms: 800 },
 ];
 
+function fmtDuration(total: number): string {
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  return `${String(h).padStart(3, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
 export function DialUp({ windowId }: AppWindowProps) {
   const { send, view, refreshView } = useGame();
   const close = useWindowStore((s) => s.close);
@@ -49,6 +56,18 @@ export function DialUp({ windowId }: AppWindowProps) {
   const timers = useRef<number[]>([]);
 
   const online = view?.online === true;
+
+  // Duration ticks locally from the server-reported baseline (the server's
+  // word on WHEN the connection started; the client only counts forward).
+  const [elapsed, setElapsed] = useState(view?.onlineSeconds ?? 0);
+  useEffect(() => {
+    setElapsed(view?.onlineSeconds ?? 0);
+  }, [view?.onlineSeconds]);
+  useEffect(() => {
+    if (!online) return;
+    const t = window.setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => window.clearInterval(t);
+  }, [online]);
 
   useEffect(
     () => () => {
@@ -105,9 +124,14 @@ export function DialUp({ windowId }: AppWindowProps) {
       <div style={{ fontSize: 13 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 4 }}>
           <Icon name="dialup" size={32} />
-          <p style={{ margin: 0 }}>
-            Connected to <b>WestWind Online</b> at 33,600 bps.
-          </p>
+          <div>
+            <p style={{ margin: 0 }}>
+              Connected to <b>WestWind Online</b> at 33,600 bps.
+            </p>
+            <p style={{ margin: '6px 0 0', fontVariantNumeric: 'tabular-nums' }}>
+              Duration: {fmtDuration(elapsed)}
+            </p>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
           <Button onClick={() => void disconnect()} style={{ width: 110 }}>

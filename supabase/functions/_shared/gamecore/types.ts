@@ -283,6 +283,8 @@ export interface PlayerState {
   chats?: Record<string, string[]>;
   /** Dial-up state: the machine starts offline every session-of-record. */
   online?: boolean;
+  /** Real epoch ms when the current connection was established. */
+  onlineSince?: number;
   /** Ids of arrivesOnline items that have been delivered to the machine. */
   delivered?: string[];
 }
@@ -373,6 +375,8 @@ export interface StateView {
   dosVolume?: { label: string; serial: string };
   /** Dial-up: whether the machine is currently connected. */
   online: boolean;
+  /** Seconds the current connection has been up (present while online). */
+  onlineSeconds?: number;
   wallpaper: string;
   homeUrl: string;
   loggedIn: boolean;

@@ -130,6 +130,28 @@ The player never leaves the machine, so only this column becomes content.
   Oct 11, 2:14 AM → discovery: *GhostBridge knew her secrets because he lives
   here — and he touched this machine after she vanished.* Season ends.
 
+## Dial-up as evidence [PROPOSED backlog]
+
+Period-real details of Win95 dial-up that could become mechanics or clues:
+
+1. **The modem kept logs.** Windows wrote dial-up session records
+   (`ppplog.txt`-style). A `C:\HORIZONS\modem.log` file listing every
+   connection — including sessions on nights Casey was gone (the week of
+   mail fetches, and one at **2:17 AM, Oct 11**) — would be hard evidence
+   of who was using the line, and a natural extra path for `the-house`.
+2. **Dial-up owned the phone line.** One line per house; going online
+   blocked calls, and another extension picking up KILLED the connection.
+   Late-game scare: mid-investigation the line drops with the period-true
+   error *"The connection was terminated: the line was picked up by
+   another extension."* — implying someone else is in the house, right
+   now. Save for maximum-dread timing (post-`who-shaped`?).
+3. **TX/RX lights.** The tray modem icon blinked on traffic. Blinking
+   during quiet moments = ambient "someone is reaching this machine" tell.
+4. **Busy signals / redial.** First dial of a session occasionally hits a
+   busy signal and auto-redials — pure flavor, sells the era.
+5. **Hourly billing.** WestWind's 20-free-hours plan (the GOLD upsell
+   email exists) could surface as a nag — mundane pressure, no mechanics.
+
 ## Decisions — RESOLVED (Adam, 2026-08-29)
 
 1. **The bend: deliberately ambiguous.** Season 1 proves *who*, never *what*.

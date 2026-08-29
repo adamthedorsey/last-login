@@ -157,6 +157,10 @@ export function toStateView(
     loginHint: state.flags[HINT_REVEALED_FLAG] ? content.computer.loginHint : undefined,
     loginLockSeconds: lockSeconds,
     online: state.online === true,
+    onlineSeconds:
+      state.online && state.onlineSince && nowMs !== undefined
+        ? Math.max(0, Math.floor((nowMs - state.onlineSince) / 1000))
+        : undefined,
     saverText: content.computer.saverText,
     imScreenname: content.computer.imScreenname,
     bootWarning: content.computer.bootWarning,
@@ -532,6 +536,7 @@ export function handleAction(
     case 'connect': {
       if (!state.online) {
         state.online = true;
+        state.onlineSince = nowMs;
         events.push({ type: 'net_connect' });
       }
       const newMail = deliverPending(content, state);
@@ -541,6 +546,7 @@ export function handleAction(
     case 'disconnect': {
       if (state.online) {
         state.online = false;
+        delete state.onlineSince;
         events.push({ type: 'net_disconnect' });
       }
       return done({ type: 'net', online: false });
