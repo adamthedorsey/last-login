@@ -34,7 +34,7 @@ const Fab = styled.button`
 `;
 
 export function DevPanel() {
-  const { client, refreshView, send } = useGame();
+  const { client, refreshView, send, view } = useGame();
   const [open, setOpen] = useState(false);
   const dev = client instanceof DevGameClient ? client : null;
 
@@ -43,6 +43,15 @@ export function DevPanel() {
   const grant = async (discoveryId: string) => {
     dev?.devMutate((s) => {
       if (!s.discoveries.includes(discoveryId)) s.discoveries.push(discoveryId);
+    });
+    await refreshView();
+  };
+
+  // Skip the login puzzle. Flips the flag through the dev adapter's state —
+  // production clients have no such path and no password in reach.
+  const autoLogin = async () => {
+    dev?.devMutate((s) => {
+      s.loggedIn = true;
     });
     await refreshView();
   };
@@ -59,6 +68,7 @@ export function DevPanel() {
         <Button onClick={() => void send({ type: 'resetSeason' })}>Reset season</Button>
         {dev && (
           <>
+            {!view?.loggedIn && <Button onClick={() => void autoLogin()}>Auto log in</Button>}
             <Button
               onClick={() => {
                 console.log('[DEV] player state', dev.devGetState());

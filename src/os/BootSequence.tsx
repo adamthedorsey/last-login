@@ -121,7 +121,7 @@ function buildBootFrames(warning?: string[]): BootFrame[] {
 }
 
 export function BootSequence() {
-  const { view, send, client, refreshView } = useGame();
+  const { view, send } = useGame();
   const [phase, setPhase] = useState<'boot' | 'login'>('boot');
   const [frameIdx, setFrameIdx] = useState(0);
   const [password, setPassword] = useState('');
@@ -214,19 +214,6 @@ export function BootSequence() {
   const lockClock = `${Math.floor(lockSeconds / 60)}:${String(lockSeconds % 60).padStart(2, '0')}`;
   const shownHint = hint ?? view?.loginHint ?? null;
 
-  const devSkip = async () => {
-    if (!import.meta.env.DEV) return;
-    // Dev builds only. Flips the flag through the dev adapter's state —
-    // production clients have no such path and no password in reach.
-    const mod = await import('../game/devGameClient');
-    if (client instanceof mod.DevGameClient) {
-      client.devMutate((s) => {
-        s.loggedIn = true;
-      });
-      await refreshView();
-    }
-  };
-
   if (phase === 'boot') {
     return (
       <BootScreen onClick={() => setFrameIdx(frames.length)}>
@@ -274,11 +261,6 @@ export function BootSequence() {
               </HintLine>
             )}
             <div style={{ display: 'flex', gap: 8, marginTop: 14, justifyContent: 'flex-end' }}>
-              {import.meta.env.DEV && (
-                <Button type="button" onClick={() => void devSkip()}>
-                  DEV: skip
-                </Button>
-              )}
               <Button type="submit" disabled={busy || locked} style={{ width: 90 }}>
                 OK
               </Button>
