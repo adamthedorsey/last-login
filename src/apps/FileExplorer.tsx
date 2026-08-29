@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame, ScrollView, Toolbar } from 'react95';
+import { Button, Frame, ScrollView, Toolbar, Window, WindowContent, WindowHeader } from 'react95';
 import type { ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { launchItem } from '../os/launch';
@@ -93,6 +93,7 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
   const marqueeRef = useRef<{ startX: number; startY: number } | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [ghost, setGhost] = useState<{ item: ItemSummary; x: number; y: number } | null>(null);
+  const [floppyError, setFloppyError] = useState(false);
   const dragOutRef = useRef<{ item: ItemSummary; startX: number; startY: number; moved: boolean } | null>(null);
 
   const clickSelect = (item: ItemSummary, e: React.MouseEvent) => {
@@ -230,6 +231,11 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
   }, [contentEpoch]);
 
   const enter = (item: ItemSummary) => {
+    // No disk in the drive. There was never a disk in the drive.
+    if (item.meta?.path === 'A:\\') {
+      setFloppyError(true);
+      return;
+    }
     if (item.kind === 'folder' && item.id !== 'folder.recycle') {
       setStack((s) => [...s, current]);
       void loadFolder(item.id);
@@ -298,6 +304,39 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
       </ScrollView>
       {marquee && (
         <Marquee style={{ left: marquee.l, top: marquee.t, width: marquee.w, height: marquee.h }} />
+      )}
+      {floppyError && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100007,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.2)',
+          }}
+          data-no-deskmenu
+        >
+          <Window shadow style={{ width: 340 }}>
+            <WindowHeader style={{ fontSize: 13 }}>A:\</WindowHeader>
+            <WindowContent style={{ fontSize: 13 }}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <Icon name="warning" size={32} />
+                <p style={{ margin: 0 }}>
+                  A:\ is not accessible.
+                  <br />
+                  <br />
+                  The device is not ready.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
+                <Button onClick={() => setFloppyError(false)} style={{ width: 80 }}>
+                  Retry
+                </Button>
+                <Button onClick={() => setFloppyError(false)} style={{ width: 80 }}>
+                  Cancel
+                </Button>
+              </div>
+            </WindowContent>
+          </Window>
+        </div>
       )}
       {ghost && (
         <DragGhost style={{ left: ghost.x - 20, top: ghost.y - 24 }}>

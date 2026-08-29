@@ -304,11 +304,45 @@ export const SEASON1: SeasonContent = {
     // FILESYSTEM
     // =====================================================================
     {
+      // The Win95 front door: drives and system folders live inside.
+      id: 'folder.computer',
+      kind: 'folder',
+      name: 'My Computer',
+      icon: 'mycomputer',
+      meta: { desktop: { x: 24, y: 24 } },
+    },
+    {
+      id: 'drive.a',
+      kind: 'folder',
+      name: '3½ Floppy (A:)',
+      icon: 'floppy',
+      parentId: 'folder.computer',
+      // No disk in the drive — the Explorer shows the classic refusal.
+      meta: { path: 'A:\\' },
+    },
+    {
       id: 'folder.c',
       kind: 'folder',
       name: 'Casey (C:)',
       icon: 'drive',
-      meta: { path: 'C:\\', desktop: { x: 24, y: 24 } },
+      parentId: 'folder.computer',
+      meta: { path: 'C:\\' },
+    },
+    {
+      id: 'cpl.dialup',
+      kind: 'shortcut',
+      name: 'Dial-Up Networking',
+      icon: 'dialup',
+      parentId: 'folder.computer',
+      meta: { appId: 'dialup' },
+    },
+    {
+      id: 'cpl.display',
+      kind: 'shortcut',
+      name: 'Control Panel',
+      icon: 'settings',
+      parentId: 'folder.computer',
+      meta: { appId: 'display' },
     },
     {
       id: 'folder.my-documents',

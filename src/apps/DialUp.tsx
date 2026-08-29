@@ -33,12 +33,13 @@ const StatusWell = styled(Frame).attrs({ variant: 'well' })`
   min-height: 44px;
 `;
 
-// The classic staging — paced to let the modem sing, still click-skippable.
+// The staging is paced to the FULL handshake recording (~26s) — the whole
+// point is the anticipation. A click still skips for impatient replays.
 const STAGES = [
-  { text: 'Dialing 555-0134 ...', ms: 1600 },
-  { text: 'Connecting ...', ms: 2300 },
-  { text: 'Verifying user name and password ...', ms: 1600 },
-  { text: 'Connected at 33,600 bps.', ms: 800 },
+  { text: 'Dialing 555-0134 ...', ms: 5500 },
+  { text: 'Connecting ...', ms: 13500 },
+  { text: 'Verifying user name and password ...', ms: 5000 },
+  { text: 'Connected at 33,600 bps.', ms: 2500 },
 ];
 
 function fmtDuration(total: number): string {
