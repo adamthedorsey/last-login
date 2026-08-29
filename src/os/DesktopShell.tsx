@@ -290,7 +290,11 @@ export function DesktopShell() {
       {saverOn && <Screensaver />}
       {bsod && <Bsod onDismiss={() => setBsod(false)} />}
 
-      <Taskbar onShutDown={() => setShutDialog(true)} onScreenSaver={startSaver} />
+      <Taskbar
+        onShutDown={() => setShutDialog(true)}
+        onScreenSaver={startSaver}
+        onDosMode={() => setDosMode(true)}
+      />
     </Desk>
   );
 }
