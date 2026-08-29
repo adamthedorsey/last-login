@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Button, Frame, ScrollView, Toolbar } from 'react95';
 import type { ItemContent, ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
-import { PIXEL_MONO } from '../theme';
 import { Icon } from '../os/icons';
 
 const MAILBOXES = [
@@ -194,7 +193,9 @@ export function MailApp() {
                   <b>Date:</b> {fmtDate(openMsg.meta?.date)}
                 </div>
               </Headers>
-              <div style={{ whiteSpace: 'pre-wrap', fontFamily: PIXEL_MONO, fontSize: 16, lineHeight: 1.45 }}>
+              {/* Proportional ms_sans_serif reads easiest for letters; any
+                  column-aligned evidence lives in Notepad files, not mail. */}
+              <div style={{ whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.55 }}>
                 {openMsg.body?.text}
               </div>
             </>

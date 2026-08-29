@@ -36,9 +36,16 @@ If not, don't build it that way.
 ### Typography
 - OS chrome: `ms_sans_serif` bitmap font (from react95). Don't introduce other
   UI fonts.
-- Machine-local text (Notepad, boot/shutdown screens, email bodies): Fixedsys —
-  use `PIXEL_MONO` from `src/theme.tsx`, at 16px (its crisp native size;
-  multiples of 16 only).
+- TERMINAL surfaces (boot/POST, MS-DOS mode, blue screen, shutdown): Fixedsys
+  — use `PIXEL_MONO` from `src/theme.tsx`, at 16px (its crisp native size;
+  multiples of 16 only). Short, large, atmospheric text only.
+- LONG-FORM machine text is deliberately easier on modern eyes (creative
+  license, owner-approved): Notepad documents and recovered logs use
+  `DOC_TEXT` from `src/theme.tsx` (Courier New 15px/1.5, antialiased —
+  monospace is load-bearing: story documents contain column-aligned ASCII
+  like the ledger). Email bodies read in the default ms_sans_serif at
+  14px/1.55 (letters are proportional; never put column-aligned evidence in
+  mail bodies). Do not put Fixedsys back on reading surfaces.
 - In-game web pages: Times New Roman / Arial / Courier New via the `PageBlock`
   style system — that's what the 1997 web actually used.
 - Font smoothing is two-tier, on purpose: bitmap fonts (ms_sans_serif,

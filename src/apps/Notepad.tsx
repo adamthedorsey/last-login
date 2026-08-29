@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Frame, MenuList, MenuListItem, Separator, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
-import { PIXEL_MONO } from '../theme';
+import { DOC_TEXT } from '../theme';
 import { useWindowStore } from '../os/windowStore';
 import type { AppWindowProps } from '../os/appRegistry';
 
@@ -13,11 +13,9 @@ const Paper = styled.textarea`
   border: 2px inset #888;
   background: #fff;
   padding: 8px 10px;
-  font-family: ${PIXEL_MONO};
-  font-size: 16px;
+  ${DOC_TEXT}
   white-space: pre-wrap;
   user-select: text;
-  line-height: 1.45;
   outline: none;
   &:read-only {
     background: #f4f4ee;

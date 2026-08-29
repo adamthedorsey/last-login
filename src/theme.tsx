@@ -25,6 +25,20 @@ export const READABLE_TEXT = `
   text-rendering: auto;
 `;
 
+/**
+ * Long-form document text (Notepad files, recovered logs): Courier New,
+ * antialiased, at a comfortable size. Monospace is load-bearing — story
+ * documents contain column-aligned ASCII (the ledger, file-properties
+ * blocks) that a proportional face would shred. Fixedsys stays on the
+ * terminal surfaces (boot, DOS, BSOD, shutdown); this is for READING.
+ */
+export const DOC_TEXT = `
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  line-height: 1.5;
+  ${READABLE_TEXT}
+`;
+
 const GlobalStyles = createGlobalStyle`
   ${styleReset}
   @font-face {
