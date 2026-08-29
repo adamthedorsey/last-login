@@ -1,6 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { AppBar, Button, Frame, MenuList, MenuListItem, Separator, Toolbar } from 'react95';
+import {
+  AppBar,
+  Button,
+  DatePicker__UNSTABLE as DatePicker,
+  Frame,
+  MenuList,
+  MenuListItem,
+  Separator,
+  Toolbar,
+  Window,
+  WindowContent,
+  WindowHeader,
+} from 'react95';
 import { listApps } from './appRegistry';
 import { TASKBAR_HEIGHT, topWindowId, useWindowStore } from './windowStore';
 import { Icon } from './icons';
@@ -63,6 +75,27 @@ const TrayButton = styled.button`
   line-height: 1;
 `;
 
+/** Time over date, the way a taller Win95 taskbar stacked its clock. */
+const TrayClock = styled.button`
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: default;
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+`;
+
+/** The Date/Time popup sits above the tray, like the Start menu does. */
+const DatePopup = styled.div`
+  position: absolute;
+  right: 4px;
+  bottom: ${TASKBAR_HEIGHT + 2}px;
+  z-index: 100001;
+`;
+
 const StartMenu = styled(MenuList)`
   position: absolute;
   left: 4px;
@@ -99,6 +132,21 @@ function formatClock(iso: string): string {
   return `${h}:${m} ${ampm}`;
 }
 
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(2)}`;
+}
+
+function sameDay(aIso: string, bIso: string): boolean {
+  const a = new Date(aIso);
+  const b = new Date(bIso);
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
 export function Taskbar({
   onShutDown,
   onScreenSaver,
@@ -111,7 +159,10 @@ export function Taskbar({
   const [startOpen, setStartOpen] = useState(false);
   const [programsOpen, setProgramsOpen] = useState(false);
   const [muted, setMutedState] = useState(isMuted());
+  const [dateOpen, setDateOpen] = useState(false);
+  const [dateRefused, setDateRefused] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const dateRef = useRef<HTMLDivElement>(null);
 
   const focusedId = topWindowId(windows);
 
@@ -126,6 +177,34 @@ export function Taskbar({
     window.addEventListener('pointerdown', onDown);
     return () => window.removeEventListener('pointerdown', onDown);
   }, [startOpen]);
+
+  useEffect(() => {
+    if (!dateOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!dateRef.current?.contains(e.target as Node)) {
+        setDateOpen(false);
+        setDateRefused(false);
+      }
+    };
+    window.addEventListener('pointerdown', onDown);
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, [dateOpen]);
+
+  const closeDate = () => {
+    setDateOpen(false);
+    setDateRefused(false);
+  };
+
+  const acceptDate = (chosen: string) => {
+    // The in-world clock is frozen season data. Re-selecting the same day is
+    // a no-op; trying to CHANGE it gets a period-true refusal (the machine's
+    // timestamps are evidence — the game won't let anyone tamper with them).
+    if (view && !sameDay(chosen, view.clockNow)) {
+      setDateRefused(true);
+      return;
+    }
+    closeDate();
+  };
 
   const toggleMute = () => {
     setMuted(!muted);
@@ -196,6 +275,38 @@ export function Taskbar({
           )}
         </div>
       )}
+      {dateOpen && view && (
+        <div ref={dateRef} data-no-deskmenu>
+          <DatePopup>
+            {dateRefused ? (
+              <Window shadow style={{ width: 280 }}>
+                <WindowHeader style={{ fontSize: 13 }}>Date/Time</WindowHeader>
+                <WindowContent style={{ fontSize: 13 }}>
+                  <p style={{ margin: '0 0 12px' }}>
+                    The date could not be changed. This computer's clock may
+                    need service.
+                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button onClick={closeDate} style={{ width: 80 }}>
+                      OK
+                    </Button>
+                  </div>
+                </WindowContent>
+              </Window>
+            ) : (
+              <DatePicker
+                shadow
+                // The picker reads its date with getUTC*; anchor the frozen
+                // in-world day to UTC noon so it shows the same calendar day
+                // in every player timezone.
+                date={`${view.clockNow.slice(0, 10)}T12:00:00Z`}
+                onCancel={closeDate}
+                onAccept={acceptDate}
+              />
+            )}
+          </DatePopup>
+        </div>
+      )}
       <Bar data-no-deskmenu>
         <BarToolbar>
           <Button
@@ -232,9 +343,17 @@ export function Taskbar({
             <TrayButton onClick={toggleMute} title={muted ? 'Sound off (click to enable)' : 'Sound on (click to mute)'}>
               {muted ? '🔇' : '🔊'}
             </TrayButton>
-            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {view ? formatClock(view.clockNow) : '--:--'}
-            </span>
+            <TrayClock
+              onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+              onClick={() => {
+                setDateOpen((v) => !v);
+                setDateRefused(false);
+              }}
+              title="Click to set the date"
+            >
+              <div>{view ? formatClock(view.clockNow) : '--:--'}</div>
+              <div>{view ? formatDate(view.clockNow) : ''}</div>
+            </TrayClock>
           </Tray>
         </BarToolbar>
       </Bar>
