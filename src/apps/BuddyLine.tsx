@@ -183,7 +183,10 @@ export function BuddyLine({ props }: AppWindowProps) {
       setNotice(null);
       setConvo(null);
       setChat(res.chat);
-      setVisible(0);
+      // A conversation already underway shows its history at once; only a
+      // first contact steps the opener in line by line.
+      const talkedBefore = res.chat.messages.some((m) => m.from === self);
+      setVisible(talkedBefore ? res.chat.messages.length : 0);
       return true;
     }
     return false;
