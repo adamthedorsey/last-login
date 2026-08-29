@@ -75,15 +75,17 @@ const TrayButton = styled.button`
   line-height: 1;
 `;
 
-/** Time over date, the way a taller Win95 taskbar stacked its clock. */
+/**
+ * The Win95 tray clock: time only, the date lives in the hover tooltip,
+ * and only a DOUBLE-click opens Date/Time — a single click does nothing.
+ */
 const TrayClock = styled.button`
   border: none;
   background: none;
   padding: 0;
   cursor: default;
-  font-size: 11px;
-  line-height: 1.3;
-  text-align: right;
+  font-size: 13px;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   font-family: inherit;
 `;
@@ -132,9 +134,16 @@ function formatClock(iso: string): string {
   return `${h}:${m} ${ampm}`;
 }
 
-function formatDate(iso: string): string {
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+/** The Win95 clock tooltip: "Saturday, October 18, 1997". */
+function formatLongDate(iso: string): string {
   const d = new Date(iso);
-  return `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(2)}`;
+  return `${DAY_NAMES[d.getDay()]}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
 
 function sameDay(aIso: string, bIso: string): boolean {
@@ -345,14 +354,13 @@ export function Taskbar({
             </TrayButton>
             <TrayClock
               onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
-              onClick={() => {
+              onDoubleClick={() => {
                 setDateOpen((v) => !v);
                 setDateRefused(false);
               }}
-              title="Click to set the date"
+              title={view ? formatLongDate(view.clockNow) : ''}
             >
-              <div>{view ? formatClock(view.clockNow) : '--:--'}</div>
-              <div>{view ? formatDate(view.clockNow) : ''}</div>
+              {view ? formatClock(view.clockNow) : '--:--'}
             </TrayClock>
           </Tray>
         </BarToolbar>
