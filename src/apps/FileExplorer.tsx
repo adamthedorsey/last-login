@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Frame, ScrollView, Toolbar } from 'react95';
 import type { ItemSummary } from '@gamecore/types.ts';
@@ -6,6 +6,8 @@ import { useGame } from '../game/gameContext';
 import { launchItem } from '../os/launch';
 import { Icon } from '../os/icons';
 import { useWindowStore } from '../os/windowStore';
+import { placeIcon, snapToGrid, ORIGIN } from '../os/desktopLayout';
+import { TASKBAR_HEIGHT } from '../os/windowStore';
 import type { AppWindowProps } from '../os/appRegistry';
 
 const Address = styled(Frame).attrs({ variant: 'well' })`
@@ -46,6 +48,21 @@ const StatusBar = styled(Frame).attrs({ variant: 'well' })`
   margin-top: 4px;
 `;
 
+/** Follows the pointer while dragging a file out of the window. */
+const DragGhost = styled.div`
+  position: fixed;
+  z-index: 100006;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  opacity: 0.8;
+  color: #fff;
+  font-size: 12px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.9);
+`;
+
 interface Crumb {
   id: string;
   name: string;
@@ -61,6 +78,41 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
   const [current, setCurrent] = useState<Crumb>({ id: initialFolder, name: '...' });
   const [items, setItems] = useState<ItemSummary[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [ghost, setGhost] = useState<{ item: ItemSummary; x: number; y: number } | null>(null);
+  const dragOutRef = useRef<{ item: ItemSummary; startX: number; startY: number; moved: boolean } | null>(null);
+
+  // Drag one of YOUR documents out of this folder window and drop it on the
+  // desktop to move it back out there.
+  const canDragOut = (item: ItemSummary) =>
+    item.editable === true && item.kind === 'document' && current.id.startsWith('playerfolder.');
+
+  const onItemPointerDown = (item: ItemSummary) => (e: React.PointerEvent) => {
+    if (e.button !== 0 || !canDragOut(item)) return;
+    dragOutRef.current = { item, startX: e.clientX, startY: e.clientY, moved: false };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const onItemPointerMove = (e: React.PointerEvent) => {
+    const d = dragOutRef.current;
+    if (!d) return;
+    if (!d.moved && Math.abs(e.clientX - d.startX) + Math.abs(e.clientY - d.startY) < 6) return;
+    d.moved = true;
+    setGhost({ item: d.item, x: e.clientX, y: e.clientY });
+  };
+
+  const onItemPointerUp = (e: React.PointerEvent) => {
+    const d = dragOutRef.current;
+    dragOutRef.current = null;
+    setGhost(null);
+    if (!d?.moved) return;
+    // Windows and the taskbar are tagged data-no-deskmenu; anything else is desktop.
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    if (under?.closest('[data-no-deskmenu]')) return;
+    const x = Math.max(ORIGIN, Math.min(snapToGrid(e.clientX - 42), snapToGrid(window.innerWidth - 92)));
+    const y = Math.max(ORIGIN, Math.min(snapToGrid(e.clientY - 44), snapToGrid(window.innerHeight - TASKBAR_HEIGHT - 92)));
+    placeIcon(d.item.id, x, y);
+    void send({ type: 'moveDocument', docId: d.item.id, folderId: undefined });
+  };
 
   const loadFolder = useCallback(
     async (folderId: string) => {
@@ -118,6 +170,10 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
               $selected={selected === item.id}
               onClick={() => setSelected(item.id)}
               onDoubleClick={() => enter(item)}
+              onPointerDown={onItemPointerDown(item)}
+              onPointerMove={onItemPointerMove}
+              onPointerUp={onItemPointerUp}
+              style={canDragOut(item) ? { touchAction: 'none' } : undefined}
             >
               <Icon name={item.icon ?? 'doc'} size={32} />
               <span>{item.name}</span>
@@ -128,6 +184,12 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
           )}
         </Grid>
       </ScrollView>
+      {ghost && (
+        <DragGhost style={{ left: ghost.x - 20, top: ghost.y - 24 }}>
+          <Icon name={ghost.item.icon ?? 'doc'} size={32} />
+          <span>{ghost.item.name}</span>
+        </DragGhost>
+      )}
       <StatusBar>
         {items.length} object(s)
         {selected

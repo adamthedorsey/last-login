@@ -7,34 +7,7 @@ import { launchItem } from './launch';
 import { Icon } from './icons';
 import { TASKBAR_HEIGHT, useWindowStore } from './windowStore';
 
-const GRID = 96;
-const ORIGIN = 24;
-const LAYOUT_KEY = 'lastlogin.desktopLayout';
-
-type Layout = Record<string, { x: number; y: number }>;
-
-// Player icon arrangement is cosmetic, per-device state — localStorage is the
-// right home for it (the server-authored layout stays the starting point).
-function loadLayout(): Layout {
-  try {
-    return JSON.parse(localStorage.getItem(LAYOUT_KEY) ?? '{}') as Layout;
-  } catch {
-    return {};
-  }
-}
-
-function saveLayout(layout: Layout): void {
-  try {
-    localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout));
-  } catch {
-    /* ignore */
-  }
-}
-
-/** Win95 "Line Up Icons": snap to the invisible desktop grid. */
-function snap(v: number): number {
-  return ORIGIN + Math.round((v - ORIGIN) / GRID) * GRID;
-}
+import { GRID, ORIGIN, loadLayout, saveLayout, snapToGrid as snap, type Layout } from './desktopLayout';
 
 const IconButton = styled.button<{ $selected: boolean; $dragging: boolean }>`
   position: absolute;
@@ -70,6 +43,18 @@ const ContextMenu = styled(MenuList)`
   font-size: 13px;
 `;
 
+const RenameInput = styled.input`
+  width: 80px;
+  font-size: 13px;
+  font-family: inherit;
+  border: 1px solid #000;
+  background: #fff;
+  color: #000;
+  padding: 0 2px;
+  text-align: center;
+  user-select: text;
+`;
+
 interface DragState {
   id: string;
   startX: number;
@@ -96,8 +81,33 @@ export function DesktopIcons() {
   const [layout, setLayout] = useState<Layout>(loadLayout);
   const [dragPos, setDragPos] = useState<{ id: string; x: number; y: number } | null>(null);
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
+  const [renaming, setRenaming] = useState<{ id: string; value: string } | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const renameTimer = useRef<number | null>(null);
+
+  const cancelRenameTimer = () => {
+    if (renameTimer.current) {
+      window.clearTimeout(renameTimer.current);
+      renameTimer.current = null;
+    }
+  };
+
+  const commitRename = (id: string, value: string) => {
+    setRenaming(null);
+    if (value.trim()) void send({ type: 'renameItem', itemId: id, name: value.trim() });
+  };
+
+  // F2 renames the selected player item, the Win95 way.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'F2' || renaming) return;
+      const item = items.find((i) => i.id === selected);
+      if (item?.editable) setRenaming({ id: item.id, value: item.name });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [items, selected, renaming]);
 
   useEffect(() => {
     if (!ready || !view?.loggedIn) return;
@@ -105,6 +115,8 @@ export function DesktopIcons() {
     void send({ type: 'getDesktop' }).then((res) => {
       if (!cancelled && res.type === 'desktop') setItems(res.items);
     });
+    // Pick up placements written by other surfaces (e.g. Explorer drag-out).
+    setLayout(loadLayout());
     return () => {
       cancelled = true;
     };
@@ -158,7 +170,7 @@ export function DesktopIcons() {
   };
 
   const onPointerDown = (item: ItemSummary) => (e: React.PointerEvent) => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 || renaming?.id === item.id) return;
     const p = posOf(item);
     dragRef.current = {
       id: item.id,
@@ -245,14 +257,51 @@ export function DesktopIcons() {
             $selected={selected === item.id}
             $dragging={dragging}
             style={{ left: p.x, top: p.y }}
-            onClick={() => setSelected(item.id)}
-            onDoubleClick={() => launchItem(item)}
+            onClick={(e) => {
+              if (e.detail === 0) return; // keyboard-synthesized click (Enter)
+              // Second click on an already-selected player item starts a
+              // rename — unless a double-click lands first (Win95 timing).
+              if (selected === item.id && item.editable && !renaming) {
+                cancelRenameTimer();
+                renameTimer.current = window.setTimeout(
+                  () => setRenaming({ id: item.id, value: item.name }),
+                  600,
+                );
+              } else {
+                cancelRenameTimer();
+                setSelected(item.id);
+              }
+            }}
+            onDoubleClick={() => {
+              cancelRenameTimer();
+              if (renaming?.id !== item.id) launchItem(item);
+            }}
             onPointerDown={onPointerDown(item)}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
           >
             <Icon name={item.icon ?? 'doc'} size={34} />
-            <span>{item.name}</span>
+            {renaming?.id === item.id ? (
+              <RenameInput
+                value={renaming.value}
+                autoFocus
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setRenaming({ id: item.id, value: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault(); // don't let Enter "click" the icon button
+                    commitRename(item.id, renaming.value);
+                  }
+                  if (e.key === 'Escape') setRenaming(null);
+                  e.stopPropagation();
+                }}
+                onBlur={() => commitRename(item.id, renaming.value)}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <span>{item.name}</span>
+            )}
           </IconButton>
         );
       })}

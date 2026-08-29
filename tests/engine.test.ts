@@ -239,3 +239,41 @@ describe('player folders', () => {
     expect(result).toMatchObject({ type: 'document', ok: false });
   });
 });
+
+describe('drag out of folders', () => {
+  it('moveDocument without folderId returns the doc to the desktop', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'createFolder', name: 'stuff' }).state;
+    s = run(s, { type: 'saveDocument', name: 'n.txt', text: 'x' }).state;
+    const docId = s.documents![0].id;
+    const folderId = s.folders![0].id;
+    s = run(s, { type: 'moveDocument', docId, folderId }).state;
+    s = run(s, { type: 'moveDocument', docId }).state;
+
+    const desktop = run(s, { type: 'getDesktop' }).result;
+    if (desktop.type !== 'desktop') throw new Error('bad result');
+    expect(desktop.items.map((i) => i.id)).toContain(docId);
+
+    const children = run(s, { type: 'listChildren', parentId: folderId }).result;
+    if (children.type !== 'children') throw new Error('bad result');
+    expect(children.items).toHaveLength(0);
+  });
+});
+
+describe('renaming', () => {
+  it('renames player documents and folders, never story items', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'saveDocument', name: 'a.txt', text: 'x' }).state;
+    s = run(s, { type: 'createFolder', name: 'stuff' }).state;
+    const docId = s.documents![0].id;
+    const folderId = s.folders![0].id;
+
+    s = run(s, { type: 'renameItem', itemId: docId, name: 'evidence notes' }).state;
+    s = run(s, { type: 'renameItem', itemId: folderId, name: 'the case' }).state;
+    expect(s.documents![0].name).toBe('evidence notes.txt');
+    expect(s.folders![0].name).toBe('the case');
+
+    const denied = run(s, { type: 'renameItem', itemId: 'file.oct-pages', name: 'haha' });
+    expect(denied.result).toMatchObject({ type: 'document', ok: false });
+  });
+});

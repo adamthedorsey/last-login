@@ -524,6 +524,33 @@ export function handleAction(
       });
     }
 
+    case 'renameItem': {
+      // Only the player's own files/folders can be renamed — the story's
+      // files are preserved evidence.
+      const doc = playerDoc(state, action.itemId);
+      if (doc) {
+        doc.name = sanitizeDocName(action.name);
+        doc.modifiedAt = content.clock.now.slice(0, 10);
+        events.push({ type: 'rename_item', payload: { itemId: doc.id } });
+        return done({
+          type: 'document',
+          ok: true,
+          item: docSummary(doc, (state.documents ?? []).indexOf(doc)),
+        });
+      }
+      const pf = playerFolder(state, action.itemId);
+      if (pf) {
+        pf.name = stripName(action.name, pf.name);
+        events.push({ type: 'rename_item', payload: { itemId: pf.id } });
+        return done({
+          type: 'document',
+          ok: true,
+          item: folderSummary(pf, (state.folders ?? []).indexOf(pf)),
+        });
+      }
+      return done({ type: 'document', ok: false, error: 'not_found' });
+    }
+
     case 'getBuddies': {
       const buddies: BuddyView[] = content.buddies
         .filter((b) => meetsRequirement(state, b.requires))

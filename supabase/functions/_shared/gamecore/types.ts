@@ -242,6 +242,7 @@ export type GameAction =
   | { type: 'saveDocument'; docId?: string; name: string; text: string }
   | { type: 'createFolder'; name: string }
   | { type: 'moveDocument'; docId: string; folderId?: string }
+  | { type: 'renameItem'; itemId: string; name: string }
   | { type: 'resetSeason' };
 
 // ---------------------------------------------------------------------------

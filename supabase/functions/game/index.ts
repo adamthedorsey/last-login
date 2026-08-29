@@ -46,6 +46,7 @@ const VALID_ACTIONS = new Set([
   'saveDocument',
   'createFolder',
   'moveDocument',
+  'renameItem',
   'resetSeason',
 ]);
 
