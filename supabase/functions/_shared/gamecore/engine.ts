@@ -102,6 +102,14 @@ function toDiscoveryView(d: Discovery): DiscoveryView {
   return { id: d.id, title: d.title, description: d.description };
 }
 
+/**
+ * The owner's password hint is earned, not given: it appears only after this
+ * many failed login attempts (and then stays revealed, across lockouts and
+ * reloads, via a server-side flag).
+ */
+const HINT_AFTER_ATTEMPTS = 3;
+const HINT_REVEALED_FLAG = 'login-hint-revealed';
+
 export function toStateView(content: SeasonContent, state: PlayerState): StateView {
   return {
     seasonSlug: content.slug,
@@ -109,7 +117,7 @@ export function toStateView(content: SeasonContent, state: PlayerState): StateVi
     clockNow: content.clock.now,
     owner: content.computer.owner,
     loginUser: content.computer.loginUser,
-    loginHint: content.computer.loginHint,
+    loginHint: state.flags[HINT_REVEALED_FLAG] ? content.computer.loginHint : undefined,
     saverText: content.computer.saverText,
     imScreenname: content.computer.imScreenname,
     bootWarning: content.computer.bootWarning,
@@ -437,13 +445,28 @@ export function handleAction(
       if (state.loggedIn) {
         return done({ type: 'login', ok: true, view: toStateView(content, state) });
       }
-      const check = checkPassword(content, state, content.computer.loginTargetId, action.password, nowMs);
+      const targetId = content.computer.loginTargetId;
+      const check = checkPassword(content, state, targetId, action.password, nowMs);
       events.push({ type: 'login_attempt', payload: { ok: check.ok } });
       if (check.ok) {
         state.loggedIn = true;
         return done({ type: 'login', ok: true, view: toStateView(content, state) });
       }
-      return done({ type: 'login', ok: false, lockedOut: check.lockedOut });
+      // Enough failures earn the owner's own hint — permanently.
+      const attempts = state.passwordAttempts[targetId] ?? 0;
+      if (check.lockedOut || attempts >= HINT_AFTER_ATTEMPTS) {
+        state.flags[HINT_REVEALED_FLAG] = true;
+      }
+      const lockedUntil = state.lockedUntil[targetId] ?? 0;
+      return done({
+        type: 'login',
+        ok: false,
+        lockedOut: check.lockedOut,
+        retryAfterSeconds: check.lockedOut
+          ? Math.max(1, Math.ceil((lockedUntil - nowMs) / 1000))
+          : undefined,
+        hint: state.flags[HINT_REVEALED_FLAG] ? content.computer.loginHint : undefined,
+      });
     }
   }
 

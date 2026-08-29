@@ -43,9 +43,11 @@ export const SEASON1: SeasonContent = {
     owner: 'Casey Taylor',
     loginUser: 'casey',
     loginTargetId: 'login.casey',
-    // Rendered as a sticky note taped beside the login prompt.
-    // (Signed "J". Remember that later.)
-    loginHint: 'C — quit using mom’s flower + the year. anyone could guess it. — J',
+    // The hint CASEY typed when she set her password. The OS offers it only
+    // after three wrong guesses — the login is the game's first puzzle.
+    // (The readme on the desktop still carries J's "i guessed it in one
+    // try" — which lands differently once you've needed the hint.)
+    loginHint: 'moms flower + the year',
     // Casey set her screen saver text herself. It floats there whenever the
     // machine idles — which means everyone in the house has seen it.
     saverText: 'junebug',
@@ -64,8 +66,9 @@ export const SEASON1: SeasonContent = {
   },
   wallpaper: 'teal',
   homeUrl: 'www.searchhound.net',
-  maxPasswordAttempts: 8,
-  lockoutSeconds: 300,
+  // Six strikes and the machine freezes you out for a minute and a half.
+  maxPasswordAttempts: 6,
+  lockoutSeconds: 90,
 
   discoveries: [
     {

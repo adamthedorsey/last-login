@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Button, Frame, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
 import { playError, playStartup } from './sounds';
-import { PIXEL_MONO, READABLE_TEXT } from '../theme';
+import { PIXEL_MONO } from '../theme';
 
 const BootScreen = styled.div`
   height: 100vh;
@@ -52,16 +52,13 @@ const Brand = styled.div`
   }
 `;
 
-const StickyNote = styled.div`
-  max-width: 300px;
-  background: #fffa9d;
-  color: #333;
-  padding: 10px 12px;
+const HintLine = styled.div`
+  margin-top: 10px;
   font-size: 13px;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
-  transform: rotate(-1.6deg);
-  font-family: 'Comic Sans MS', 'Segoe Print', cursive;
-  ${READABLE_TEXT}
+  color: #444;
+  b {
+    font-weight: bold;
+  }
 `;
 
 const Row = styled.div`
@@ -131,6 +128,20 @@ export function BootSequence() {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [fontsReady, setFontsReady] = useState(false);
+  // The owner's password hint, revealed by the server after failed attempts
+  // (view.loginHint covers a reload after it was already earned).
+  const [hint, setHint] = useState<string | null>(null);
+  const [lockSeconds, setLockSeconds] = useState(0);
+
+  // The freeze: while locked, count the seconds down on screen.
+  useEffect(() => {
+    if (lockSeconds <= 0) return;
+    const t = window.setTimeout(() => {
+      setLockSeconds((s) => s - 1);
+      if (lockSeconds === 1) setMessage(null);
+    }, 1000);
+    return () => window.clearTimeout(t);
+  }, [lockSeconds]);
 
   // The boot text is the first thing on screen — hold it (black screen, like a
   // monitor warming up) until the bitmap fonts have actually loaded, so the
@@ -173,7 +184,7 @@ export function BootSequence() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (busy || !password) return;
+    if (busy || !password || lockSeconds > 0) return;
     setBusy(true);
     setMessage(null);
     const res = await send({ type: 'login', password });
@@ -185,15 +196,21 @@ export function BootSequence() {
       }
       playError();
       setPassword('');
-      setMessage(
-        res.lockedOut
-          ? 'Too many incorrect attempts. This account is temporarily locked.'
-          : 'The password is incorrect. Please try again.',
-      );
+      if (res.hint) setHint(res.hint);
+      if (res.lockedOut) {
+        setLockSeconds(res.retryAfterSeconds ?? 90);
+        setMessage('Too many incorrect attempts.');
+      } else {
+        setMessage('The password is incorrect. Please try again.');
+      }
     } else {
       setMessage('The system did not respond. Try again.');
     }
   };
+
+  const locked = lockSeconds > 0;
+  const lockClock = `${Math.floor(lockSeconds / 60)}:${String(lockSeconds % 60).padStart(2, '0')}`;
+  const shownHint = hint ?? view?.loginHint ?? null;
 
   const devSkip = async () => {
     if (!import.meta.env.DEV) return;
@@ -245,28 +262,34 @@ export function BootSequence() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{ flex: 1 }}
+                disabled={locked}
                 autoFocus
               />
             </Row>
+            {shownHint && (
+              <HintLine>
+                Password hint (typed by {view?.loginUser ?? 'the owner'}): <b>{shownHint}</b>
+              </HintLine>
+            )}
             <div style={{ display: 'flex', gap: 8, marginTop: 14, justifyContent: 'flex-end' }}>
               {import.meta.env.DEV && (
                 <Button type="button" onClick={() => void devSkip()}>
                   DEV: skip
                 </Button>
               )}
-              <Button type="submit" disabled={busy} style={{ width: 90 }}>
+              <Button type="submit" disabled={busy || locked} style={{ width: 90 }}>
                 OK
               </Button>
             </div>
           </form>
-          {message && (
+          {(message || locked) && (
             <Frame variant="well" style={{ marginTop: 12, padding: '6px 8px', width: '100%' }}>
               {message}
+              {locked && ` This computer is locked. Try again in ${lockClock}.`}
             </Frame>
           )}
         </WindowContent>
       </Window>
-      {view?.loginHint && <StickyNote>{view.loginHint}</StickyNote>}
     </LoginBackdrop>
   );
 }

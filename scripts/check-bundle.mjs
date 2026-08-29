@@ -29,6 +29,7 @@ const FORBIDDEN = [
   'ghost-signoff', // epilogue flag
   'not shut down properly', // boot warning (server-sent story line)
   'Last session ended', // the 2:31 AM stamp that goes with it
+  'moms flower', // casey's password hint (earned after failed attempts)
 ];
 
 function* walk(dir) {

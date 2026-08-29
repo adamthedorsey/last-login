@@ -76,6 +76,37 @@ describe('computer login', () => {
     expect(after.result).toMatchObject({ type: 'login', ok: true });
   });
 
+  it('reveals the owner-typed hint only after three failed attempts, then permanently', () => {
+    let s = newPlayerState();
+    for (let i = 0; i < 2; i++) {
+      const r = run(s, { type: 'login', password: `wrong${i}` });
+      s = r.state;
+      if (r.result.type !== 'login') throw new Error('bad result');
+      expect(r.result.hint).toBeUndefined();
+    }
+    const third = run(s, { type: 'login', password: 'wrong3' });
+    s = third.state;
+    if (third.result.type !== 'login') throw new Error('bad result');
+    expect(third.result.hint).toContain('flower');
+
+    // Earned once, served always — including in the pre-login state view.
+    const st = run(s, { type: 'getState' }).result;
+    if (st.type !== 'state') throw new Error('bad result');
+    expect(st.view.loginHint).toContain('flower');
+  });
+
+  it('reports the freeze duration when locked out', () => {
+    let s = newPlayerState();
+    for (let i = 0; i < SEASON1.maxPasswordAttempts; i++) {
+      s = run(s, { type: 'login', password: `guess${i}` }).state;
+    }
+    const { result } = run(s, { type: 'login', password: 'anything' });
+    if (result.type !== 'login') throw new Error('bad result');
+    expect(result.lockedOut).toBe(true);
+    expect(result.retryAfterSeconds).toBeGreaterThan(0);
+    expect(result.retryAfterSeconds).toBeLessThanOrEqual(SEASON1.lockoutSeconds);
+  });
+
   it('refuses every game action before login', () => {
     const actions: GameAction[] = [
       { type: 'getDesktop' },

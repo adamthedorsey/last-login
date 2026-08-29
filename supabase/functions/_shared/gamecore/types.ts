@@ -199,6 +199,11 @@ export interface SeasonContent {
     loginUser: string;
     /** Password target id for the OS login (an entry in `passwords`). */
     loginTargetId: string;
+    /**
+     * The hint the machine's owner typed when setting their password.
+     * SERVED ONLY after enough failed attempts (see engine) — it reaches
+     * StateView/login results gated, never unconditionally.
+     */
     loginHint?: string;
     /** The word the owner set in their screen saver. Sometimes a clue. */
     saverText?: string;
@@ -386,7 +391,16 @@ export interface SearchResult {
 
 export type ActionResult =
   | { type: 'state'; view: StateView }
-  | { type: 'login'; ok: boolean; lockedOut?: boolean; view?: StateView }
+  | {
+      type: 'login';
+      ok: boolean;
+      lockedOut?: boolean;
+      /** Seconds until the account accepts attempts again (when locked). */
+      retryAfterSeconds?: number;
+      /** The owner's password hint — present only once it has been earned. */
+      hint?: string;
+      view?: StateView;
+    }
   | { type: 'desktop'; items: ItemSummary[] }
   | { type: 'children'; items: ItemSummary[] }
   | {

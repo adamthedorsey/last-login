@@ -177,6 +177,17 @@ describe('DTO redaction', () => {
 });
 
 describe('password guessing', () => {
+  it('withholds the owner’s hint until it is earned by failing', () => {
+    let s = newPlayerState();
+    const fresh = run(s, { type: 'getState' }).result;
+    expect(JSON.stringify(fresh)).not.toContain('flower');
+    for (let i = 0; i < 2; i++) {
+      const r = run(s, { type: 'login', password: `x${i}` });
+      s = r.state;
+      expect(JSON.stringify(r.result)).not.toContain('flower');
+    }
+  });
+
   it('cannot brute-force without limit', () => {
     let s = loggedInState();
     for (let i = 0; i < SEASON1.maxPasswordAttempts; i++) {
