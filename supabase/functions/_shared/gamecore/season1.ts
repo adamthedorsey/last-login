@@ -666,7 +666,7 @@ ps. change your password. i guessed it in one try. ONE.`,
         createdAt: '1997-08-23',
         sizeKb: 84,
         caption: 'county fair w/ sadie + angel. angel lost her churro on this ride.',
-        photoSrc: '/photos/fair_ferris.svg',
+        photoSrc: '/photos/fair_ferris_aug97.jpg',
       },
     },
     {
@@ -689,10 +689,11 @@ ps. change your password. i guessed it in one try. ONE.`,
       icon: 'photo',
       parentId: 'folder.pictures',
       meta: {
-        createdAt: '1997-07-30',
+        // Matches the film date stamp burned into the print.
+        createdAt: '1997-04-19',
         sizeKb: 66,
         caption: 'buster claims another box. the box was for him actually.',
-        photoSrc: '/photos/buster.svg',
+        photoSrc: '/photos/buster_box.jpg',
       },
     },
     {
