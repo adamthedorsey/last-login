@@ -4,7 +4,6 @@
  */
 import { useEffect, useId, useState } from 'react';
 import styled, { css, keyframes } from 'styled-components';
-import { READABLE_TEXT } from '../theme';
 
 // The mark: a little ship under a night sky — its two sails echo the old "V".
 // When `sailing`, the waves scroll and the hull bobs, frame-stepped like a
@@ -102,7 +101,6 @@ const SplashPanel = styled.div`
   padding: 26px 28px 14px;
   cursor: pointer;
   font-family: 'Times New Roman', serif;
-  ${READABLE_TEXT}
 `;
 
 const SPLASH_LINES = [

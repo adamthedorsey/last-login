@@ -41,21 +41,20 @@ If not, don't build it that way.
   multiples of 16 only). Short, large, atmospheric text only.
 - LONG-FORM machine text is deliberately easier on modern eyes (creative
   license, owner-approved): Notepad documents and recovered logs use
-  `DOC_TEXT` from `src/theme.tsx` (Courier New 15px/1.5, antialiased —
-  monospace is load-bearing: story documents contain column-aligned ASCII
-  like the ledger). Email bodies read in Arial 14px/1.6 with READABLE_TEXT
-  antialiasing — what Outlook Express actually rendered mail in; the bitmap
-  chrome font scales badly in long paragraphs (never put column-aligned
-  evidence in mail bodies). Do not put Fixedsys or scaled ms_sans_serif back
-  on reading surfaces.
+  `DOC_TEXT` from `src/theme.tsx` (Courier New 15px/1.5 — monospace is
+  load-bearing: story documents contain column-aligned ASCII like the
+  ledger). Email bodies read in Arial 14px/1.6 — what Outlook Express
+  actually rendered mail in; the bitmap chrome font scales badly in long
+  paragraphs (never put column-aligned evidence in mail bodies). Do not put
+  Fixedsys or scaled ms_sans_serif back on reading surfaces.
 - In-game web pages: Times New Roman / Arial / Courier New via the `PageBlock`
   style system — that's what the 1997 web actually used.
-- Font smoothing is two-tier, on purpose: bitmap fonts (ms_sans_serif,
-  Fixedsys) render ALIASED (smoothing off inherits from body — their crisp,
-  correct form). Vector reading faces (Times/Arial content surfaces) opt back
-  into antialiasing via `READABLE_TEXT` from `src/theme.tsx` — period feel
-  must not make long story text hard to read. Never smooth the bitmap fonts;
-  never leave a long-form vector-text surface aliased.
+- Font smoothing is ONE tier, on purpose (owner call): EVERYTHING renders
+  aliased — body-level `-webkit-font-smoothing: none`, no opt-outs — the way
+  a real 1997 machine drew text. Readability comes from FACE, SIZE, and
+  LINE-HEIGHT, never from smoothing: vector faces (Arial, Courier New,
+  Times) alias cleanly at 14px+; only SCALED BITMAP fonts go ragged, so
+  ms_sans_serif/Fixedsys never appear on long-form reading surfaces.
 - Reading surfaces get comfortable line-height (1.45–1.55) and ≥14px sizes;
   chrome stays compact at 13–14px.
 - No webfonts beyond the three above. No variable fonts, no Inter/Roboto/system

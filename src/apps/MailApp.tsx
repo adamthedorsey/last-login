@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Button, Frame, ScrollView, Toolbar } from 'react95';
 import type { ItemContent, ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
-import { READABLE_TEXT } from '../theme';
 import { Icon } from '../os/icons';
 
 const MAILBOXES = [
@@ -95,16 +94,15 @@ const Headers = styled.div`
 `;
 
 /**
- * Letter bodies read in Arial, antialiased — what Outlook Express actually
- * used in 1997, and the comfortable long-form face. The bitmap chrome font
- * stays on lists and headers, where it's short and crisp.
+ * Letter bodies read in Arial — what Outlook Express actually used in 1997,
+ * and the comfortable long-form face. Aliased like everything else; the
+ * bitmap chrome font stays on lists and headers, where it's short and crisp.
  */
 const BodyText = styled.div`
   white-space: pre-wrap;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 14px;
   line-height: 1.6;
-  ${READABLE_TEXT}
 `;
 
 function fmtDate(iso?: string): string {

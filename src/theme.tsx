@@ -15,28 +15,16 @@ import type { ReactNode } from 'react';
 export const PIXEL_MONO = "'Fixedsys', 'Courier New', monospace";
 
 /**
- * Legibility carve-out: bitmap fonts (ms_sans_serif, Fixedsys) render aliased
- * — that's their correct, crisp form. But vector reading faces (Times/Arial
- * on web pages, splash serif) get modern antialiasing back so long-form story
- * text stays comfortable on today's displays. Apply this on those surfaces.
- */
-export const READABLE_TEXT = `
-  -webkit-font-smoothing: auto;
-  text-rendering: auto;
-`;
-
-/**
- * Long-form document text (Notepad files, recovered logs): Courier New,
- * antialiased, at a comfortable size. Monospace is load-bearing — story
- * documents contain column-aligned ASCII (the ledger, file-properties
- * blocks) that a proportional face would shred. Fixedsys stays on the
- * terminal surfaces (boot, DOS, BSOD, shutdown); this is for READING.
+ * Long-form document text (Notepad files, recovered logs): Courier New at a
+ * comfortable size, aliased like everything else. Monospace is load-bearing
+ * — story documents contain column-aligned ASCII (the ledger, file-
+ * properties blocks) that a proportional face would shred. Fixedsys stays
+ * on the terminal surfaces (boot, DOS, BSOD, shutdown); this is for READING.
  */
 export const DOC_TEXT = `
   font-family: 'Courier New', monospace;
   font-size: 15px;
   line-height: 1.5;
-  ${READABLE_TEXT}
 `;
 
 const GlobalStyles = createGlobalStyle`
@@ -70,9 +58,11 @@ const GlobalStyles = createGlobalStyle`
     background: #000;
     /* Desktop chrome is not selectable; readable panes opt back in. */
     user-select: none;
-    /* Bitmap fonts (the OS chrome + Fixedsys) render aliased — their crisp,
-       correct form. Reading surfaces with vector faces opt back into
-       antialiasing via READABLE_TEXT for today's eyes. */
+    /* ONE tier, no carve-outs (owner call): everything renders aliased, the
+       way a real 1997 machine drew text — it had no font smoothing at all.
+       Readability comes from face, size, and line-height: vector faces
+       (Arial, Courier, Times) alias cleanly; only scaled bitmap fonts go
+       ragged, so those never appear on reading surfaces. */
     -webkit-font-smoothing: none;
     text-rendering: optimizeSpeed;
   }

@@ -4,7 +4,6 @@ import { Button, Frame, MenuList, MenuListItem, Separator, TextInput } from 'rea
 import type { ItemContent, ItemSummary, PageBlock, SearchResult } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { useWindowStore } from '../os/windowStore';
-import { READABLE_TEXT } from '../theme';
 import type { AppWindowProps } from '../os/appRegistry';
 
 const FONTS: Record<string, string> = {
@@ -163,7 +162,6 @@ const Page = styled(Frame).attrs({ variant: 'field' })`
   padding: 0;
   margin-top: 3px;
   /* Web-page text is Times/Arial — smooth it for comfortable reading. */
-  ${READABLE_TEXT}
 `;
 
 const StatusRow = styled(Frame).attrs({ variant: 'well' })`
