@@ -48,6 +48,17 @@ function fmtDuration(total: number): string {
   return `${String(h).padStart(3, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
+/** Ticks forward from the server-reported baseline; remounted (via key)
+ * whenever the server refreshes its number. */
+function Duration({ base }: { base: number }) {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const t = window.setInterval(() => setTick((s) => s + 1), 1000);
+    return () => window.clearInterval(t);
+  }, []);
+  return <>Duration: {fmtDuration(base + tick)}</>;
+}
+
 export function DialUp({ windowId }: AppWindowProps) {
   const { send, view, refreshView } = useGame();
   const close = useWindowStore((s) => s.close);
@@ -57,17 +68,9 @@ export function DialUp({ windowId }: AppWindowProps) {
 
   const online = view?.online === true;
 
-  // Duration ticks locally from the server-reported baseline (the server's
-  // word on WHEN the connection started; the client only counts forward).
-  const [elapsed, setElapsed] = useState(view?.onlineSeconds ?? 0);
-  useEffect(() => {
-    setElapsed(view?.onlineSeconds ?? 0);
-  }, [view?.onlineSeconds]);
-  useEffect(() => {
-    if (!online) return;
-    const t = window.setInterval(() => setElapsed((s) => s + 1), 1000);
-    return () => window.clearInterval(t);
-  }, [online]);
+  // The server's word on when the connection started; the client only
+  // counts forward from it (see Duration).
+  const baseline = view?.onlineSeconds ?? 0;
 
   useEffect(
     () => () => {
@@ -129,7 +132,7 @@ export function DialUp({ windowId }: AppWindowProps) {
               Connected to <b>WestWind Online</b> at 33,600 bps.
             </p>
             <p style={{ margin: '6px 0 0', fontVariantNumeric: 'tabular-nums' }}>
-              Duration: {fmtDuration(elapsed)}
+              <Duration key={baseline} base={baseline} />
             </p>
           </div>
         </div>
