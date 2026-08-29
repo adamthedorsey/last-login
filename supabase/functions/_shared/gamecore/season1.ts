@@ -411,6 +411,29 @@ ps. change your password. i guessed it in one try. ONE.`,
       },
     },
 
+    // --- Datebook data (read by the Datebook 97 accessory; not in any folder) ---
+    {
+      id: 'file.datebook-1997',
+      kind: 'document',
+      name: 'datebook.dat',
+      icon: 'doc',
+      meta: { createdAt: '1997-01-04', modifiedAt: '1997-10-09', sizeKb: 2 },
+      body: {
+        text: `1997-09-19: band practice (jesse's garage. bring earplugs)
+1997-09-26: english journal due
+1997-10-03: sleepover @ mel's
+1997-10-04: FAIR!!! w/ d + b
+1997-10-09: STUDY. quiz tmrw. actually study
+1997-10-10: algebra quiz
+1997-10-10: ★ 10pm
+1997-10-14: dana bday ideas?? (NOT a mixtape again. ok maybe a mixtape)
+1997-10-21: picture retakes (fix bangs FIRST this time)
+1997-10-25: homecoming - find shoes
+1997-10-26: SOLAR FLARE RIVERTON?? beg mom. beg harder
+1997-11-27: thanksgiving @ aunt patty's (ron. turkey. fire dept on standby)`,
+      },
+    },
+
     // =====================================================================
     // PICTURES (placeholder art, all mundane worldbuilding)
     // =====================================================================
@@ -927,7 +950,7 @@ The Civil War was a war that happened in America between 1861 and
     {
       id: 'shortcut.mail',
       kind: 'shortcut',
-      name: 'WestWind Mail',
+      name: 'Mail',
       icon: 'mail-app',
       meta: { appId: 'mail', desktop: { x: 120, y: 120 } },
     },
@@ -948,7 +971,7 @@ The Civil War was a war that happened in America between 1861 and
     {
       id: 'shortcut.notepad',
       kind: 'shortcut',
-      name: 'Jotter',
+      name: 'Notepad',
       icon: 'notepad',
       meta: { appId: 'notepad', desktop: { x: 216, y: 24 } },
     },

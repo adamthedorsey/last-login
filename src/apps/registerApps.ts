@@ -9,6 +9,12 @@ import { RecycleBin } from './RecycleBin';
 import { CardShark } from './CardShark';
 import { CaseNotes } from './CaseNotes';
 import { VoyagerSplash } from './VoyagerSplash';
+import { Calculator } from './Calculator';
+import { Calendar } from './Calendar';
+import { Minefield } from './Minefield';
+import { Paintbox } from './Paintbox';
+import { DiscDeck } from './DiscDeck';
+import { ClockApp } from './ClockApp';
 
 export function registerAllApps(): void {
   registerApp({
@@ -20,21 +26,21 @@ export function registerAllApps(): void {
   });
   registerApp({
     id: 'notepad',
-    name: 'Jotter',
+    name: 'Notepad',
     icon: 'notepad',
     component: Notepad,
     defaultSize: { w: 520, h: 440 },
   });
   registerApp({
     id: 'photos',
-    name: 'PicturePost Viewer',
+    name: 'Picture Viewer',
     icon: 'photo',
     component: PhotoViewer,
     defaultSize: { w: 560, h: 480 },
   });
   registerApp({
     id: 'mail',
-    name: 'WestWind Mail',
+    name: 'Mail',
     icon: 'mail-app',
     component: MailApp,
     defaultSize: { w: 700, h: 520 },
@@ -79,6 +85,55 @@ export function registerAllApps(): void {
     icon: 'notes',
     component: CaseNotes,
     defaultSize: { w: 420, h: 400 },
+    singleton: true,
+  });
+  // --- Accessories (the Win95-style default apps) ---
+  registerApp({
+    id: 'calculator',
+    name: 'Calculator',
+    icon: 'calc',
+    component: Calculator,
+    defaultSize: { w: 300, h: 330 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'calendar',
+    name: 'Calendar',
+    icon: 'calendar',
+    component: Calendar,
+    defaultSize: { w: 460, h: 460 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'minefield',
+    name: 'Minefield',
+    icon: 'mine',
+    component: Minefield,
+    defaultSize: { w: 300, h: 400 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'paintbox',
+    name: 'Paint',
+    icon: 'paint',
+    component: Paintbox,
+    defaultSize: { w: 520, h: 470 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'discdeck',
+    name: 'CD Player',
+    icon: 'cd',
+    component: DiscDeck,
+    defaultSize: { w: 380, h: 420 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'clock',
+    name: 'Clock',
+    icon: 'clock',
+    component: ClockApp,
+    defaultSize: { w: 300, h: 300 },
     singleton: true,
   });
 }

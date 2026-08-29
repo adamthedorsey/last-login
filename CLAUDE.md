@@ -55,9 +55,14 @@ If not, don't build it that way.
 - Images ship as SVGs styled like period photos/GIF banners (flat shapes,
   caption strips, dithered-dusk palettes). `image-rendering: pixelated` stays on.
 - Never reproduce real logos, trademarks, or brand lookalikes (no Windows flag,
-  Netscape N, AOL, etc.). Every brand is fictional: Microtech Horizons,
-  WestWind, BuddyLine, NetVoyager, SearchHound, CityPages, MapFinder,
-  Solar Flare, Meridian Digital Systems, Kava/Helios, Cosmoid/Prism.
+  Netscape N, AOL, etc.).
+- Naming policy: OS accessories use PLAIN GENERIC names, exactly like Win95 did
+  (Calculator, Calendar, Notepad, Mail, Paint, CD Player, Clock, Picture
+  Viewer). Fictional brands are only for things that were branded products or
+  services in 1997: Microtech Horizons (OS), WestWind (ISP/email service),
+  BuddyLine (IM), NetVoyager (browser), SearchHound (search), CityPages,
+  MapFinder, CardShark (retail game), Solar Flare (band), Meridian Digital
+  Systems, Kava/Helios, Cosmoid/Prism.
 
 ### Sound
 - Synthesized chip-style tones only (`src/os/sounds.ts`). Short, quiet,

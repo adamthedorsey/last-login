@@ -54,7 +54,7 @@ export function Notepad({ props }: AppWindowProps) {
             .join('   '),
         );
       } else {
-        setError('Jotter cannot open this file.');
+        setError('Notepad cannot open this file.');
       }
     });
     return () => {

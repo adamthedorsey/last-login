@@ -66,7 +66,7 @@ export function PhotoViewer({ windowId, props }: AppWindowProps) {
       if (cancelled) return;
       if (res.type === 'open' && res.ok && res.item) {
         setPhoto(res.item);
-        setTitle(windowId, `${res.item.name} - PicturePost`);
+        setTitle(windowId, `${res.item.name} - Picture Viewer`);
       }
     });
     return () => {

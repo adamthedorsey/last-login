@@ -13,13 +13,13 @@ export function launchItem(item: ItemSummary): void {
       }
       return;
     case 'document':
-      os.open('notepad', { props: { itemId: item.id }, title: `${item.name} - Jotter` });
+      os.open('notepad', { props: { itemId: item.id }, title: `${item.name} - Notepad` });
       return;
     case 'trash_item':
       if (item.meta?.photoSrc) {
         os.open('photos', { props: { itemId: item.id }, title: item.name });
       } else {
-        os.open('notepad', { props: { itemId: item.id }, title: `${item.name} - Jotter` });
+        os.open('notepad', { props: { itemId: item.id }, title: `${item.name} - Notepad` });
       }
       return;
     case 'photo':
