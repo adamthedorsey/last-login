@@ -124,6 +124,14 @@ export function playDialup(): void {
   tone(1070, 2950, 260, 'sine', 0.012);
 }
 
+/** The busy signal: the classic 480+620 Hz cadence, three beats. */
+export function playBusy(): void {
+  for (let i = 0; i < 3; i++) {
+    tone(480, i * 500, 240, 'sine', 0.02);
+    tone(620, i * 500, 240, 'sine', 0.02);
+  }
+}
+
 /** A buddy signing on: two rising notes, the era's doorbell. */
 export function playBuddyOn(): void {
   tone(523, 0, 120, 'square', 0.03);

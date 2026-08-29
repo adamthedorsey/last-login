@@ -230,7 +230,20 @@ export function Taskbar({
   onDosMode: () => void;
 }) {
   const { windows, focus, minimize, open } = useWindowStore();
-  const { view, send } = useGame();
+  const { view, send, netActivity } = useGame();
+  // The TX light: blinks on the tray phone whenever the machine talks to
+  // the outside world. Stepped, never faded.
+  const [txLit, setTxLit] = useState(false);
+  useEffect(() => {
+    if (netActivity === 0) return;
+    const ts = [
+      window.setTimeout(() => setTxLit(true), 0),
+      window.setTimeout(() => setTxLit(false), 160),
+      window.setTimeout(() => setTxLit(true), 320),
+      window.setTimeout(() => setTxLit(false), 480),
+    ];
+    return () => ts.forEach((t) => window.clearTimeout(t));
+  }, [netActivity]);
   const [startOpen, setStartOpen] = useState(false);
   const [sub, setSub] = useState<SubName>(null);
   const [sub2, setSub2] = useState<Sub2Name>(null);
@@ -615,9 +628,21 @@ export function Taskbar({
               <TrayButton
                 onDoubleClick={() => open('dialup')}
                 title="Connected to WestWind Online at 33,600 bps"
-                style={{ cursor: 'default' }}
+                style={{ cursor: 'default', position: 'relative' }}
               >
                 <Icon name="dialup" size={16} />
+                {txLit && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: -1,
+                      width: 4,
+                      height: 3,
+                      background: '#00d000',
+                    }}
+                  />
+                )}
               </TrayButton>
             )}
             <TrayButton onClick={toggleMute} title={muted ? 'Sound off (click to enable)' : 'Sound on (click to mute)'}>

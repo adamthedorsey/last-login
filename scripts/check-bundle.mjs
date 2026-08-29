@@ -31,6 +31,7 @@ const FORBIDDEN = [
   'Last session ended', // the 2:31 AM stamp that goes with it
   'moms flower', // casey's password hint (earned after failed attempts)
   '2141-1011', // DOS volume serial (the finale timestamp, hiding in plain sight)
+  '02:17 AM', // the modem log's smoking-gun session
 ];
 
 function* walk(dir) {

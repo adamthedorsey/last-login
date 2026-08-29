@@ -238,6 +238,12 @@ export interface SeasonContent {
   buddies: Buddy[];
   /** Live prompt-tree conversations (see ChatConversation). SERVER ONLY. */
   conversations?: ChatConversation[];
+  /**
+   * The one-phone-line scare: once `requires` is met, the NEXT action taken
+   * while online drops the connection — someone in the house picked up the
+   * extension. Fires exactly once per season. SERVER ONLY.
+   */
+  linePickup?: { requires: Requirement };
   maxPasswordAttempts: number;
   lockoutSeconds: number;
 }
@@ -377,6 +383,8 @@ export interface StateView {
   online: boolean;
   /** Seconds the current connection has been up (present while online). */
   onlineSeconds?: number;
+  /** True once the line-pickup beat has fired (client shows it one time). */
+  linePickup?: boolean;
   wallpaper: string;
   homeUrl: string;
   loggedIn: boolean;
@@ -420,7 +428,7 @@ export interface SearchResult {
   snippet: string;
 }
 
-export type ActionResult =
+export type ActionResult = (
   | { type: 'state'; view: StateView }
   | {
       type: 'login';
@@ -471,7 +479,14 @@ export type ActionResult =
   | { type: 'document'; ok: boolean; item?: ItemSummary; error?: string }
   | { type: 'net'; online: boolean; newMail?: number }
   | { type: 'reset'; view: StateView }
-  | { type: 'error'; error: string };
+  | { type: 'error'; error: string }
+) & {
+  /**
+   * Stamped on the one result during which the line-pickup fired, whatever
+   * the action was — the client's cue to refresh and show the scare.
+   */
+  linePickup?: true;
+};
 
 export interface EngineOutcome {
   state: PlayerState;

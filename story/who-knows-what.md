@@ -117,10 +117,12 @@ app never soft-locks the season.
 | Sam Reed's second letter "what i should have said" | S1 | Mail | the-clean-truck | `the-pipeline` (B) |
 | Rebecca's message | S11 | Mail | the-pipeline | `who-shaped` (A) |
 | LIVE chat: the woman at the vigil | S11 | Chat | the-pipeline | `who-shaped` (B) |
-| File timestamps + diary last-modified | S12 | Explorer metadata | finale gate (all of Act 3) | `the-house` — END (single-path by design) |
+| File timestamps + diary last-modified | S12 | Explorer metadata | who-shaped | `the-house` — END (A) |
+| modem.log — the 2:17 AM session + the week of midnight dial-ins | S12 | Explorer | who-shaped | `the-house` — END (B) |
 | Chad's unread apology email, 6:02 PM | S8 window | Mail | open | exoneration texture |
 | Angel's apology email + live chat guilt | S7 | Mail/Chat | open / talk | witness conversion |
 | EPILOGUE: GhostBridge signs on; "junebug." makes him run | S4 felt, not proven | Chat | the-house | season sting |
+| THE LINE PICKUP: first online action after who-shaped drops the connection — "the line was picked up by another extension" | the house is not empty | Dial-Up | who-shaped, once | dread, not data |
 
 Notes for writing: Father Mike and Leslie carry no ledger rows — they are
 texture and tragedy, not clues; that's deliberate (not everyone who knows

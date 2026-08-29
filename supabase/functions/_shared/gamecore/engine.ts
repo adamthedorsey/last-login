@@ -157,6 +157,7 @@ export function toStateView(
     loginHint: state.flags[HINT_REVEALED_FLAG] ? content.computer.loginHint : undefined,
     loginLockSeconds: lockSeconds,
     online: state.online === true,
+    linePickup: state.flags['line-pickup-done'] === true,
     onlineSeconds:
       state.online && state.onlineSince && nowMs !== undefined
         ? Math.max(0, Math.floor((nowMs - state.onlineSince) / 1000))
@@ -463,11 +464,12 @@ export function handleAction(
 ): EngineOutcome {
   const state = clone(prevState);
   const events: EngineOutcome['events'] = [];
+  let pickupNotice = false;
 
   const done = (result: ActionResult): EngineOutcome => ({
     state,
     changed: JSON.stringify(state) !== JSON.stringify(prevState),
-    result,
+    result: pickupNotice ? { ...result, linePickup: true } : result,
     events,
   });
 
@@ -526,6 +528,23 @@ export function handleAction(
   // Everything below requires being logged in to the in-game computer.
   if (!state.loggedIn) {
     return done({ type: 'error', error: 'not_logged_in' });
+  }
+
+  // The house has one phone line. Once the season's condition is met, the
+  // next action taken while the line is up gets it yanked — somebody in
+  // the house picked up the extension. Once per season.
+  if (
+    state.online &&
+    content.linePickup &&
+    !state.flags['line-pickup-done'] &&
+    meetsRequirement(state, content.linePickup.requires) &&
+    action.type !== 'connect'
+  ) {
+    state.flags['line-pickup-done'] = true;
+    state.online = false;
+    delete state.onlineSince;
+    pickupNotice = true;
+    events.push({ type: 'net_line_pickup' });
   }
 
   // While the line is up, the outside world can reach the machine: any

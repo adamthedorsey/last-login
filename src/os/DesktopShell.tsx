@@ -4,6 +4,7 @@ import { Button, Radio, Window, WindowContent, WindowHeader } from 'react95';
 import { DosMode } from './DosMode';
 import { Bsod } from './Bsod';
 import { Icon } from './icons';
+import { playError } from './sounds';
 import { topWindowId, useWindowStore, TASKBAR_HEIGHT } from './windowStore';
 import { getApp } from './appRegistry';
 import { WindowFrame } from './WindowFrame';
@@ -72,12 +73,15 @@ type ShutChoice = 'shutdown' | 'restart' | 'dos' | 'logoff';
 
 export function DesktopShell() {
   const { windows, pendingLaunch, completeLaunch, closeAll } = useWindowStore();
-  const { toasts, dismissToast, showEndCard, setShowEndCard, view, send, refreshView } = useGame();
+  const { toasts, dismissToast, showEndCard, setShowEndCard, view, send, refreshView, lineDropSignal } = useGame();
   const [shutDown, setShutDown] = useState(false);
   const [shutDialog, setShutDialog] = useState(false);
   const [shutChoice, setShutChoice] = useState<ShutChoice>('shutdown');
   const [dosMode, setDosMode] = useState(false);
   const [bsod, setBsod] = useState(false);
+  // The one-phone-line scare: fires when the server stamps a result with
+  // the pickup notice (exactly one result ever carries it).
+  const [lineDrop, setLineDrop] = useState(false);
   const [saverOn, setSaverOn] = useState(false);
   const focusedId = topWindowId(windows);
   const wallpaper = useSettingsStore((s) => s.wallpaper);
@@ -122,6 +126,15 @@ export function DesktopShell() {
       window.removeEventListener('keydown', onActivity);
     };
   }, [saverMinutes]);
+
+  useEffect(() => {
+    if (lineDropSignal === 0) return;
+    const t = window.setTimeout(() => {
+      playError();
+      setLineDrop(true);
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [lineDropSignal]);
 
   // The blue screen: a 1997 machine is mortal. It surfaces after a random
   // number of clicks (rare enough to shock, never to torment — at most twice
@@ -279,6 +292,28 @@ export function DesktopShell() {
                 </Button>
                 <Button disabled style={{ width: 80 }}>
                   Help
+                </Button>
+              </div>
+            </WindowContent>
+          </Window>
+        </CenterOverlay>
+      )}
+
+      {lineDrop && (
+        <CenterOverlay onPointerDown={(e) => e.stopPropagation()}>
+          <Window style={{ width: 380 }}>
+            <WindowHeader style={{ fontSize: 13 }}>Dial-Up Networking</WindowHeader>
+            <WindowContent style={{ fontSize: 13 }}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <Icon name="warning" size={32} />
+                <p style={{ margin: 0 }}>
+                  The connection to WestWind Online was terminated: the line
+                  was picked up by another extension.
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14 }}>
+                <Button onClick={() => setLineDrop(false)} style={{ width: 80 }}>
+                  OK
                 </Button>
               </div>
             </WindowContent>

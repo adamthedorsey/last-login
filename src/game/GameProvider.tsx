@@ -12,6 +12,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<StateView | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [contentEpoch, setContentEpoch] = useState(0);
+  const [netActivity, setNetActivity] = useState(0);
+  const [lineDropSignal, setLineDropSignal] = useState(0);
   const [showEndCard, setShowEndCard] = useState(false);
   const viewRef = useRef<StateView | null>(null);
   useEffect(() => {
@@ -26,6 +28,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const client = clientRef.current;
     if (!client) return;
     const res = await client.send({ type: 'getState' });
+    if (res.linePickup) setLineDropSignal((n) => n + 1);
     if (res.type === 'state') setView(res.view);
   }, []);
 
@@ -37,6 +40,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       clientRef.current = client;
       const res = await client.send({ type: 'getState' });
       if (cancelled) return;
+      if (res.linePickup) setLineDropSignal((n) => n + 1);
       if (res.type === 'state') setView(res.view);
       setReady(true);
     })();
@@ -83,6 +87,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const client = clientRef.current;
       if (!client) return { type: 'error', error: 'not_ready' };
       const res = await client.send(action);
+      if (viewRef.current?.online) setNetActivity((n) => n + 1);
+      if (res.linePickup) {
+        // The house picked up the phone. Refresh so every app sees the line
+        // is down; the shell shows the scare off this signal.
+        setLineDropSignal((n) => n + 1);
+        setContentEpoch((e) => e + 1);
+        void refreshView();
+      }
       if (res.type === 'open' || res.type === 'visit' || res.type === 'chat') {
         noteDiscoveries(res.newDiscoveries, res.ended);
       }
@@ -120,11 +132,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
       toasts,
       dismissToast,
       contentEpoch,
+      netActivity,
+      lineDropSignal,
       showEndCard,
       setShowEndCard,
       client: clientRef.current,
     }),
-    [ready, view, send, refreshView, toasts, dismissToast, contentEpoch, showEndCard],
+    [ready, view, send, refreshView, toasts, dismissToast, contentEpoch, netActivity, lineDropSignal, showEndCard],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

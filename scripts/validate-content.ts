@@ -76,6 +76,7 @@ function validate(content: SeasonContent): void {
   }
   if (!passwordTargets.has(content.computer.loginTargetId))
     errors.push(`computer.loginTargetId "${content.computer.loginTargetId}" has no password`);
+  if (content.linePickup) checkReq('linePickup', content.linePickup.requires);
 
   // --- Conversations: references, prompt uniqueness, flag integrity ---
   const buddyNames = new Set(content.buddies.map((b) => b.screenname));

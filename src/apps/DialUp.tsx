@@ -11,7 +11,7 @@ import styled from 'styled-components';
 import { Button, Frame, TextInput } from 'react95';
 import { useGame } from '../game/gameContext';
 import { useWindowStore } from '../os/windowStore';
-import { playError, startDialupSound, stopDialupSound } from '../os/sounds';
+import { playBusy, playError, startDialupSound, stopDialupSound } from '../os/sounds';
 import { Icon } from '../os/icons';
 import type { AppWindowProps } from '../os/appRegistry';
 
@@ -63,7 +63,6 @@ export function DialUp({ windowId }: AppWindowProps) {
   const { send, view, refreshView } = useGame();
   const close = useWindowStore((s) => s.close);
   const [phase, setPhase] = useState<'idle' | 'dialing' | 'done'>('idle');
-  const [stage, setStage] = useState(0);
   const timers = useRef<number[]>([]);
 
   const online = view?.online === true;
@@ -93,25 +92,43 @@ export function DialUp({ windowId }: AppWindowProps) {
     }
   };
 
-  const startDialing = () => {
-    setPhase('dialing');
-    setStage(0);
-    startDialupSound();
+  const [lines, setLines] = useState<string[]>([]);
+
+  const runStages = (schedule: Array<{ text: string; ms: number }>) => {
     let at = 0;
-    STAGES.forEach((_stage, i) => {
-      at += i === 0 ? 0 : STAGES[i - 1].ms;
-      timers.current.push(window.setTimeout(() => setStage(i), at));
+    schedule.forEach((st, i) => {
+      at += i === 0 ? 0 : schedule[i - 1].ms;
+      timers.current.push(window.setTimeout(() => setLines((l) => [...l, st.text]), at));
     });
     timers.current.push(
-      window.setTimeout(() => void finishConnect(), at + STAGES[STAGES.length - 1].ms),
+      window.setTimeout(() => void finishConnect(), at + schedule[schedule.length - 1].ms),
     );
+  };
+
+  const startDialing = () => {
+    setPhase('dialing');
+    setLines([]);
+    // One line in a small town: sometimes the first dial hits a busy signal.
+    if (Math.random() < 0.22) {
+      playBusy();
+      runStages([
+        { text: 'Dialing 555-0134 ...', ms: 1500 },
+        { text: 'The line is busy.', ms: 1400 },
+        { text: 'Redialing (attempt 2) ...', ms: 500 },
+        ...STAGES.map((st, i) => (i === 0 ? { ...st, text: 'Dialing 555-0134 ...' } : st)),
+      ]);
+      timers.current.push(window.setTimeout(() => startDialupSound(), 3400));
+    } else {
+      startDialupSound();
+      runStages(STAGES);
+    }
   };
 
   const skip = () => {
     if (phase !== 'dialing') return;
     timers.current.forEach((t) => window.clearTimeout(t));
     timers.current = [];
-    setStage(STAGES.length - 1);
+    setLines((l) => [...l, STAGES[STAGES.length - 1].text]);
     void finishConnect();
   };
 
@@ -133,6 +150,10 @@ export function DialUp({ windowId }: AppWindowProps) {
             </p>
             <p style={{ margin: '6px 0 0', fontVariantNumeric: 'tabular-nums' }}>
               <Duration key={baseline} base={baseline} />
+            </p>
+            <p style={{ margin: '6px 0 0', fontSize: 12, color: '#555' }}>
+              WestWind Standard Plan — your first 20 hours each month are
+              free.
             </p>
           </div>
         </div>
@@ -168,8 +189,8 @@ export function DialUp({ windowId }: AppWindowProps) {
       </Row>
       {phase === 'dialing' || phase === 'done' ? (
         <StatusWell>
-          {STAGES.slice(0, stage + 1).map((s) => (
-            <div key={s.text}>{s.text}</div>
+          {lines.map((l, i) => (
+            <div key={i}>{l}</div>
           ))}
         </StatusWell>
       ) : null}

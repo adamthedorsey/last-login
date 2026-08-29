@@ -279,6 +279,65 @@ describe('dial-up', () => {
   });
 });
 
+describe('the modem log (path B to the finale)', () => {
+  it('is invisible until who-shaped, then grants the-house', () => {
+    let s = loggedInState();
+    expect(run(s, { type: 'open', itemId: 'file.modem-log' }).result).toMatchObject({
+      type: 'open',
+      ok: false,
+    });
+    for (const step of CHAIN.slice(0, 6)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    expect(s.discoveries).toContain('who-shaped');
+    const fin = run(s, { type: 'open', itemId: 'file.modem-log' });
+    expect(fin.result).toMatchObject({ type: 'open', ok: true, ended: true });
+    expect(fin.state.discoveries).toContain('the-house');
+  });
+});
+
+describe('the line pickup', () => {
+  function whoShapedOnline(): PlayerState {
+    let s = loggedInState();
+    for (const step of CHAIN.slice(0, 6)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    return s;
+  }
+
+  it('the next online action after who-shaped gets the line yanked, once', () => {
+    let s = whoShapedOnline();
+    expect(s.online).toBe(true);
+
+    // The very next action: somebody picks up the extension. The dropping
+    // result itself carries the notice so the client can't miss it.
+    const dropped = run(s, { type: 'getDesktop' });
+    s = dropped.state;
+    expect(s.online).toBe(false);
+    expect(s.flags['line-pickup-done']).toBe(true);
+    expect(dropped.result.linePickup).toBe(true);
+    expect(dropped.events.some((e) => e.type === 'net_line_pickup')).toBe(true);
+
+    // The view tells the client (once-shown logic lives client-side).
+    const view = run(s, { type: 'getState' }).result;
+    if (view.type !== 'state') throw new Error('bad result');
+    expect(view.view.linePickup).toBe(true);
+    expect(view.view.online).toBe(false);
+
+    // Reconnecting sticks — the scare never repeats.
+    s = run(s, { type: 'connect' }).state;
+    s = run(s, { type: 'getDesktop' }).state;
+    expect(s.online).toBe(true);
+  });
+
+  it('never fires while offline or before the condition', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'getDesktop' }).state;
+    expect(s.online).toBe(true);
+    expect(s.flags['line-pickup-done']).toBeUndefined();
+  });
+});
+
 describe('live conversations', () => {
   function saySadie(s: PlayerState, promptId: string) {
     return run(s, { type: 'say', screenname: 'sadiedraws77', promptId });
@@ -328,7 +387,9 @@ describe('the epilogue', () => {
   function finishedState(): PlayerState {
     let s = loggedInState();
     for (const step of CHAIN) s = run(s, { type: 'open', itemId: step.open }).state;
-    return s;
+    // The extension pickup yanked the line after who-shaped; dial back in
+    // to meet him. (He was always going to be waiting.)
+    return run(s, { type: 'connect' }).state;
   }
 
   it('GhostBridge is unreachable before the finale', () => {

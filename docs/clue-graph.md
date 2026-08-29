@@ -2,8 +2,8 @@
 
 > GENERATED — do not edit. Source of truth: `season1.ts`. Regenerate: `npm run graph`
 >
-> In-world date: 1997-10-18 · 100 items
-> (10 gated · 10 granting · ~80 mundane camouflage) ·
+> In-world date: 1997-10-18 · 101 items
+> (11 gated · 11 granting · ~79 mundane camouflage) ·
 > 7 discoveries
 
 ```mermaid
@@ -28,6 +28,9 @@ flowchart TD
   i_file_gb_log_oct8["poem drafts 2.txt<br/><i>file</i>"]:::item
   i_file_gb_log_oct8 ==>|grants| d_stolen_intimacy
   d_the_meeting -->|requires| i_file_gb_log_oct8
+  i_file_modem_log["modem.log<br/><i>file</i>"]:::item
+  i_file_modem_log ==>|grants| d_the_house
+  d_who_shaped -->|requires| i_file_modem_log
   i_email_sadie_please["please write back<br/><i>email</i>"]:::item
   i_email_sadie_please ==>|grants| d_the_meeting
   i_email_sadie_notchad["it’s not chad<br/><i>email</i>"]:::item

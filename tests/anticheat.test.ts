@@ -119,6 +119,7 @@ describe('DTO redaction', () => {
     record({ type: 'getConversation', screenname: 'sadiedraws77' });
     record({ type: 'say', screenname: 'sadiedraws77', promptId: 'intro' });
     for (const id of CHAIN_OPENS) record({ type: 'open', itemId: id });
+    record({ type: 'connect' }); // the line pickup dropped the connection mid-chain
     record({ type: 'getBuddies' });
     record({ type: 'getConversation', screenname: 'GhostBridge' });
     record({ type: 'say', screenname: 'GhostBridge', promptId: 'junebug' });

@@ -19,6 +19,10 @@ export interface GameContextValue {
   dismissToast(id: number): void;
   /** Bumps whenever a discovery lands so views refetch (new items may exist). */
   contentEpoch: number;
+  /** Bumps on every server round-trip made while online (the TX light). */
+  netActivity: number;
+  /** Bumps when the server reports the line-pickup scare fired. */
+  lineDropSignal: number;
   showEndCard: boolean;
   setShowEndCard(v: boolean): void;
   client: GameClient | null;
