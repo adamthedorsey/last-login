@@ -50,6 +50,14 @@ export const SEASON1: SeasonContent = {
     // machine idles — which means everyone in the house has seen it.
     saverText: 'junebug',
     imScreenname: 'SunflwrC81',
+    // The machine's first ambient clue, shown on every cold boot — before
+    // the player knows anything. Whoever used this PC at 2:14 AM on Oct 11
+    // didn't shut it down. They cut the power at 2:31 and walked away.
+    // (The diary's file properties corroborate the window, much later.)
+    bootWarning: [
+      'WARNING: This computer was not shut down properly.',
+      'Last session ended:  10/11/97  2:31 AM',
+    ],
   },
   passwords: {
     'login.casey': { password: 'sunflower97' },

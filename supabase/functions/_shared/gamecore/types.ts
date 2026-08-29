@@ -204,6 +204,11 @@ export interface SeasonContent {
     saverText?: string;
     /** The owner's instant-messenger screen name (the player chats as it). */
     imScreenname?: string;
+    /**
+     * Extra lines the BIOS prints during the POST (e.g. an improper-shutdown
+     * warning). Story data — served via StateView, never client-coded.
+     */
+    bootWarning?: string[];
   };
   /** Standalone password targets (e.g. the OS login itself). SERVER ONLY values. */
   passwords: Record<string, { password: string; hint?: string }>;
@@ -335,6 +340,7 @@ export interface StateView {
   loginHint?: string;
   saverText?: string;
   imScreenname?: string;
+  bootWarning?: string[];
   wallpaper: string;
   homeUrl: string;
   loggedIn: boolean;

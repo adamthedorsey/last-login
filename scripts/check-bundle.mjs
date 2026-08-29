@@ -27,6 +27,8 @@ const FORBIDDEN = [
   'a friend of the family', // GhostBridge's epilogue line
   'sadie-talking', // conversation flag
   'ghost-signoff', // epilogue flag
+  'not shut down properly', // boot warning (server-sent story line)
+  'Last session ended', // the 2:31 AM stamp that goes with it
 ];
 
 function* walk(dir) {

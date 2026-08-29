@@ -83,7 +83,7 @@ interface BootFrame {
   ms: number;
 }
 
-function buildBootFrames(): BootFrame[] {
+function buildBootFrames(warning?: string[]): BootFrame[] {
   const frames: BootFrame[] = [];
   let cur = '';
   const hold = (ms: number) => frames.push({ text: cur, ms });
@@ -108,12 +108,20 @@ function buildBootFrames(): BootFrame[] {
   line('Detecting IDE devices ...', 1100);
   append(' 1 fixed disk, 1 CD-ROM', 500);
   line('Mouse initialized on COM1', 450);
+  // Server-sent story lines (e.g. the improper-shutdown stamp). The disk
+  // check that follows is generic chrome; the WORDING of the warning — and
+  // its timestamp — belongs to the season content.
+  if (warning && warning.length > 0) {
+    line('', 400);
+    for (const w of warning) line(w, 800);
+    line('Checking drive C: for errors', 350);
+    for (let i = 0; i < 6; i++) append(' .', 170);
+    append(' done. No errors found.', 700);
+  }
   line('', 300);
   line('Starting Microtech Horizons 97 ...', 1700);
   return frames;
 }
-
-const BOOT_FRAMES = buildBootFrames();
 
 export function BootSequence() {
   const { view, send, client, refreshView } = useGame();
@@ -143,20 +151,24 @@ export function BootSequence() {
     return () => window.clearTimeout(t);
   }, []);
 
+  // The frame schedule includes any server-sent boot warning (story data —
+  // the view is already loaded by the time this component mounts).
+  const frames = useMemo(() => buildBootFrames(view?.bootWarning), [view]);
+
   useEffect(() => {
     if (phase !== 'boot' || !fontsReady) return;
-    if (frameIdx >= BOOT_FRAMES.length) {
+    if (frameIdx >= frames.length) {
       const t = window.setTimeout(() => setPhase('login'), 400);
       return () => window.clearTimeout(t);
     }
-    const t = window.setTimeout(() => setFrameIdx((i) => i + 1), BOOT_FRAMES[frameIdx].ms);
+    const t = window.setTimeout(() => setFrameIdx((i) => i + 1), frames[frameIdx].ms);
     return () => window.clearTimeout(t);
-  }, [phase, frameIdx, fontsReady]);
+  }, [phase, frameIdx, fontsReady, frames]);
 
-  const done = frameIdx >= BOOT_FRAMES.length;
+  const done = frameIdx >= frames.length;
   const bootText = useMemo(
-    () => BOOT_FRAMES[Math.min(frameIdx, BOOT_FRAMES.length - 1)].text,
-    [frameIdx],
+    () => frames[Math.min(frameIdx, frames.length - 1)].text,
+    [frames, frameIdx],
   );
 
   const submit = async (e: FormEvent) => {
@@ -198,7 +210,7 @@ export function BootSequence() {
 
   if (phase === 'boot') {
     return (
-      <BootScreen onClick={() => setFrameIdx(BOOT_FRAMES.length)}>
+      <BootScreen onClick={() => setFrameIdx(frames.length)}>
         {bootText}
         {!done && (
           <>

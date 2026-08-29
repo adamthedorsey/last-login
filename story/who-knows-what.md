@@ -30,7 +30,10 @@
 - **S11 — Jonathan's pattern.** He reads other people's private words and
   answers *as them* — Rebecca lived it (mail, letters) years before.
 - **S12 — The 2:14 AM login.** Someone used Casey's PC the night she
-  disappeared.
+  disappeared — and killed the power at 2:31 AM instead of shutting down.
+  The BIOS prints the improper-shutdown stamp on every cold boot: the
+  player's very first screen contains the finale's timestamp, meaningless
+  until the diary's file properties give it teeth.
 
 ## The matrix
 

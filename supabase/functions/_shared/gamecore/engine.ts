@@ -112,6 +112,7 @@ export function toStateView(content: SeasonContent, state: PlayerState): StateVi
     loginHint: content.computer.loginHint,
     saverText: content.computer.saverText,
     imScreenname: content.computer.imScreenname,
+    bootWarning: content.computer.bootWarning,
     wallpaper: content.wallpaper,
     homeUrl: content.homeUrl,
     loggedIn: state.loggedIn,
