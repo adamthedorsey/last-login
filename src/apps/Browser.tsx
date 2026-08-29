@@ -15,13 +15,6 @@ const FONTS: Record<string, string> = {
 
 import { VoyagerLogo } from './VoyagerSplash';
 
-const sweep = keyframes`
-  0%   { transform: translate(-10px, -10px); opacity: 0; }
-  20%  { opacity: 1; }
-  60%  { transform: translate(30px, 26px); opacity: 1; }
-  100% { transform: translate(34px, 30px); opacity: 0; }
-`;
-
 const ThrobBox = styled(Frame).attrs({ variant: 'well' })`
   width: 40px;
   height: 40px;
@@ -29,18 +22,6 @@ const ThrobBox = styled(Frame).attrs({ variant: 'well' })`
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
-`;
-
-const Comet = styled.div`
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 6px 2px #aaccff;
-  animation: ${sweep} 0.9s linear infinite;
 `;
 
 // ---------------------------------------------------------------------------
@@ -963,8 +944,7 @@ export function Browser({ windowId, props }: AppWindowProps) {
         ))}
         <div style={{ marginLeft: 'auto' }}>
           <ThrobBox>
-            <VoyagerLogo size={32} />
-            {loading && <Comet />}
+            <VoyagerLogo size={32} sailing={loading} />
           </ThrobBox>
         </div>
       </NavRow>
