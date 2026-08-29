@@ -19,6 +19,8 @@ const FORBIDDEN = [
   'overlook. 10', // gated IM line
   'Dana believed Casey', // discovery description
   'SEASON1', // content export name
+  'generateNeighborhood', // web generator (server-side content tooling)
+  'radioactive_dave', // generated-web identity pool
 ];
 
 function* walk(dir) {

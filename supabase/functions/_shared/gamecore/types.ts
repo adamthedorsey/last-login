@@ -53,7 +53,16 @@ export type PageBlock =
   | { t: 'counter'; value: number }
   | { t: 'marquee'; text: string }
   /** The site's search form, rendered by the in-game browser at this spot. */
-  | { t: 'searchform' };
+  | { t: 'searchform' }
+  // --- 1997 web furniture (rendered by the in-game browser) ---
+  | { t: 'divider'; kind?: 'rainbow' | 'dots' | 'zigzag' }
+  | { t: 'badges'; labels: string[] }
+  | { t: 'construction' }
+  | { t: 'webring'; ring: string; prevUrl: string; nextUrl: string }
+  | { t: 'blink'; text: string }
+  | { t: 'midi'; file: string }
+  | { t: 'guestbook'; count: number }
+  | { t: 'updated'; date: string };
 
 export interface PageStyle {
   bg: string;
@@ -62,6 +71,8 @@ export interface PageStyle {
   font: 'serif' | 'sans' | 'mono';
   centered?: boolean;
   accent?: string;
+  /** Tiled background texture, the GeoCities way. */
+  bgTile?: 'stars' | 'clouds' | 'plaid' | 'marble' | 'hearts' | 'grid';
 }
 
 export interface ItemMeta {

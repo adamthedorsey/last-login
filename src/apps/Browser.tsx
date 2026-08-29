@@ -251,6 +251,84 @@ const ImgPlaceholder = styled.div`
   max-width: 420px;
 `;
 
+// --- 1997 web furniture ------------------------------------------------------
+
+const blinker = keyframes`
+  50% { visibility: hidden; }
+`;
+
+const BlinkText = styled.div`
+  font-weight: bold;
+  margin: 8px 0;
+  animation: ${blinker} 1s steps(1) infinite;
+`;
+
+const Badge = styled.span`
+  display: inline-block;
+  width: 88px;
+  height: 31px;
+  line-height: 29px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-align: center;
+  color: #fff;
+  border: 2px outset #ddd;
+  margin: 2px;
+  overflow: hidden;
+  vertical-align: middle;
+`;
+
+const BADGE_COLORS = ['#183a8a', '#7a1030', '#0a5a30', '#5a2a7a', '#8a5a10', '#101010'];
+
+const RingBox = styled.div`
+  border: 2px ridge #888;
+  padding: 6px 12px;
+  margin: 16px auto 8px;
+  max-width: 420px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.85);
+  color: #111;
+`;
+
+const Stripes = styled.div`
+  height: 18px;
+  margin: 12px auto;
+  max-width: 440px;
+  background: repeating-linear-gradient(-45deg, #f0c000 0 12px, #111 12px 24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+/** Tiled page backgrounds via inline SVG — the GeoCities look, zero assets. */
+function tileCss(tile?: string): React.CSSProperties {
+  const svg = (body: string, w = 40, h = 40) => ({
+    backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>${body}</svg>`,
+    )}")`,
+  });
+  switch (tile) {
+    case 'stars':
+      return svg(`<rect width='40' height='40' fill='#000022'/><circle cx='8' cy='9' r='1.3' fill='#fff'/><circle cx='30' cy='20' r='1' fill='#aaf'/><circle cx='18' cy='33' r='1.4' fill='#ffc'/>`);
+    case 'clouds':
+      return svg(`<rect width='60' height='40' fill='#aad4f0'/><ellipse cx='20' cy='16' rx='14' ry='7' fill='#fff' opacity='.9'/><ellipse cx='45' cy='30' rx='11' ry='6' fill='#fff' opacity='.75'/>`, 60);
+    case 'plaid':
+      return svg(`<rect width='40' height='40' fill='#e8e0d0'/><rect width='40' height='8' y='6' fill='#c05050' opacity='.4'/><rect width='8' height='40' x='6' fill='#4050a0' opacity='.35'/>`);
+    case 'marble':
+      return svg(`<rect width='60' height='60' fill='#d8d8d8'/><path d='M0 20 Q20 8 34 22 T60 18' stroke='#b8b8b8' fill='none'/><path d='M0 44 Q26 34 44 48 T60 40' stroke='#c4c4c4' fill='none'/>`, 60, 60);
+    case 'hearts':
+      return svg(`<rect width='44' height='44' fill='#ffe4ee'/><text x='6' y='18' font-size='12'>💗</text><text x='26' y='38' font-size='9'>💗</text>`, 44, 44);
+    case 'grid':
+      return svg(`<rect width='24' height='24' fill='#f4f4f4'/><path d='M0 0H24M0 0V24' stroke='#c8d8c8'/>`, 24, 24);
+    default:
+      return {};
+  }
+}
+
 // ---------------------------------------------------------------------------
 // about: page (fictional homage to a 90s about screen)
 // ---------------------------------------------------------------------------
@@ -392,7 +470,8 @@ function Blocks({
     <div
       style={{
         minHeight: '100%',
-        background: style?.bg ?? '#fff',
+        backgroundColor: style?.bg ?? '#fff',
+        ...tileCss(style?.bgTile),
         color: style?.fg ?? '#000',
         fontFamily: FONTS[style?.font ?? 'serif'],
         textAlign: style?.centered ? 'center' : 'left',
@@ -480,6 +559,84 @@ function Block({
         <MarqueeOuter>
           <MarqueeInner>{b.text}</MarqueeInner>
         </MarqueeOuter>
+      );
+    case 'blink':
+      return <BlinkText>{b.text}</BlinkText>;
+    case 'divider': {
+      const styles: Record<string, React.CSSProperties> = {
+        rainbow: {
+          height: 6,
+          background:
+            'linear-gradient(90deg, #f00 0 16%, #f90 16% 32%, #ff0 32% 48%, #0a0 48% 64%, #06f 64% 82%, #a0f 82% 100%)',
+        },
+        dots: {
+          height: 8,
+          background: 'radial-gradient(circle 3px at 8px 4px, currentColor 3px, transparent 3px)',
+          backgroundSize: '16px 8px',
+          opacity: 0.6,
+        },
+        zigzag: {
+          height: 8,
+          background:
+            'linear-gradient(135deg, currentColor 25%, transparent 25%) 0 0/12px 8px, linear-gradient(45deg, transparent 75%, currentColor 75%) 0 0/12px 8px',
+          opacity: 0.6,
+        },
+      };
+      return <div style={{ margin: '14px auto', maxWidth: 440, ...styles[b.kind ?? 'rainbow'] }} />;
+    }
+    case 'construction':
+      return (
+        <Stripes>
+          <span style={{ background: '#111', color: '#f0c000', fontSize: 11, fontWeight: 'bold', padding: '1px 8px', letterSpacing: 2, fontFamily: 'Arial, sans-serif' }}>
+            ⚠ UNDER CONSTRUCTION ⚠
+          </span>
+        </Stripes>
+      );
+    case 'badges':
+      return (
+        <div style={{ margin: '10px 0' }}>
+          {b.labels.map((label, i) => (
+            <Badge key={i} style={{ background: BADGE_COLORS[i % BADGE_COLORS.length] }}>
+              {label}
+            </Badge>
+          ))}
+        </div>
+      );
+    case 'webring':
+      return (
+        <RingBox>
+          <b>{b.ring}</b>
+          <br />
+          [{' '}
+          <a href="#" style={{ color: '#0000cc' }} onClick={(e) => { e.preventDefault(); onNavigate(b.prevUrl); }}>
+            ← prev
+          </a>{' '}
+          |{' '}
+          <a href="#" style={{ color: '#0000cc' }} onClick={(e) => { e.preventDefault(); onNavigate(b.nextUrl); }}>
+            next →
+          </a>{' '}
+          ] — this site is proud to be part of the ring
+        </RingBox>
+      );
+    case 'midi':
+      return (
+        <div style={{ display: 'inline-block', border: '2px inset #999', padding: '4px 10px', margin: '8px 0', fontFamily: "'Courier New', monospace", fontSize: 12, background: '#e8e8e8', color: '#222' }}>
+          ♪ now playing: {b.file} — [■ stop] (it will not stop)
+        </div>
+      );
+    case 'guestbook':
+      return (
+        <p style={{ margin: '8px 0', fontSize: 14 }}>
+          📖{' '}
+          <span style={{ textDecoration: 'underline' }}>Sign my Guestbook!</span> ·{' '}
+          <span style={{ textDecoration: 'underline' }}>View Guestbook ({b.count} entries)</span>
+        </p>
+      );
+    case 'updated':
+      return (
+        <p style={{ fontSize: 11, opacity: 0.75, margin: '10px 0 0', fontFamily: 'Arial, sans-serif' }}>
+          This page was last updated {b.date}.
+        </p>
       );
     default:
       return null;

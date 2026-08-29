@@ -17,6 +17,14 @@
  */
 
 import type { SeasonContent } from './types.ts';
+import { generateNeighborhood } from './webgen.ts';
+
+// Procedurally generated GeoCities-style filler web (fixed seed = stable
+// world). Casey's and Mel's hand-authored pages headline the directory.
+const GENERATED_WEB = generateNeighborhood(19971018, 8, [
+  { title: "~*~ casey's corner ~*~", url: 'www.citypages.net/~sunflwrc81' },
+  { title: "mel's page", url: 'www.citypages.net/~melwave' },
+]);
 
 export const SEASON1: SeasonContent = {
   slug: 'season-1',
@@ -1023,6 +1031,13 @@ The Civil War was a war that happened in America between 1861 and
       meta: { url: 'www.solarflareband.net' },
     },
     {
+      id: 'bm.citypages',
+      kind: 'bookmark',
+      name: 'CityPages directory',
+      parentId: 'folder.bookmarks',
+      meta: { url: 'www.citypages.net' },
+    },
+    {
       id: 'bm.ledger',
       kind: 'bookmark',
       name: 'Maple Glen Ledger',
@@ -1084,6 +1099,7 @@ The Civil War was a war that happened in America between 1861 and
           { t: 'sub', text: 'cool links' },
           { t: 'link', text: 'SOLAR FLARE official site', url: 'www.solarflareband.net' },
           { t: 'link', text: "mel's page (she updates it NEVER)", url: 'www.citypages.net/~melwave' },
+          { t: 'link', text: 'the CityPages member directory (find ur neighbors)', url: 'www.citypages.net' },
           { t: 'link', text: 'SearchHound', url: 'www.searchhound.net' },
           { t: 'hr' },
           { t: 'small', text: 'sign my guestbook!! (guestbook broken since june. it counts the thought.)' },
@@ -1173,5 +1189,8 @@ The Civil War was a war that happened in America between 1861 and
         ],
       },
     },
+
+    // The generated CityPages neighborhood + member directory (see webgen.ts).
+    ...GENERATED_WEB,
   ],
 };
