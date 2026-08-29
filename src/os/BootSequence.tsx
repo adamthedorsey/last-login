@@ -16,6 +16,16 @@ const BootScreen = styled.div`
   cursor: pointer;
 `;
 
+// The one sanctioned blink: a DOS block cursor, snapping — never fading.
+const Cursor = styled.span`
+  animation: boot-blink 0.9s steps(1) infinite;
+  @keyframes boot-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+`;
+
 const LoginBackdrop = styled.div`
   height: 100vh;
   background: #008080;
@@ -64,19 +74,51 @@ const Row = styled.div`
   }
 `;
 
-const BOOT_LINES = [
-  'Microtech BIOS v2.11  (C) 1996 Microtech Systems',
-  'Memory Test: 32768 KB ......... OK',
-  'Detecting IDE devices ... 1 fixed disk, 1 CD-ROM',
-  'Mouse initialized on COM1',
-  '',
-  'Starting Microtech Horizons 97 ...',
-];
+// The POST, frame by frame. Real 1997 boots were slow and UNEVEN: the memory
+// test counted up, IDE detection hung for a beat, then lines snapped in.
+// Every frame is the full screen text plus how long to hold it — one flat
+// schedule keeps the timing deterministic and the whole thing click-skippable.
+interface BootFrame {
+  text: string;
+  ms: number;
+}
+
+function buildBootFrames(): BootFrame[] {
+  const frames: BootFrame[] = [];
+  let cur = '';
+  const hold = (ms: number) => frames.push({ text: cur, ms });
+  const line = (text: string, ms: number) => {
+    cur = cur ? `${cur}\n${text}` : text;
+    hold(ms);
+  };
+  const append = (text: string, ms: number) => {
+    cur += text;
+    hold(ms);
+  };
+
+  line('Microtech BIOS v2.11  (C) 1996 Microtech Systems', 600);
+  line('CPU Type: MT-586, 133 MHz', 450);
+  line('Memory Test: 0 KB', 55);
+  for (let kb = 2048; kb <= 32768; kb += 2048) {
+    cur = cur.replace(/Memory Test: \d+ KB$/, `Memory Test: ${kb} KB`);
+    hold(55);
+  }
+  append(' ......... OK', 550);
+  line('', 150);
+  line('Detecting IDE devices ...', 1100);
+  append(' 1 fixed disk, 1 CD-ROM', 500);
+  line('Mouse initialized on COM1', 450);
+  line('', 300);
+  line('Starting Microtech Horizons 97 ...', 1700);
+  return frames;
+}
+
+const BOOT_FRAMES = buildBootFrames();
 
 export function BootSequence() {
   const { view, send, client, refreshView } = useGame();
   const [phase, setPhase] = useState<'boot' | 'login'>('boot');
-  const [lineCount, setLineCount] = useState(0);
+  const [frameIdx, setFrameIdx] = useState(0);
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -103,15 +145,19 @@ export function BootSequence() {
 
   useEffect(() => {
     if (phase !== 'boot' || !fontsReady) return;
-    if (lineCount >= BOOT_LINES.length) {
-      const t = window.setTimeout(() => setPhase('login'), 700);
+    if (frameIdx >= BOOT_FRAMES.length) {
+      const t = window.setTimeout(() => setPhase('login'), 400);
       return () => window.clearTimeout(t);
     }
-    const t = window.setTimeout(() => setLineCount((c) => c + 1), 260);
+    const t = window.setTimeout(() => setFrameIdx((i) => i + 1), BOOT_FRAMES[frameIdx].ms);
     return () => window.clearTimeout(t);
-  }, [phase, lineCount, fontsReady]);
+  }, [phase, frameIdx, fontsReady]);
 
-  const bootText = useMemo(() => BOOT_LINES.slice(0, lineCount).join('\n'), [lineCount]);
+  const done = frameIdx >= BOOT_FRAMES.length;
+  const bootText = useMemo(
+    () => BOOT_FRAMES[Math.min(frameIdx, BOOT_FRAMES.length - 1)].text,
+    [frameIdx],
+  );
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -152,9 +198,14 @@ export function BootSequence() {
 
   if (phase === 'boot') {
     return (
-      <BootScreen onClick={() => setLineCount(BOOT_LINES.length)}>
+      <BootScreen onClick={() => setFrameIdx(BOOT_FRAMES.length)}>
         {bootText}
-        {lineCount < BOOT_LINES.length ? '\n█' : ''}
+        {!done && (
+          <>
+            {'\n'}
+            <Cursor>█</Cursor>
+          </>
+        )}
       </BootScreen>
     );
   }

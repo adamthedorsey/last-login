@@ -29,7 +29,9 @@ If not, don't build it that way.
   screen saver (constant-velocity linear drift + stepped sprite frames only —
   no easing, ever).
 - Deliberate slowness is flavor (dial-up delays, splash screens) — keep each
-  under ~2.5s and always click-skippable.
+  under ~2.5s and always click-skippable. One exception: the cold-boot POST
+  runs ~6s with uneven, machine-like timing (memory count-up, IDE pause) —
+  it too must stay click-skippable.
 
 ### Typography
 - OS chrome: `ms_sans_serif` bitmap font (from react95). Don't introduce other
