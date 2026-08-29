@@ -80,7 +80,7 @@ src/
                original pixel icon set, synthesized UI sounds (mutable)
   apps/        applications registered in a small AppDefinition registry:
                File Explorer, Notepad, Picture Viewer, Mail,
-               BuddyLine (IM), NetVoyager (browser), Recycle Bin,
+               Chat (BuddyLine network), NetVoyager (browser), Recycle Bin,
                Case Notes, and accessories: Calculator, Calendar,
                Solitaire, Minefield, Paint, CD Player, Clock
   dev/         DEV-only panel (reset, state dump, grant discovery, skip login)
@@ -237,7 +237,7 @@ supabase test db      # pgTAP RLS tests (needs local stack)
 3. **WestWind Mail** — Dana's *"please write back"* (Oct 11): Casey said she was
    meeting Mel at the overlook; Mel provably wasn't there. → discovery **The
    overlook plan** (a quiet "case notes updated" toast).
-4. **BuddyLine** — a buddy named **GhostBridge** now stands out; its saved log
+4. **Chat** — a buddy named **GhostBridge** now stands out; its saved log
    from the night of Oct 10 shows someone arranging the meeting, proving identity
    with a secret only Mel should know, and demanding the logs be deleted. →
    **GhostBridge**.

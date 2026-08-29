@@ -48,7 +48,7 @@ export function registerAllApps(): void {
   });
   registerApp({
     id: 'buddyline',
-    name: 'BuddyLine',
+    name: 'Chat',
     icon: 'im-app',
     component: BuddyLine,
     defaultSize: { w: 620, h: 460 },

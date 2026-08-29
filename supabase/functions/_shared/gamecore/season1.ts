@@ -965,7 +965,7 @@ The Civil War was a war that happened in America between 1861 and
     {
       id: 'shortcut.buddyline',
       kind: 'shortcut',
-      name: 'BuddyLine',
+      name: 'Chat',
       icon: 'im-app',
       meta: { appId: 'buddyline', desktop: { x: 120, y: 216 } },
     },

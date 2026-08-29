@@ -57,10 +57,10 @@ If not, don't build it that way.
 - Never reproduce real logos, trademarks, or brand lookalikes (no Windows flag,
   Netscape N, AOL, etc.).
 - Naming policy: OS accessories use PLAIN GENERIC names, exactly like Win95 did
-  (Calculator, Calendar, Notepad, Mail, Paint, CD Player, Clock, Picture
+  (Calculator, Calendar, Notepad, Mail, Chat, Paint, CD Player, Clock, Picture
   Viewer). Fictional brands are only for things that were branded products or
   services in 1997: Microtech Horizons (OS), WestWind (ISP/email service),
-  BuddyLine (IM), NetVoyager (browser), SearchHound (search), CityPages,
+  BuddyLine (the IM network Chat connects to), NetVoyager (browser), SearchHound (search), CityPages,
   MapFinder, Solar Flare (band), Meridian Digital
   Systems, Kava/Helios, Cosmoid/Prism.
 

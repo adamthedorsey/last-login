@@ -107,10 +107,14 @@ const ICONS: Record<string, Px[]> = {
     [10, 14, 12, 4, W],
   ],
   'im-app': [
-    [3, 5, 18, 12, '#fffa9d'],
-    [5, 17, 4, 4, '#fffa9d'],
-    [11, 13, 18, 12, '#9dd8ff'],
-    [23, 25, 4, 3, '#9dd8ff'],
+    // two buddies, side by side
+    [19, 4, 7, 7, '#4a6fa5'], // back buddy: head
+    [16, 12, 13, 12, '#4a6fa5'], // back buddy: shoulders
+    [18, 12, 9, 2, '#3a5a8a'], // shoulder shading
+    [7, 8, 7, 7, '#e8c04a'], // front buddy: head
+    [4, 16, 13, 12, '#e8c04a'], // front buddy: shoulders
+    [6, 16, 9, 2, '#c9a227'], // shoulder shading
+    [28, 6, 2, 2, W], // a little "online" spark
   ],
   im: [
     [4, 6, 24, 14, W],
