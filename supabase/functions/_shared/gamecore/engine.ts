@@ -18,6 +18,7 @@ import type {
   GameAction,
   ItemContent,
   ItemSummary,
+  PlayerDocument,
   PlayerState,
   Requirement,
   SeasonContent,
@@ -200,6 +201,41 @@ function applyOpenEffects(
 }
 
 // ---------------------------------------------------------------------------
+// Player documents (the player's own Notepad files, saved to the desktop)
+// ---------------------------------------------------------------------------
+
+const MAX_PLAYER_DOCS = 24;
+const MAX_DOC_TEXT = 20000;
+
+function sanitizeDocName(raw: string): string {
+  let name = raw.replace(/[\p{Cc}\\/:*?"<>|]/gu, '').trim().slice(0, 40);
+  if (!name) name = 'untitled';
+  if (!name.includes('.')) name += '.txt';
+  return name;
+}
+
+function docSummary(doc: PlayerDocument, index: number): ItemSummary {
+  return {
+    id: doc.id,
+    kind: 'document',
+    name: doc.name,
+    icon: 'doc',
+    editable: true,
+    meta: {
+      createdAt: doc.createdAt,
+      modifiedAt: doc.modifiedAt,
+      sizeKb: Math.max(1, Math.round(doc.text.length / 1024)),
+      // Player files stack in their own desktop column(s), right of the story icons.
+      desktop: { x: 312 + Math.floor(index / 5) * 96, y: 120 + (index % 5) * 96 },
+    },
+  };
+}
+
+function playerDoc(state: PlayerState, id: string): PlayerDocument | undefined {
+  return (state.documents ?? []).find((d) => d.id === id);
+}
+
+// ---------------------------------------------------------------------------
 // Search
 // ---------------------------------------------------------------------------
 
@@ -297,6 +333,7 @@ export function handleAction(
       const items = content.items
         .filter((i) => i.meta?.desktop && isAccessible(content, state, i))
         .map((i) => toSummary(state, i));
+      (state.documents ?? []).forEach((d, i) => items.push(docSummary(d, i)));
       return done({ type: 'desktop', items });
     }
 
@@ -312,6 +349,16 @@ export function handleAction(
     }
 
     case 'open': {
+      // Player-authored documents open with full (editable) content.
+      const doc = playerDoc(state, action.itemId);
+      if (doc) {
+        const idx = (state.documents ?? []).indexOf(doc);
+        return done({
+          type: 'open',
+          ok: true,
+          item: { ...docSummary(doc, idx), body: { text: doc.text } },
+        });
+      }
       const item = itemById(content, action.itemId);
       if (!item || !isAccessible(content, state, item)) {
         return done({ type: 'open', ok: false, error: 'not_found' });
@@ -370,6 +417,39 @@ export function handleAction(
     case 'search': {
       events.push({ type: 'search', payload: { query: action.query.slice(0, 200) } });
       return done({ type: 'search', results: searchPages(content, state, action.query) });
+    }
+
+    case 'saveDocument': {
+      const docs = (state.documents ??= []);
+      const name = sanitizeDocName(action.name);
+      const text = action.text.slice(0, MAX_DOC_TEXT);
+      const nowDate = content.clock.now.slice(0, 10);
+
+      if (action.docId) {
+        const doc = playerDoc(state, action.docId);
+        if (!doc) return done({ type: 'document', ok: false, error: 'not_found' });
+        doc.name = name;
+        doc.text = text;
+        doc.modifiedAt = nowDate;
+        events.push({ type: 'save_document', payload: { docId: doc.id } });
+        return done({ type: 'document', ok: true, item: docSummary(doc, docs.indexOf(doc)) });
+      }
+
+      if (docs.length >= MAX_PLAYER_DOCS) {
+        return done({ type: 'document', ok: false, error: 'too_many' });
+      }
+      const seq = (state.docSeq ?? 0) + 1;
+      state.docSeq = seq;
+      const doc: PlayerDocument = {
+        id: `playerdoc.${seq}`,
+        name,
+        text,
+        createdAt: nowDate,
+        modifiedAt: nowDate,
+      };
+      docs.push(doc);
+      events.push({ type: 'save_document', payload: { docId: doc.id } });
+      return done({ type: 'document', ok: true, item: docSummary(doc, docs.length - 1) });
     }
 
     case 'getBuddies': {

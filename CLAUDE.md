@@ -79,7 +79,8 @@ If not, don't build it that way.
   chain letters, guestbooks. Mundane beats suspicious; never add game-y UI
   (no glowing clues, no objective markers).
 - The one sanctioned fourth-wall surface is quiet system feedback: the small
-  "Case notes updated" toast, Case Notes, and the end-of-demo dialog.
+  discovery toast and the end-of-demo dialog. Player note-taking is diegetic:
+  Notepad edits and saves real player documents to the desktop (saveDocument).
 
 ### Web pages (in-game)
 - Author pages ONLY as `PageBlock` data in season content — never raw HTML

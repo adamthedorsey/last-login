@@ -175,6 +175,15 @@ export interface SeasonContent {
 // Player state (persisted server-side, per player per season)
 // ---------------------------------------------------------------------------
 
+/** A document the PLAYER wrote (via Notepad) — their own notes, saved to the desktop. */
+export interface PlayerDocument {
+  id: string;
+  name: string;
+  text: string;
+  createdAt: string;
+  modifiedAt: string;
+}
+
 export interface PlayerState {
   loggedIn: boolean;
   opened: string[];
@@ -185,6 +194,9 @@ export interface PlayerState {
   passwordAttempts: Record<string, number>;
   /** Real-world epoch ms until which a target refuses attempts. */
   lockedUntil: Record<string, number>;
+  /** Player-authored files. Older saved states may lack these fields. */
+  documents?: PlayerDocument[];
+  docSeq?: number;
 }
 
 export function newPlayerState(): PlayerState {
@@ -197,6 +209,8 @@ export function newPlayerState(): PlayerState {
     ended: false,
     passwordAttempts: {},
     lockedUntil: {},
+    documents: [],
+    docSeq: 0,
   };
 }
 
@@ -214,6 +228,7 @@ export type GameAction =
   | { type: 'visit'; url: string }
   | { type: 'search'; query: string }
   | { type: 'getBuddies' }
+  | { type: 'saveDocument'; docId?: string; name: string; text: string }
   | { type: 'resetSeason' };
 
 // ---------------------------------------------------------------------------
@@ -232,6 +247,8 @@ export interface ItemSummary {
   meta?: SafeMeta;
   /** True when the item needs a password the player hasn't provided yet. */
   locked?: boolean;
+  /** True for player-authored documents (writable in Notepad). */
+  editable?: boolean;
 }
 
 export interface ItemContent extends ItemSummary {
@@ -304,6 +321,7 @@ export type ActionResult =
     }
   | { type: 'search'; results: SearchResult[] }
   | { type: 'buddies'; buddies: BuddyView[] }
+  | { type: 'document'; ok: boolean; item?: ItemSummary; error?: string }
   | { type: 'reset'; view: StateView }
   | { type: 'error'; error: string };
 

@@ -145,11 +145,8 @@ export function DesktopShell() {
       <ToastStack>
         {toasts.map((t) => (
           <ToastCard key={t.id} onClick={() => dismissToast(t.id)}>
-            <WindowHeader style={{ fontSize: 13 }}>Case notes updated</WindowHeader>
-            <WindowContent style={{ padding: 8 }}>
-              <b>{t.title}</b>
-              <div style={{ marginTop: 4 }}>{t.description}</div>
-            </WindowContent>
+            <WindowHeader style={{ fontSize: 13 }}>{t.title}</WindowHeader>
+            <WindowContent style={{ padding: 8 }}>{t.description}</WindowContent>
           </ToastCard>
         ))}
       </ToastStack>

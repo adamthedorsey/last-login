@@ -43,15 +43,29 @@ const VALID_ACTIONS = new Set([
   'visit',
   'search',
   'getBuddies',
+  'saveDocument',
   'resetSeason',
 ]);
+
+// Per-field length caps; `text` is the player's own Notepad document.
+const FIELD_LIMITS: Record<string, number> = {
+  password: 500,
+  parentId: 500,
+  itemId: 500,
+  targetId: 500,
+  url: 500,
+  query: 500,
+  docId: 100,
+  name: 100,
+  text: 20000,
+};
 
 function parseAction(raw: unknown): GameAction | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const a = raw as Record<string, unknown>;
   if (typeof a.type !== 'string' || !VALID_ACTIONS.has(a.type)) return null;
-  for (const key of ['password', 'parentId', 'itemId', 'targetId', 'url', 'query']) {
-    if (key in a && (typeof a[key] !== 'string' || (a[key] as string).length > 500)) return null;
+  for (const [key, limit] of Object.entries(FIELD_LIMITS)) {
+    if (key in a && (typeof a[key] !== 'string' || (a[key] as string).length > limit)) return null;
   }
   return a as unknown as GameAction;
 }

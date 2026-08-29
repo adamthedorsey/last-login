@@ -7,7 +7,6 @@ import { BuddyLine } from './BuddyLine';
 import { Browser } from './Browser';
 import { RecycleBin } from './RecycleBin';
 import { Solitaire } from './Solitaire';
-import { CaseNotes } from './CaseNotes';
 import { VoyagerSplash } from './VoyagerSplash';
 import { Calculator } from './Calculator';
 import { Calendar } from './Calendar';
@@ -77,14 +76,6 @@ export function registerAllApps(): void {
     icon: 'game',
     component: Solitaire,
     defaultSize: { w: 640, h: 560 },
-    singleton: true,
-  });
-  registerApp({
-    id: 'casenotes',
-    name: 'Case Notes',
-    icon: 'notes',
-    component: CaseNotes,
-    defaultSize: { w: 420, h: 400 },
     singleton: true,
   });
   // --- Accessories (the Win95-style default apps) ---

@@ -151,3 +151,60 @@ describe('analytics events', () => {
     expect(again.events).toHaveLength(0);
   });
 });
+
+describe('player documents (Notepad saves)', () => {
+  it('requires login', () => {
+    const { result } = run(newPlayerState(), {
+      type: 'saveDocument',
+      name: 'notes.txt',
+      text: 'hi',
+    });
+    expect(result).toMatchObject({ type: 'error', error: 'not_logged_in' });
+  });
+
+  it('creates a document that appears on the desktop and opens editable', () => {
+    let s = loggedInState();
+    const saved = run(s, { type: 'saveDocument', name: 'my notes', text: 'GhostBridge = ???' });
+    s = saved.state;
+    expect(saved.result).toMatchObject({
+      type: 'document',
+      ok: true,
+      item: { name: 'my notes.txt', editable: true },
+    });
+    const desktop = run(s, { type: 'getDesktop' }).result;
+    if (desktop.type !== 'desktop') throw new Error('bad result');
+    const doc = desktop.items.find((i) => i.name === 'my notes.txt');
+    expect(doc?.editable).toBe(true);
+
+    const open = run(s, { type: 'open', itemId: doc!.id }).result;
+    if (open.type !== 'open' || !open.item) throw new Error('bad result');
+    expect(open.item.body?.text).toBe('GhostBridge = ???');
+    expect(open.item.editable).toBe(true);
+  });
+
+  it('updates an existing document by id', () => {
+    let s = loggedInState();
+    const created = run(s, { type: 'saveDocument', name: 'a.txt', text: 'v1' });
+    s = created.state;
+    const id = created.result.type === 'document' ? created.result.item!.id : '';
+    s = run(s, { type: 'saveDocument', docId: id, name: 'a.txt', text: 'v2' }).state;
+    const open = run(s, { type: 'open', itemId: id }).result;
+    if (open.type !== 'open') throw new Error('bad result');
+    expect(open.item?.body?.text).toBe('v2');
+    expect(s.documents).toHaveLength(1);
+  });
+
+  it('sanitizes names and enforces the document cap', () => {
+    let s = loggedInState();
+    const weird = run(s, { type: 'saveDocument', name: '  ../..\\evil<>|  ', text: 'x' });
+    s = weird.state;
+    if (weird.result.type !== 'document') throw new Error('bad result');
+    expect(weird.result.item!.name).not.toMatch(/[\\/<>|]/);
+
+    for (let i = 0; i < 30; i++) {
+      s = run(s, { type: 'saveDocument', name: `n${i}.txt`, text: 'x' }).state;
+    }
+    const over = run(s, { type: 'saveDocument', name: 'one-more.txt', text: 'x' });
+    expect(over.result).toMatchObject({ type: 'document', ok: false, error: 'too_many' });
+  });
+});

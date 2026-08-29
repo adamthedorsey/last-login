@@ -81,7 +81,7 @@ src/
   apps/        applications registered in a small AppDefinition registry:
                File Explorer, Notepad, Picture Viewer, Mail,
                Chat (BuddyLine network), NetVoyager (browser), Recycle Bin,
-               Case Notes, and accessories: Calculator, Calendar,
+               and accessories: Calculator, Calendar,
                Solitaire, Minefield, Paint, CD Player, Clock
   dev/         DEV-only panel (reset, state dump, grant discovery, skip login)
 ```

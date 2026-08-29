@@ -64,6 +64,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (res.type === 'open' || res.type === 'visit') {
         noteDiscoveries(res.newDiscoveries, res.ended);
       }
+      if (res.type === 'document' && res.ok) {
+        // A player file was created/renamed — desktop views should refetch.
+        setContentEpoch((e) => e + 1);
+      }
       if (res.type === 'login' && res.ok && res.view) setView(res.view);
       if (res.type === 'reset') {
         setView(res.view);
