@@ -225,7 +225,7 @@ export function Taskbar({
       {startOpen && (
         <div ref={menuRef} data-no-deskmenu>
           <StartMenu>
-            <MenuBrand>HORIZONS 97</MenuBrand>
+            <MenuBrand>HORIZONS 95</MenuBrand>
             <MenuListItem
               onMouseEnter={() => setProgramsOpen(true)}
               onClick={() => setProgramsOpen((v) => !v)}

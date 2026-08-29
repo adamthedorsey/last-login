@@ -116,7 +116,7 @@ function buildBootFrames(warning?: string[]): BootFrame[] {
     append(' done. No errors found.', 700);
   }
   line('', 300);
-  line('Starting Microtech Horizons 97 ...', 1700);
+  line('Starting Microtech Horizons 95 ...', 1700);
   return frames;
 }
 
@@ -231,11 +231,11 @@ export function BootSequence() {
   return (
     <LoginBackdrop>
       <Brand>
-        <h1>Microtech Horizons 97</h1>
+        <h1>Microtech Horizons 95</h1>
         <p>Your world. Your desktop.</p>
       </Brand>
       <Window style={{ width: 380 }}>
-        <WindowHeader>Welcome to Horizons 97</WindowHeader>
+        <WindowHeader>Welcome to Horizons 95</WindowHeader>
         <WindowContent>
           <div>Type a password to log on to this computer.</div>
           <form onSubmit={submit}>

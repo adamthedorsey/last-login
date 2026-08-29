@@ -8,7 +8,7 @@ together what happened.
 Season 1: **Without a Trace** — Humble, West Virginia, October 1997. Casey
 Taylor, 16, has been missing for a week. Her machine is still on.
 
-Everything is fictional: the OS ("Microtech Horizons 97"), the ISP ("WestWind
+Everything is fictional: the OS ("Microtech Horizons 95"), the ISP ("WestWind
 Online"), the messenger ("BuddyLine"), the browser ("NetVoyager"), the search
 engine ("SearchHound"), every person and place. The visual language evokes 1997
 consumer computing without reproducing any real trademarks, logos, or interfaces.
@@ -35,7 +35,7 @@ The three concerns the project keeps separate, so future seasons can swap any on
 GAME ENGINE              SEASON CONTENT               OS / VISUAL THEME
 (pure rules)             (data)                       (React shell)
 supabase/functions/      supabase/functions/_shared/  src/os/*  src/apps/*
-_shared/gamecore/        gamecore/season1.ts          (React95 "Horizons 97")
+_shared/gamecore/        gamecore/season1.ts          (React95 "Horizons 95")
 engine.ts, types.ts      + generated supabase/seed.sql
 ```
 
@@ -162,7 +162,7 @@ Two deliberately separate concepts:
 
 - **Player account** (Supabase Auth — email OTP or anonymous "guest" play): who is
   saving progress. Handled by `src/AuthGate.tsx`, skipped entirely in dev mode.
-- **Computer login** (the Horizons 97 password prompt): a *story puzzle*, validated
+- **Computer login** (the Horizons 95 password prompt): a *story puzzle*, validated
   server-side like any other password target. Being authenticated as a player while
   stuck at the fictional login is the intended first experience.
 

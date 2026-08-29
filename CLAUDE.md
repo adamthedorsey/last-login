@@ -63,7 +63,11 @@ If not, don't build it that way.
 - Naming policy: OS accessories use PLAIN GENERIC names, exactly like Win95 did
   (Calculator, Calendar, Notepad, Mail, Chat, Paint, CD Player, Clock, Picture
   Viewer). Fictional brands are only for things that were branded products or
-  services in 1997: Microtech Horizons (OS), WestWind (ISP/email service),
+  services in 1997: Microtech Horizons 95 (the OS — version 95, exactly like
+  the real world's; the STORY year is 1997 and surfaces only through the
+  machine itself: the boot stamp, the tray clock, the content. That gap is a
+  deliberate difficulty knob for the login hint's "the year" — never
+  rebrand the OS to 97), WestWind (ISP/email service),
   BuddyLine (the IM network Chat connects to), NetVoyager (browser), SearchHound (search), CityPages,
   MapFinder, Solar Flare (band), Meridian Digital
   Systems, Kava/Helios, Cosmoid/Prism.
