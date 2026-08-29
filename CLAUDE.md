@@ -111,3 +111,5 @@ If not, don't build it that way.
 - An app may declare a startup `splash` in its registry entry (see NetVoyager)
   rather than overlaying one itself.
 - TypeScript strict; `npm run lint` (oxlint) warnings should not grow.
+- react95 caveat: `Slider` (and anything relying on `findDOMNode`) crashes
+  under React 19 — do not use it; prefer Select/NumberInput/buttons.

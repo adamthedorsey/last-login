@@ -14,6 +14,8 @@ import { Minefield } from './Minefield';
 import { Paintbox } from './Paintbox';
 import { DiscDeck } from './DiscDeck';
 import { ClockApp } from './ClockApp';
+import { Display } from './Display';
+import { SystemMonitor } from './SystemMonitor';
 
 export function registerAllApps(): void {
   registerApp({
@@ -117,6 +119,22 @@ export function registerAllApps(): void {
     icon: 'cd',
     component: DiscDeck,
     defaultSize: { w: 380, h: 420 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'display',
+    name: 'Display',
+    icon: 'display',
+    component: Display,
+    defaultSize: { w: 380, h: 470 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'sysmon',
+    name: 'System Monitor',
+    icon: 'sysmon',
+    component: SystemMonitor,
+    defaultSize: { w: 400, h: 430 },
     singleton: true,
   });
   registerApp({

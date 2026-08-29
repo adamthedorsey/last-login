@@ -182,6 +182,15 @@ export interface PlayerDocument {
   text: string;
   createdAt: string;
   modifiedAt: string;
+  /** When set, the doc lives inside a player folder instead of on the desktop. */
+  folderId?: string;
+}
+
+/** A folder the player created on the desktop. */
+export interface PlayerFolder {
+  id: string;
+  name: string;
+  createdAt: string;
 }
 
 export interface PlayerState {
@@ -197,6 +206,8 @@ export interface PlayerState {
   /** Player-authored files. Older saved states may lack these fields. */
   documents?: PlayerDocument[];
   docSeq?: number;
+  folders?: PlayerFolder[];
+  folderSeq?: number;
 }
 
 export function newPlayerState(): PlayerState {
@@ -229,6 +240,8 @@ export type GameAction =
   | { type: 'search'; query: string }
   | { type: 'getBuddies' }
   | { type: 'saveDocument'; docId?: string; name: string; text: string }
+  | { type: 'createFolder'; name: string }
+  | { type: 'moveDocument'; docId: string; folderId?: string }
   | { type: 'resetSeason' };
 
 // ---------------------------------------------------------------------------

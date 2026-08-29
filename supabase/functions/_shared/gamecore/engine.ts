@@ -19,6 +19,7 @@ import type {
   ItemContent,
   ItemSummary,
   PlayerDocument,
+  PlayerFolder,
   PlayerState,
   Requirement,
   SeasonContent,
@@ -205,11 +206,16 @@ function applyOpenEffects(
 // ---------------------------------------------------------------------------
 
 const MAX_PLAYER_DOCS = 24;
+const MAX_PLAYER_FOLDERS = 12;
 const MAX_DOC_TEXT = 20000;
 
+function stripName(raw: string, fallback: string): string {
+  const name = raw.replace(/[\p{Cc}\\/:*?"<>|]/gu, '').trim().slice(0, 40);
+  return name || fallback;
+}
+
 function sanitizeDocName(raw: string): string {
-  let name = raw.replace(/[\p{Cc}\\/:*?"<>|]/gu, '').trim().slice(0, 40);
-  if (!name) name = 'untitled';
+  let name = stripName(raw, 'untitled');
   if (!name.includes('.')) name += '.txt';
   return name;
 }
@@ -233,6 +239,25 @@ function docSummary(doc: PlayerDocument, index: number): ItemSummary {
 
 function playerDoc(state: PlayerState, id: string): PlayerDocument | undefined {
   return (state.documents ?? []).find((d) => d.id === id);
+}
+
+function playerFolder(state: PlayerState, id: string): PlayerFolder | undefined {
+  return (state.folders ?? []).find((f) => f.id === id);
+}
+
+function folderSummary(folder: PlayerFolder, index: number): ItemSummary {
+  return {
+    id: folder.id,
+    kind: 'folder',
+    name: folder.name,
+    icon: 'folder',
+    editable: true,
+    meta: {
+      createdAt: folder.createdAt,
+      path: `Desktop\\${folder.name}`,
+      desktop: { x: 408 + Math.floor(index / 5) * 96, y: 120 + (index % 5) * 96 },
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -333,11 +358,21 @@ export function handleAction(
       const items = content.items
         .filter((i) => i.meta?.desktop && isAccessible(content, state, i))
         .map((i) => toSummary(state, i));
-      (state.documents ?? []).forEach((d, i) => items.push(docSummary(d, i)));
+      (state.folders ?? []).forEach((f, i) => items.push(folderSummary(f, i)));
+      (state.documents ?? [])
+        .filter((d) => !d.folderId)
+        .forEach((d, i) => items.push(docSummary(d, i)));
       return done({ type: 'desktop', items });
     }
 
     case 'listChildren': {
+      // Player folders list their own documents.
+      if (playerFolder(state, action.parentId)) {
+        const items = (state.documents ?? [])
+          .filter((d) => d.folderId === action.parentId)
+          .map((d, i) => docSummary(d, i));
+        return done({ type: 'children', items });
+      }
       const parent = itemById(content, action.parentId);
       if (!parent || !isAccessible(content, state, parent) || !isUnlocked(state, parent)) {
         return done({ type: 'children', items: [] });
@@ -358,6 +393,11 @@ export function handleAction(
           ok: true,
           item: { ...docSummary(doc, idx), body: { text: doc.text } },
         });
+      }
+      const pf = playerFolder(state, action.itemId);
+      if (pf) {
+        const idx = (state.folders ?? []).indexOf(pf);
+        return done({ type: 'open', ok: true, item: folderSummary(pf, idx) });
       }
       const item = itemById(content, action.itemId);
       if (!item || !isAccessible(content, state, item)) {
@@ -450,6 +490,38 @@ export function handleAction(
       docs.push(doc);
       events.push({ type: 'save_document', payload: { docId: doc.id } });
       return done({ type: 'document', ok: true, item: docSummary(doc, docs.length - 1) });
+    }
+
+    case 'createFolder': {
+      const folders = (state.folders ??= []);
+      if (folders.length >= MAX_PLAYER_FOLDERS) {
+        return done({ type: 'document', ok: false, error: 'too_many' });
+      }
+      const seq = (state.folderSeq ?? 0) + 1;
+      state.folderSeq = seq;
+      const folder: PlayerFolder = {
+        id: `playerfolder.${seq}`,
+        name: stripName(action.name, 'New Folder'),
+        createdAt: content.clock.now.slice(0, 10),
+      };
+      folders.push(folder);
+      events.push({ type: 'create_folder', payload: { folderId: folder.id } });
+      return done({ type: 'document', ok: true, item: folderSummary(folder, folders.length - 1) });
+    }
+
+    case 'moveDocument': {
+      const doc = playerDoc(state, action.docId);
+      if (!doc) return done({ type: 'document', ok: false, error: 'not_found' });
+      if (action.folderId && !playerFolder(state, action.folderId)) {
+        return done({ type: 'document', ok: false, error: 'not_found' });
+      }
+      doc.folderId = action.folderId;
+      events.push({ type: 'move_document', payload: { docId: doc.id, folderId: action.folderId ?? null } });
+      return done({
+        type: 'document',
+        ok: true,
+        item: docSummary(doc, (state.documents ?? []).indexOf(doc)),
+      });
     }
 
     case 'getBuddies': {

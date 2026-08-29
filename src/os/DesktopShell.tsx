@@ -9,8 +9,7 @@ import { DesktopIcons } from './DesktopIcons';
 import { useGame } from '../game/gameContext';
 import { PIXEL_MONO } from '../theme';
 import { Screensaver } from './Screensaver';
-
-const SCREENSAVER_IDLE_MS = 3 * 60 * 1000;
+import { useSettingsStore } from './settingsStore';
 
 // Dev tooling is lazy-loaded strictly behind the DEV flag so neither the
 // panel nor anything it references can reach a production bundle.
@@ -21,7 +20,6 @@ const DevPanel = import.meta.env.DEV
 const Desk = styled.div`
   position: fixed;
   inset: 0;
-  background-color: #008080;
   overflow: hidden;
 `;
 
@@ -79,6 +77,9 @@ export function DesktopShell() {
   const [shutDown, setShutDown] = useState(false);
   const [saverOn, setSaverOn] = useState(false);
   const focusedId = topWindowId(windows);
+  const wallpaper = useSettingsStore((s) => s.wallpaper);
+  const saverMinutes = useSettingsStore((s) => s.saverMinutes);
+  const saverNonce = useSettingsStore((s) => s.saverNonce);
 
   // Screen saver: kicks in after idle, any input wakes it (Win95 behavior).
   // A short grace period stops the Start-menu click that launches it from
@@ -89,13 +90,19 @@ export function DesktopShell() {
     setSaverOn(true);
   };
   useEffect(() => {
+    if (saverNonce > 0) startSaver();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saverNonce]);
+
+  useEffect(() => {
+    const idleMs = saverMinutes * 60 * 1000;
     let timer = 0;
     const arm = () => {
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
         saverStartedAt.current = performance.now();
         setSaverOn(true);
-      }, SCREENSAVER_IDLE_MS);
+      }, idleMs);
     };
     const onActivity = () => {
       if (performance.now() - saverStartedAt.current > 600) setSaverOn(false);
@@ -111,7 +118,7 @@ export function DesktopShell() {
       window.removeEventListener('pointerdown', onActivity);
       window.removeEventListener('keydown', onActivity);
     };
-  }, []);
+  }, [saverMinutes]);
 
   // An app launch waiting on its startup splash (e.g. NetVoyager).
   const SplashComponent = pendingLaunch ? getApp(pendingLaunch.appId)?.splash : undefined;
@@ -134,7 +141,7 @@ export function DesktopShell() {
   }
 
   return (
-    <Desk>
+    <Desk style={{ backgroundColor: wallpaper }}>
       <DesktopIcons />
       <WindowLayer>
         {windows.map((w) => (

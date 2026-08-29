@@ -1,147 +1,139 @@
 /**
- * "Flying Floppies" — the Horizons 97 screen saver. An original homage to the
- * great absurd-household-objects savers of the era: winged 3.5" floppy disks
- * flap diagonally across a black screen while CDs drift and spin among them.
+ * Casey's screen saver — the one SHE configured: her name in pink, bouncing
+ * around the dark with a heart and a little star, corner to corner, forever.
  *
- * Motion is period-honest: constant-velocity linear drift (no easing) and a
- * two-frame stepped wing flap, like sprite animation.
+ * Constant-velocity linear motion with edge bounces (the classic bouncing-
+ * logo saver). No easing.
  */
-import { useMemo } from 'react';
-import styled, { keyframes } from 'styled-components';
+import { useEffect, useRef } from 'react';
+import styled from 'styled-components';
 
 const Black = styled.div`
   position: fixed;
   inset: 0;
-  background: #000;
-  z-index: 100010; /* above everything, taskbar included */
+  background: #0a000a;
+  z-index: 100010;
   overflow: hidden;
   cursor: none;
 `;
 
-const fly = keyframes`
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(-165vw, 95vw, 0); }
-`;
-
-const spin = keyframes`
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-`;
-
-// Two-frame wing flap, hard-stepped like a sprite sheet.
-const frameA = keyframes`
-  0%, 49.9% { opacity: 1; }
-  50%, 100% { opacity: 0; }
-`;
-const frameB = keyframes`
-  0%, 49.9% { opacity: 0; }
-  50%, 100% { opacity: 1; }
-`;
-
-const Flyer = styled.div<{ $dur: number; $delay: number; $scale: number }>`
+const Bouncer = styled.div`
   position: absolute;
+  top: 0;
+  left: 0;
   will-change: transform;
-  animation: ${fly} ${(p) => p.$dur}s linear infinite;
-  animation-delay: ${(p) => p.$delay}s;
-  transform-origin: center;
-  scale: ${(p) => p.$scale};
-
-  .wingA {
-    animation: ${frameA} 0.28s steps(1) infinite;
-  }
-  .wingB {
-    animation: ${frameB} 0.28s steps(1) infinite;
-  }
-  .disc {
-    animation: ${spin} 5s linear infinite;
-    transform-origin: 32px 32px;
-  }
 `;
 
-function WingedFloppy() {
+const NamePlate = styled.div`
+  font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+  font-size: 64px;
+  font-weight: bold;
+  color: #ff7ad9;
+  text-shadow:
+    3px 3px 0 #7a1055,
+    -1px -1px 0 #ffc4ec;
+  white-space: nowrap;
+  user-select: none;
+`;
+
+function Heart({ size = 56 }: { size?: number }) {
   return (
-    <svg width="86" height="80" viewBox="0 0 86 80" aria-hidden>
-      {/* wings: frame A (up) */}
-      <g className="wingA" fill="#f0f0f4" stroke="#c8c8d0" strokeWidth="1">
-        <path d="M22 34 Q10 24 6 6 Q16 16 20 14 Q22 22 24 30 Z" />
-        <path d="M64 34 Q76 24 80 6 Q70 16 66 14 Q64 22 62 30 Z" />
-      </g>
-      {/* wings: frame B (down) */}
-      <g className="wingB" fill="#e0e0e8" stroke="#b8b8c4" strokeWidth="1">
-        <path d="M22 36 Q8 42 4 58 Q16 50 20 52 Q22 44 24 38 Z" />
-        <path d="M64 36 Q78 42 82 58 Q70 50 66 52 Q64 44 62 38 Z" />
-      </g>
-      {/* the floppy */}
-      <g shapeRendering="crispEdges">
-        <rect x="22" y="26" width="42" height="42" fill="#2a3a8a" />
-        <rect x="22" y="26" width="42" height="2" fill="#4a5aae" />
-        <rect x="34" y="26" width="20" height="14" fill="#b8b8c8" />
-        <rect x="44" y="29" width="6" height="9" fill="#5a5a6a" />
-        <rect x="28" y="46" width="30" height="20" fill="#e8e8e0" />
-        <rect x="31" y="50" width="24" height="1.5" fill="#9a9aa0" />
-        <rect x="31" y="54" width="24" height="1.5" fill="#9a9aa0" />
-        <rect x="31" y="58" width="16" height="1.5" fill="#9a9aa0" />
-        <rect x="24" y="62" width="4" height="4" fill="#111122" />
-      </g>
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
+      <path
+        d="M16 28 C6 20 2 14 2 9.5 C2 5.9 4.9 3 8.5 3 C11.4 3 14.2 4.8 16 7.6 C17.8 4.8 20.6 3 23.5 3 C27.1 3 30 5.9 30 9.5 C30 14 26 20 16 28 Z"
+        fill="#ff4fa0"
+        stroke="#8a1055"
+        strokeWidth="1.5"
+      />
+      <circle cx="10" cy="9" r="2.4" fill="#ffb6de" />
     </svg>
   );
 }
 
-function DriftingCD() {
+function Star({ size = 40 }: { size?: number }) {
   return (
-    <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden>
-      <g className="disc">
-        <circle cx="32" cy="32" r="26" fill="#d4d4de" />
-        <path d="M32 6 A26 26 0 0 1 54 20" stroke="#aac4f0" strokeWidth="5" fill="none" opacity="0.8" />
-        <path d="M32 58 A26 26 0 0 1 10 44" stroke="#f0b8d8" strokeWidth="5" fill="none" opacity="0.8" />
-        <circle cx="32" cy="32" r="8" fill="#f4f4f8" />
-        <circle cx="32" cy="32" r="3.5" fill="#222230" />
-      </g>
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
+      <path
+        d="M16 2 L19 12 L30 12 L21 18.5 L24.5 29 L16 22.5 L7.5 29 L11 18.5 L2 12 L13 12 Z"
+        fill="#ffd0f0"
+        stroke="#c76c9e"
+        strokeWidth="1.5"
+      />
     </svg>
   );
 }
 
-interface Sprite {
-  kind: 'floppy' | 'cd';
-  top: number; // vh
-  left: number; // vw
-  dur: number;
-  delay: number;
-  scale: number;
+interface Body {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
 }
 
-function makeSprites(): Sprite[] {
-  const sprites: Sprite[] = [];
-  for (let i = 0; i < 22; i++) {
-    // Spawn along a band across the top and right edges so the diagonal
-    // stream covers the whole screen; negative delays start mid-flight.
-    sprites.push({
-      kind: i % 3 === 2 ? 'cd' : 'floppy',
-      top: Math.random() * 160 - 70,
-      left: Math.random() * 150,
-      dur: 16 + Math.random() * 14,
-      delay: -Math.random() * 30,
-      scale: 0.45 + Math.random() * 0.85,
-    });
-  }
-  return sprites;
-}
+// px/second; signs randomized at mount.
+const SPEEDS = [130, 95, 165];
 
 export function Screensaver() {
-  const sprites = useMemo(makeSprites, []);
+  const refs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)];
+  const bodies = useRef<Body[]>([]);
+
+  useEffect(() => {
+    bodies.current = SPEEDS.map((speed) => {
+      const angle = Math.random() * Math.PI * 2;
+      return {
+        x: Math.random() * (window.innerWidth - 300) + 40,
+        y: Math.random() * (window.innerHeight - 200) + 40,
+        vx: Math.abs(Math.cos(angle) * speed) * (Math.random() < 0.5 ? -1 : 1) || speed * 0.7,
+        vy: Math.abs(Math.sin(angle) * speed) * (Math.random() < 0.5 ? -1 : 1) || speed * 0.7,
+      };
+    });
+
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      bodies.current.forEach((b, i) => {
+        const el = refs[i].current;
+        if (!el) return;
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+        if (b.x <= 0) {
+          b.x = 0;
+          b.vx = Math.abs(b.vx);
+        } else if (b.x + w >= window.innerWidth) {
+          b.x = window.innerWidth - w;
+          b.vx = -Math.abs(b.vx);
+        }
+        if (b.y <= 0) {
+          b.y = 0;
+          b.vy = Math.abs(b.vy);
+        } else if (b.y + h >= window.innerHeight) {
+          b.y = window.innerHeight - h;
+          b.vy = -Math.abs(b.vy);
+        }
+        el.style.transform = `translate3d(${b.x}px, ${b.y}px, 0)`;
+      });
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Black aria-label="Screen saver — press any key or move the mouse">
-      {sprites.map((s, i) => (
-        <Flyer
-          key={i}
-          $dur={s.dur}
-          $delay={s.delay}
-          $scale={s.scale}
-          style={{ top: `${s.top}vh`, left: `${s.left}vw` }}
-        >
-          {s.kind === 'floppy' ? <WingedFloppy /> : <DriftingCD />}
-        </Flyer>
-      ))}
+      <Bouncer ref={refs[0]}>
+        <NamePlate>✿ casey ✿</NamePlate>
+      </Bouncer>
+      <Bouncer ref={refs[1]}>
+        <Heart />
+      </Bouncer>
+      <Bouncer ref={refs[2]}>
+        <Star />
+      </Bouncer>
     </Black>
   );
 }

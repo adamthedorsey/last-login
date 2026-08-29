@@ -208,3 +208,34 @@ describe('player documents (Notepad saves)', () => {
     expect(over.result).toMatchObject({ type: 'document', ok: false, error: 'too_many' });
   });
 });
+
+describe('player folders', () => {
+  it('creates a folder on the desktop and files documents into it', () => {
+    let s = loggedInState();
+    const created = run(s, { type: 'createFolder', name: 'case stuff' });
+    s = created.state;
+    if (created.result.type !== 'document' || !created.result.item) throw new Error('bad result');
+    const folderId = created.result.item.id;
+    expect(created.result.item.kind).toBe('folder');
+
+    s = run(s, { type: 'saveDocument', name: 'timeline.txt', text: 'oct 10, 10pm' }).state;
+    const docId = s.documents![0].id;
+    s = run(s, { type: 'moveDocument', docId, folderId }).state;
+
+    const desktop = run(s, { type: 'getDesktop' }).result;
+    if (desktop.type !== 'desktop') throw new Error('bad result');
+    expect(desktop.items.map((i) => i.id)).not.toContain(docId);
+    expect(desktop.items.map((i) => i.id)).toContain(folderId);
+
+    const children = run(s, { type: 'listChildren', parentId: folderId }).result;
+    if (children.type !== 'children') throw new Error('bad result');
+    expect(children.items.map((i) => i.id)).toContain(docId);
+  });
+
+  it('rejects moving into a nonexistent folder', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'saveDocument', name: 'a.txt', text: 'x' }).state;
+    const { result } = run(s, { type: 'moveDocument', docId: s.documents![0].id, folderId: 'playerfolder.999' });
+    expect(result).toMatchObject({ type: 'document', ok: false });
+  });
+});

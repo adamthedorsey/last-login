@@ -184,6 +184,7 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
   return (
     <Shell
       $maximized={win.maximized}
+      data-no-deskmenu
       style={{ ...rect, zIndex: win.z, display: win.minimized ? 'none' : 'flex' }}
       onPointerDown={() => focus(win.id)}
     >

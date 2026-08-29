@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { MenuList, MenuListItem, Separator } from 'react95';
 import type { ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { launchItem } from './launch';
 import { Icon } from './icons';
-import { TASKBAR_HEIGHT } from './windowStore';
+import { TASKBAR_HEIGHT, useWindowStore } from './windowStore';
 
 const GRID = 96;
 const ORIGIN = 24;
@@ -62,6 +63,13 @@ const IconButton = styled.button<{ $selected: boolean; $dragging: boolean }>`
   }
 `;
 
+const ContextMenu = styled(MenuList)`
+  position: fixed;
+  z-index: 100005;
+  min-width: 180px;
+  font-size: 13px;
+`;
+
 interface DragState {
   id: string;
   startX: number;
@@ -71,13 +79,25 @@ interface DragState {
   moved: boolean;
 }
 
+/** Pick an unused "Name", "Name (2)", ... against current desktop names. */
+function nextName(base: string, ext: string, taken: Set<string>): string {
+  if (!taken.has(base + ext)) return base + ext;
+  for (let n = 2; n < 99; n++) {
+    if (!taken.has(`${base} (${n})${ext}`)) return `${base} (${n})${ext}`;
+  }
+  return base + ext;
+}
+
 export function DesktopIcons() {
   const { send, contentEpoch, ready, view } = useGame();
+  const openApp = useWindowStore((s) => s.open);
   const [items, setItems] = useState<ItemSummary[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [layout, setLayout] = useState<Layout>(loadLayout);
   const [dragPos, setDragPos] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const dragRef = useRef<DragState | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!ready || !view?.loggedIn) return;
@@ -90,10 +110,55 @@ export function DesktopIcons() {
     };
   }, [send, contentEpoch, ready, view?.loggedIn]);
 
+  // Desktop right-click menu (windows and the taskbar keep the default).
+  useEffect(() => {
+    const onCtx = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-no-deskmenu]')) return;
+      e.preventDefault();
+      setMenuAt({ x: Math.min(e.clientX, window.innerWidth - 190), y: Math.min(e.clientY, window.innerHeight - TASKBAR_HEIGHT - 180) });
+    };
+    window.addEventListener('contextmenu', onCtx);
+    return () => window.removeEventListener('contextmenu', onCtx);
+  }, []);
+
+  useEffect(() => {
+    if (!menuAt) return;
+    const onDown = (e: PointerEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuAt(null);
+    };
+    window.addEventListener('pointerdown', onDown);
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, [menuAt]);
+
   const posOf = (item: ItemSummary): { x: number; y: number } =>
     layout[item.id] ?? { x: item.meta?.desktop?.x ?? ORIGIN, y: item.meta?.desktop?.y ?? ORIGIN };
 
+  const takenNames = () => new Set(items.map((i) => i.name));
+
+  const createDocument = async () => {
+    setMenuAt(null);
+    await send({ type: 'saveDocument', name: nextName('New Text Document', '.txt', takenNames()), text: '' });
+  };
+
+  const createFolder = async () => {
+    setMenuAt(null);
+    await send({ type: 'createFolder', name: nextName('New Folder', '', takenNames()) });
+  };
+
+  const lineUpIcons = () => {
+    setMenuAt(null);
+    setLayout({});
+    saveLayout({});
+  };
+
+  const openDisplayProps = () => {
+    setMenuAt(null);
+    openApp('display');
+  };
+
   const onPointerDown = (item: ItemSummary) => (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
     const p = posOf(item);
     dragRef.current = {
       id: item.id,
@@ -122,6 +187,23 @@ export function DesktopIcons() {
     if (!d || !d.moved || !dragPos) {
       setDragPos(null);
       return;
+    }
+
+    const dragged = items.find((i) => i.id === d.id);
+    const dropCenter = { x: dragPos.x + 42, y: dragPos.y + 44 };
+
+    // Dropping one of YOUR documents onto one of YOUR folders files it away.
+    if (dragged?.editable && dragged.kind === 'document') {
+      const folder = items.find((i) => {
+        if (i.id === d.id || i.kind !== 'folder' || !i.editable) return false;
+        const p = posOf(i);
+        return dropCenter.x >= p.x && dropCenter.x <= p.x + 84 && dropCenter.y >= p.y && dropCenter.y <= p.y + 92;
+      });
+      if (folder) {
+        setDragPos(null);
+        void send({ type: 'moveDocument', docId: dragged.id, folderId: folder.id });
+        return;
+      }
     }
 
     // Snap to the grid, clamp to the desktop, and avoid landing on a
@@ -174,6 +256,27 @@ export function DesktopIcons() {
           </IconButton>
         );
       })}
+
+      {menuAt && (
+        <div ref={menuRef}>
+          <ContextMenu style={{ left: menuAt.x, top: menuAt.y }}>
+            <MenuListItem size="sm" onClick={() => void createFolder()}>
+              New Folder
+            </MenuListItem>
+            <MenuListItem size="sm" onClick={() => void createDocument()}>
+              New Text Document
+            </MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" onClick={lineUpIcons}>
+              Line Up Icons
+            </MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" onClick={openDisplayProps}>
+              Properties
+            </MenuListItem>
+          </ContextMenu>
+        </div>
+      )}
     </>
   );
 }

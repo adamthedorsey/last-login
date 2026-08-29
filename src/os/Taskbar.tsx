@@ -71,6 +71,16 @@ const StartMenu = styled(MenuList)`
   min-width: 210px;
 `;
 
+const ProgramsMenu = styled(MenuList)`
+  position: absolute;
+  left: 216px;
+  bottom: ${TASKBAR_HEIGHT}px;
+  z-index: 100002;
+  min-width: 200px;
+  max-height: calc(100vh - ${TASKBAR_HEIGHT + 16}px);
+  overflow-y: auto;
+`;
+
 const MenuBrand = styled.div`
   background: #000080;
   color: #fff;
@@ -99,6 +109,7 @@ export function Taskbar({
   const { windows, focus, minimize, open } = useWindowStore();
   const { view } = useGame();
   const [startOpen, setStartOpen] = useState(false);
+  const [programsOpen, setProgramsOpen] = useState(false);
   const [muted, setMutedState] = useState(isMuted());
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -107,7 +118,10 @@ export function Taskbar({
   useEffect(() => {
     if (!startOpen) return;
     const onDown = (e: PointerEvent) => {
-      if (!menuRef.current?.contains(e.target as Node)) setStartOpen(false);
+      if (!menuRef.current?.contains(e.target as Node)) {
+        setStartOpen(false);
+        setProgramsOpen(false);
+      }
     };
     window.addEventListener('pointerdown', onDown);
     return () => window.removeEventListener('pointerdown', onDown);
@@ -121,25 +135,22 @@ export function Taskbar({
   return (
     <>
       {startOpen && (
-        <div ref={menuRef}>
+        <div ref={menuRef} data-no-deskmenu>
           <StartMenu>
             <MenuBrand>HORIZONS 97</MenuBrand>
-            {listApps().map((app) => (
-              <MenuListItem
-                key={app.id}
-                onClick={() => {
-                  open(app.id);
-                  setStartOpen(false);
-                }}
-              >
-                <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-                  <Icon name={app.icon} size={20} />
-                  {app.name}
-                </span>
-              </MenuListItem>
-            ))}
+            <MenuListItem
+              onMouseEnter={() => setProgramsOpen(true)}
+              onClick={() => setProgramsOpen((v) => !v)}
+            >
+              <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', width: '100%' }}>
+                <Icon name="folder" size={20} />
+                Programs
+                <span style={{ marginLeft: 'auto' }}>▸</span>
+              </span>
+            </MenuListItem>
             <Separator />
             <MenuListItem
+              onMouseEnter={() => setProgramsOpen(false)}
               onClick={() => {
                 setStartOpen(false);
                 onScreenSaver();
@@ -151,6 +162,7 @@ export function Taskbar({
               </span>
             </MenuListItem>
             <MenuListItem
+              onMouseEnter={() => setProgramsOpen(false)}
               onClick={() => {
                 setStartOpen(false);
                 onShutDown();
@@ -162,14 +174,37 @@ export function Taskbar({
               </span>
             </MenuListItem>
           </StartMenu>
+          {programsOpen && (
+            <ProgramsMenu>
+              {listApps().map((app) => (
+                <MenuListItem
+                  key={app.id}
+                  size="sm"
+                  onClick={() => {
+                    open(app.id);
+                    setStartOpen(false);
+                    setProgramsOpen(false);
+                  }}
+                >
+                  <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+                    <Icon name={app.icon} size={18} />
+                    {app.name}
+                  </span>
+                </MenuListItem>
+              ))}
+            </ProgramsMenu>
+          )}
         </div>
       )}
-      <Bar>
+      <Bar data-no-deskmenu>
         <BarToolbar>
           <Button
             active={startOpen}
             onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
-            onClick={() => setStartOpen((v) => !v)}
+            onClick={() => {
+              setStartOpen((v) => !v);
+              setProgramsOpen(false);
+            }}
             style={{ fontWeight: 'bold' }}
           >
             <StartLogo>

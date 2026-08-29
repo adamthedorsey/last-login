@@ -44,6 +44,8 @@ const VALID_ACTIONS = new Set([
   'search',
   'getBuddies',
   'saveDocument',
+  'createFolder',
+  'moveDocument',
   'resetSeason',
 ]);
 
@@ -56,6 +58,7 @@ const FIELD_LIMITS: Record<string, number> = {
   url: 500,
   query: 500,
   docId: 100,
+  folderId: 100,
   name: 100,
   text: 20000,
 };
