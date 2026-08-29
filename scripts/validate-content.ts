@@ -141,6 +141,7 @@ function validate(content: SeasonContent): void {
   // --- Reachability: simulate an omniscient-but-rule-abiding player ---
   const state = newPlayerState();
   state.loggedIn = true;
+  state.online = true; // the omniscient player dials in immediately
   state.unlocked = [...Object.keys(content.passwords)]; // authored passwords are solvable
   const said = new Set<string>();
   let changed = true;
@@ -149,6 +150,12 @@ function validate(content: SeasonContent): void {
     changed = false;
     for (const item of content.items) {
       if (state.opened.includes(item.id)) continue;
+      // Wire content gets delivered the moment its requirements are met.
+      if (item.arrivesOnline && !(state.delivered ??= []).includes(item.id) &&
+          meetsRequirement(state, item.requires)) {
+        state.delivered.push(item.id);
+        changed = true;
+      }
       if (!isAccessible(content, state, item)) continue;
       if (item.password && !state.unlocked.includes(item.id)) state.unlocked.push(item.id);
       state.opened.push(item.id);

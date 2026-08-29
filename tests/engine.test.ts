@@ -23,8 +23,14 @@ function run(state: PlayerState, action: GameAction, now = NOW) {
 
 function loggedInState(): PlayerState {
   const s = newPlayerState();
-  const { state } = run(s, { type: 'login', password: LOGIN_PASSWORD });
-  return state;
+  const logged = run(s, { type: 'login', password: LOGIN_PASSWORD }).state;
+  // Most flows assume the player has dialed in.
+  return run(logged, { type: 'connect' }).state;
+}
+
+function offlineState(): PlayerState {
+  const s = newPlayerState();
+  return run(s, { type: 'login', password: LOGIN_PASSWORD }).state;
 }
 
 describe('requirements', () => {
@@ -201,6 +207,75 @@ describe('clue chain progression', () => {
     s = run(s, { type: 'open', itemId: 'email.sadie.please' }).state;
     const { state } = run(s, { type: 'resetSeason' });
     expect(state).toEqual(newPlayerState());
+  });
+});
+
+describe('dial-up', () => {
+  it('starts offline: the web fails, buddies are unreachable, chat is dead', () => {
+    const s = offlineState();
+    expect(run(s, { type: 'visit', url: 'www.searchhound.net' }).result).toMatchObject({
+      type: 'visit',
+      ok: false,
+      offline: true,
+    });
+    expect(run(s, { type: 'search', query: 'humble' }).result).toMatchObject({
+      type: 'search',
+      offline: true,
+    });
+    const buddies = run(s, { type: 'getBuddies' }).result;
+    if (buddies.type !== 'buddies') throw new Error('bad result');
+    expect(buddies.buddies.every((b) => b.status === 'offline')).toBe(true);
+    expect(run(s, { type: 'getConversation', screenname: 'sadiedraws77' }).result).toMatchObject({
+      type: 'chat',
+      ok: false,
+    });
+  });
+
+  it('local content still works offline: files, saved logs, downloaded mail', () => {
+    const s = offlineState();
+    expect(run(s, { type: 'open', itemId: 'file.minewars-report' }).result).toMatchObject({ ok: true });
+    expect(run(s, { type: 'open', itemId: 'im.sadie' }).result).toMatchObject({ ok: true });
+    expect(run(s, { type: 'open', itemId: 'email.sadie.please' }).result).toMatchObject({ ok: true });
+  });
+
+  it('connect and disconnect flip the shared state', () => {
+    let s = offlineState();
+    const on = run(s, { type: 'connect' });
+    s = on.state;
+    expect(on.result).toMatchObject({ type: 'net', online: true });
+    const view = run(s, { type: 'getState' }).result;
+    if (view.type !== 'state') throw new Error('bad result');
+    expect(view.view.online).toBe(true);
+    const off = run(s, { type: 'disconnect' });
+    expect(off.result).toMatchObject({ type: 'net', online: false });
+  });
+
+  it('wire mail arrives only online, and stays delivered after hanging up', () => {
+    // Earn stolen-intimacy fully OFFLINE (both Act 1 items are local disk).
+    let s = offlineState();
+    s = run(s, { type: 'open', itemId: 'email.sadie.please' }).state;
+    s = run(s, { type: 'open', itemId: 'trash.bl-log' }).state;
+    expect(s.discoveries).toContain('stolen-intimacy');
+
+    // Sadie's second email is eligible — but it has not ARRIVED.
+    expect(run(s, { type: 'open', itemId: 'email.sadie.notchad' }).result).toMatchObject({
+      type: 'open',
+      ok: false,
+    });
+    const inbox = run(s, { type: 'listChildren', parentId: 'mailbox.inbox' }).result;
+    if (inbox.type !== 'children') throw new Error('bad result');
+    expect(inbox.items.map((i) => i.id)).not.toContain('email.sadie.notchad');
+
+    // Dial in: the mail truck comes.
+    const on = run(s, { type: 'connect' });
+    s = on.state;
+    if (on.result.type !== 'net') throw new Error('bad result');
+    expect(on.result.newMail).toBeGreaterThan(0);
+    expect(run(s, { type: 'open', itemId: 'email.sadie.notchad' }).result).toMatchObject({ ok: true });
+
+    // Hang up: the letter is on the disk now.
+    s = run(s, { type: 'disconnect' }).state;
+    expect(run(s, { type: 'open', itemId: 'email.sadie.notchad' }).result).toMatchObject({ ok: true });
   });
 });
 

@@ -123,7 +123,7 @@ export function MailApp() {
   const [mailbox, setMailbox] = useState('mailbox.inbox');
   const [messages, setMessages] = useState<ItemSummary[]>([]);
   const [openMsg, setOpenMsg] = useState<ItemContent | null>(null);
-  const [status, setStatus] = useState('Connected to westwind.net — session cached');
+  const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,9 +144,20 @@ export function MailApp() {
     if (res.type === 'open' && res.ok && res.item) setOpenMsg(res.item);
   };
 
-  const checkMail = () => {
-    setStatus('Dialing… no answer from mail server. Working offline.');
-    window.setTimeout(() => setStatus('No new messages.'), 1600);
+  const online = view?.online === true;
+
+  const checkMail = async () => {
+    if (!online) {
+      setStatus('Not connected. Use Dial-Up Networking to connect, then try again.');
+      return;
+    }
+    setStatus('Checking for new messages ...');
+    const res = await send({ type: 'checkMail' });
+    if (res.type === 'net' && (res.newMail ?? 0) > 0) {
+      setStatus(`You have ${res.newMail} new message(s).`);
+    } else {
+      setStatus('No new messages.');
+    }
   };
 
   const openedSet = new Set(view?.opened ?? []);
@@ -154,7 +165,7 @@ export function MailApp() {
   return (
     <>
       <Toolbar style={{ gap: 6, flexShrink: 0 }}>
-        <Button onClick={checkMail}>Check Mail</Button>
+        <Button onClick={() => void checkMail()}>Check Mail</Button>
         <Button disabled>Compose</Button>
         <Button disabled>Reply</Button>
         <span style={{ fontSize: 12, marginLeft: 'auto', color: '#444' }}>
@@ -217,7 +228,7 @@ export function MailApp() {
         </Reading>
       </Layout>
       <Frame variant="well" style={{ marginTop: 4, padding: '2px 8px', fontSize: 12, flexShrink: 0 }}>
-        {status}
+        {status ?? (online ? 'Connected to westwind.net' : 'Working offline — downloaded mail only.')}
       </Frame>
     </>
   );

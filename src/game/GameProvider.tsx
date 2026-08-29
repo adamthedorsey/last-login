@@ -13,6 +13,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [contentEpoch, setContentEpoch] = useState(0);
   const [showEndCard, setShowEndCard] = useState(false);
+  const viewRef = useRef<StateView | null>(null);
+  useEffect(() => {
+    viewRef.current = view;
+  }, [view]);
   const endCardSeenRef = useRef(false);
   useEffect(() => {
     if (showEndCard) endCardSeenRef.current = true;
@@ -53,9 +57,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
         void refreshView();
       }
       if (ended) {
-        // The season doesn't end with a dialog. It ends with a sign-on.
-        // (No name in the client copy — the roster itself does the telling.)
+        // The season doesn't end with a dialog. It ends with a sign-on —
+        // which needs the line to be up. Offline, he simply waits for the
+        // player's next connection.
         window.setTimeout(() => {
+          if (!viewRef.current?.online) return;
           playBuddyOn();
           setToasts((prev) => [
             ...prev,
@@ -80,6 +86,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (res.type === 'open' || res.type === 'visit' || res.type === 'chat') {
         noteDiscoveries(res.newDiscoveries, res.ended);
       }
+      if (res.type === 'net') {
+        // Connection state or mail delivery changed — every app refetches.
+        setContentEpoch((e) => e + 1);
+        void refreshView();
+      }
       if (res.type === 'document' && res.ok) {
         // A player file was created/renamed — desktop views should refetch.
         setContentEpoch((e) => e + 1);
@@ -92,7 +103,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       return res;
     },
-    [noteDiscoveries],
+    [noteDiscoveries, refreshView],
   );
 
   const dismissToast = useCallback((id: number) => {

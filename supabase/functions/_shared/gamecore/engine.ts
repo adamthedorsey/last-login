@@ -59,16 +59,36 @@ function discoveryById(content: SeasonContent, id: string): Discovery | undefine
   return content.discoveries.find((d) => d.id === id);
 }
 
-/** An item is accessible only if it and every ancestor meet their requirements. */
+/** An item is accessible only if it and every ancestor meet their
+ * requirements — and, for items that arrive over the wire, only once a
+ * delivery sweep has actually delivered them. */
 export function isAccessible(content: SeasonContent, state: PlayerState, item: ContentItem): boolean {
   let cur: ContentItem | undefined = item;
   let hops = 0;
   while (cur) {
     if (!meetsRequirement(state, cur.requires)) return false;
+    if (cur.arrivesOnline && !(state.delivered ?? []).includes(cur.id)) return false;
     if (!cur.parentId || ++hops > 20) break;
     cur = itemById(content, cur.parentId);
   }
   return true;
+}
+
+/**
+ * The mail truck: while online, any arrivesOnline item whose requirements
+ * are met gets delivered (permanently — the machine has it on disk now).
+ * Returns how many arrived in this sweep.
+ */
+function deliverPending(content: SeasonContent, state: PlayerState): number {
+  const delivered = (state.delivered ??= []);
+  let n = 0;
+  for (const item of content.items) {
+    if (!item.arrivesOnline || delivered.includes(item.id)) continue;
+    if (!meetsRequirement(state, item.requires)) continue;
+    delivered.push(item.id);
+    n += 1;
+  }
+  return n;
 }
 
 function isUnlocked(state: PlayerState, item: ContentItem): boolean {
@@ -136,6 +156,7 @@ export function toStateView(
     loginUser: content.computer.loginUser,
     loginHint: state.flags[HINT_REVEALED_FLAG] ? content.computer.loginHint : undefined,
     loginLockSeconds: lockSeconds,
+    online: state.online === true,
     saverText: content.computer.saverText,
     imScreenname: content.computer.imScreenname,
     bootWarning: content.computer.bootWarning,
@@ -266,6 +287,7 @@ function conversationFor(
   state: PlayerState,
   screenname: string,
 ): { convo: ChatConversation; buddy: Buddy } | null {
+  if (!state.online) return null; // live chat needs the dial-up connection
   const convo = (content.conversations ?? []).find((c) => c.screenname === screenname);
   if (!convo || !meetsRequirement(state, convo.requires)) return null;
   const buddy = content.buddies.find((b) => b.screenname === screenname);
@@ -502,7 +524,33 @@ export function handleAction(
     return done({ type: 'error', error: 'not_logged_in' });
   }
 
+  // While the line is up, the outside world can reach the machine: any
+  // newly-eligible wire content arrives before the action is handled.
+  const arrived = state.online ? deliverPending(content, state) : 0;
+
   switch (action.type) {
+    case 'connect': {
+      if (!state.online) {
+        state.online = true;
+        events.push({ type: 'net_connect' });
+      }
+      const newMail = deliverPending(content, state);
+      return done({ type: 'net', online: true, newMail });
+    }
+
+    case 'disconnect': {
+      if (state.online) {
+        state.online = false;
+        events.push({ type: 'net_disconnect' });
+      }
+      return done({ type: 'net', online: false });
+    }
+
+    case 'checkMail': {
+      if (!state.online) return done({ type: 'net', online: false });
+      return done({ type: 'net', online: true, newMail: arrived });
+    }
+
     case 'getDesktop': {
       const items = content.items
         .filter((i) => i.meta?.desktop && isAccessible(content, state, i))
@@ -586,6 +634,9 @@ export function handleAction(
     }
 
     case 'visit': {
+      if (!state.online) {
+        return done({ type: 'visit', ok: false, offline: true });
+      }
       const url = normalizeUrl(action.url);
       const page = content.items.find(
         (i) => i.kind === 'webpage' && i.meta?.url && normalizeUrl(i.meta.url) === url,
@@ -604,6 +655,9 @@ export function handleAction(
     }
 
     case 'search': {
+      if (!state.online) {
+        return done({ type: 'search', results: [], offline: true });
+      }
       events.push({ type: 'search', payload: { query: action.query.slice(0, 200) } });
       return done({ type: 'search', results: searchPages(content, state, action.query) });
     }
@@ -704,7 +758,11 @@ export function handleAction(
       const buddies: BuddyView[] = content.buddies
         .filter((b) => meetsRequirement(state, b.requires))
         .map((b: Buddy) => {
-          const presence = resolvePresence(state, b);
+          // Offline, the roster still lists everyone — but nobody is
+          // reachable and no live presence is known.
+          const presence = state.online
+            ? resolvePresence(state, b)
+            : { status: 'offline' as const, awayMessage: undefined };
           return {
             screenname: b.screenname,
             alias: b.alias,

@@ -131,9 +131,16 @@ export interface ContentItem {
   searchText?: string;
   /**
    * When the referenced item has any accessible children, this item's icon
-   * is served with a `-full` suffix (the Mac-style bulging trash can).
+   * is served with a `-full` suffix (the bulging bin).
    */
   fullWhenHasChildren?: string;
+  /**
+   * This item (an email, typically) is not on the machine yet: it ARRIVES
+   * over the wire. It stays invisible until a delivery sweep runs while the
+   * player is online AND its `requires` are met; once delivered it persists
+   * offline like anything else on the disk. SERVER ONLY.
+   */
+  arrivesOnline?: boolean;
 }
 
 export interface Discovery {
@@ -274,6 +281,10 @@ export interface PlayerState {
   folderSeq?: number;
   /** Per-buddy list of prompt ids the player has said, in order. */
   chats?: Record<string, string[]>;
+  /** Dial-up state: the machine starts offline every session-of-record. */
+  online?: boolean;
+  /** Ids of arrivesOnline items that have been delivered to the machine. */
+  delivered?: string[];
 }
 
 export function newPlayerState(): PlayerState {
@@ -299,6 +310,9 @@ export type GameAction =
   | { type: 'getState' }
   | { type: 'login'; password: string }
   | { type: 'logout' }
+  | { type: 'connect' }
+  | { type: 'disconnect' }
+  | { type: 'checkMail' }
   | { type: 'getDesktop' }
   | { type: 'listChildren'; parentId: string }
   | { type: 'open'; itemId: string }
@@ -357,6 +371,8 @@ export interface StateView {
   imScreenname?: string;
   bootWarning?: string[];
   dosVolume?: { label: string; serial: string };
+  /** Dial-up: whether the machine is currently connected. */
+  online: boolean;
   wallpaper: string;
   homeUrl: string;
   loggedIn: boolean;
@@ -432,11 +448,13 @@ export type ActionResult =
   | {
       type: 'visit';
       ok: boolean;
+      /** True when the visit failed because the machine is offline. */
+      offline?: boolean;
       page?: ItemContent;
       newDiscoveries?: DiscoveryView[];
       ended?: boolean;
     }
-  | { type: 'search'; results: SearchResult[] }
+  | { type: 'search'; results: SearchResult[]; offline?: boolean }
   | { type: 'buddies'; buddies: BuddyView[] }
   | {
       type: 'chat';
@@ -447,6 +465,7 @@ export type ActionResult =
       error?: string;
     }
   | { type: 'document'; ok: boolean; item?: ItemSummary; error?: string }
+  | { type: 'net'; online: boolean; newMail?: number }
   | { type: 'reset'; view: StateView }
   | { type: 'error'; error: string };
 

@@ -24,7 +24,8 @@ function run(state: PlayerState, action: GameAction) {
 }
 
 function loggedInState(): PlayerState {
-  return run(newPlayerState(), { type: 'login', password: 'sunflower97' }).state;
+  const logged = run(newPlayerState(), { type: 'login', password: 'sunflower97' }).state;
+  return run(logged, { type: 'connect' }).state;
 }
 
 describe('locked content is never returned', () => {
@@ -173,6 +174,22 @@ describe('DTO redaction', () => {
     if (res.type !== 'state') throw new Error('bad result');
     // The word is on her idle screen — the player is entitled to see it.
     expect(res.view.saverText).toBe('junebug');
+  });
+});
+
+describe('dial-up cannot be spoofed', () => {
+  it('undelivered wire mail never appears in listings or opens, and the client cannot force delivery', () => {
+    // The ONLY way to state.online is the server's connect action — there is
+    // no client-writable flag. Simulate the closest thing: a player whose
+    // requirements are met but who never connected.
+    let s = run(newPlayerState(), { type: 'login', password: 'sunflower97' }).state;
+    s = run(s, { type: 'open', itemId: 'email.sadie.please' }).state;
+    s = run(s, { type: 'open', itemId: 'trash.bl-log' }).state;
+    const denied = run(s, { type: 'open', itemId: 'email.sadie.notchad' });
+    expect(denied.result).toMatchObject({ type: 'open', ok: false });
+    expect(JSON.stringify(denied.result)).not.toContain('jealous');
+    // checkMail while offline delivers nothing and says so.
+    expect(run(s, { type: 'checkMail' }).result).toMatchObject({ type: 'net', online: false });
   });
 });
 

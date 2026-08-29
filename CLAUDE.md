@@ -128,6 +128,24 @@ If not, don't build it that way.
 - Buddy presence changes are authored as `overrides` on the roster entry
   (requirement → status), never client-side logic.
 
+### Dial-up (the online/offline mechanic)
+- The core loop: OFFLINE = explore what Casey already had on the machine;
+  ONLINE = the outside world can reach it again. The player dials in via
+  Dial-Up Networking (WestWind Online) and can disconnect; the tray shows a
+  modem icon while connected.
+- The connection state is SERVER STATE (`PlayerState.online`), changed only
+  by the engine's `connect`/`disconnect` actions. The client's dialing
+  sequence and modem sound are pure theater — no app may keep a local
+  online flag, and flipping anything client-side must never reveal content
+  (the web, live chat, buddy presence, and mail delivery are all gated in
+  the engine).
+- Mail that "arrives" is authored with `arrivesOnline: true`: invisible
+  until a delivery sweep runs while online AND its requires are met; once
+  delivered it lives on the disk and reads fine offline. Sweeps run on
+  connect and continuously while online. Going online CAN trigger story
+  (that's the habit loop) but must not always — mundane connects are good.
+- The modem handshake is synthesized chip tones (~3s), click-skippable.
+
 ### MS-DOS mode & system mortality
 - MS-DOS mode (Shut Down → "Restart in MS-DOS mode") is a real prompt whose
   every listing and TYPE goes through the ENGINE — content gating carries

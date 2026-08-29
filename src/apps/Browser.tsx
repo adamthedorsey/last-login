@@ -631,6 +631,7 @@ type ViewState =
   | { kind: 'page'; page: ItemContent }
   | { kind: 'about' }
   | { kind: 'notfound'; url: string }
+  | { kind: 'offline'; url: string }
   | { kind: 'results'; query: string; results: SearchResult[] };
 
 interface MenuSpec {
@@ -690,6 +691,10 @@ export function Browser({ windowId, props }: AppWindowProps) {
         setViewState({ kind: 'page', page: res.page });
         setStatus('Document: Done');
         brand(res.page.meta?.siteTitle ?? res.page.name);
+      } else if (res.type === 'visit' && res.offline) {
+        setViewState({ kind: 'offline', url: target });
+        setStatus('Not connected.');
+        brand('Connection Failed');
       } else {
         setViewState({ kind: 'notfound', url: target });
         setStatus('Unable to locate server.');
@@ -706,7 +711,11 @@ export function Browser({ windowId, props }: AppWindowProps) {
       const res = await send({ type: 'search', query });
       await new Promise((r) => window.setTimeout(r, 220));
       setLoading(false);
-      if (res.type === 'search') {
+      if (res.type === 'search' && res.offline) {
+        setViewState({ kind: 'offline', url: 'www.searchhound.net' });
+        setStatus('Not connected.');
+        brand('Connection Failed');
+      } else if (res.type === 'search') {
         setViewState({ kind: 'results', query, results: res.results });
         setStatus(`${res.results.length} result(s). Document: Done`);
         brand(`SearchHound: ${query}`);
@@ -830,6 +839,21 @@ export function Browser({ windowId, props }: AppWindowProps) {
       break;
     case 'about':
       content = <AboutPage />;
+      break;
+    case 'offline':
+      content = (
+        <div style={{ padding: 26, fontFamily: FONTS.serif, background: '#fff', minHeight: '100%' }}>
+          <h2>Unable to connect</h2>
+          <p>
+            NetVoyager could not open <b>{viewState.url}</b> because this
+            computer is not connected to the Internet.
+          </p>
+          <p style={{ fontSize: 13, color: '#555' }}>
+            Use <b>Dial-Up Networking</b> (WestWind Online on the desktop) to
+            connect, then click Reload.
+          </p>
+        </div>
+      );
       break;
     case 'notfound':
       content = (

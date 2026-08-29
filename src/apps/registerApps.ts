@@ -6,6 +6,7 @@ import { MailApp } from './MailApp';
 import { BuddyLine } from './BuddyLine';
 import { Browser } from './Browser';
 import { RecycleBin } from './RecycleBin';
+import { DialUp } from './DialUp';
 import { Solitaire } from './Solitaire';
 import { VoyagerSplash } from './VoyagerSplash';
 import { Calculator } from './Calculator';
@@ -66,6 +67,14 @@ export function registerAllApps(): void {
     defaultSize: { w: 780, h: 580 },
     singleton: true,
     splash: VoyagerSplash,
+  });
+  registerApp({
+    id: 'dialup',
+    name: 'Dial-Up Networking',
+    icon: 'dialup',
+    component: DialUp,
+    defaultSize: { w: 380, h: 330 },
+    singleton: true,
   });
   registerApp({
     id: 'recycle',

@@ -184,7 +184,7 @@ type SubName = 'programs' | 'documents' | 'settings' | 'find' | null;
 type Sub2Name = 'accessories' | 'games' | null;
 
 // Which registered apps live where (everything else lands under Programs).
-const ACCESSORY_IDS = ['calculator', 'calendar', 'clock', 'notepad', 'paintbox', 'photos', 'sysmon'];
+const ACCESSORY_IDS = ['calculator', 'calendar', 'clock', 'dialup', 'notepad', 'paintbox', 'photos', 'sysmon'];
 const GAME_IDS = ['solitaire', 'minefield'];
 const SETTINGS_IDS = ['display'];
 const NON_PROGRAM_IDS = new Set([...ACCESSORY_IDS, ...GAME_IDS, ...SETTINGS_IDS, 'recycle']);
@@ -611,6 +611,15 @@ export function Taskbar({
             ))}
           </WinButtons>
           <Tray>
+            {view?.online && (
+              <TrayButton
+                onDoubleClick={() => open('dialup')}
+                title="Connected to WestWind Online at 33,600 bps"
+                style={{ cursor: 'default' }}
+              >
+                <Icon name="dialup" size={16} />
+              </TrayButton>
+            )}
             <TrayButton onClick={toggleMute} title={muted ? 'Sound off (click to enable)' : 'Sound on (click to mute)'}>
               {muted ? '🔇' : '🔊'}
             </TrayButton>

@@ -235,7 +235,11 @@ export function BuddyLine({ props }: AppWindowProps) {
   return (
     <>
       <div style={{ fontSize: 12, padding: '0 2px 4px', color: '#444' }}>
-        Signed on as <b>{self}</b>
+        {view?.online ? (
+          <>Signed on as <b>{self}</b></>
+        ) : (
+          <>Not connected — saved logs only. Dial in to see who&apos;s online.</>
+        )}
       </div>
       <Layout>
         <ListPane>

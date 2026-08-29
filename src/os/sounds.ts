@@ -60,6 +60,38 @@ export function playError(): void {
   tone(196, 0, 160, 'sawtooth', 0.03);
 }
 
+/**
+ * A stylized dial-up handshake, all chip tones (~3.2s, quiet): dial tone,
+ * DTMF chatter, carrier warble, then the answering screech. Not a sample —
+ * a cartoon of the real thing, per the synth-only sound rule.
+ */
+export function playDialup(): void {
+  // dial tone
+  tone(350, 0, 350, 'sine', 0.02);
+  tone(440, 0, 350, 'sine', 0.02);
+  // DTMF-ish digit chatter
+  const digits = [
+    [770, 1336], [852, 1209], [852, 1477], [697, 1336], [941, 1336], [770, 1209], [852, 1336],
+  ];
+  digits.forEach(([a, b], i) => {
+    tone(a, 420 + i * 90, 70, 'sine', 0.02);
+    tone(b, 420 + i * 90, 70, 'sine', 0.02);
+  });
+  // ring, then the modem answers
+  tone(440, 1150, 300, 'sine', 0.02);
+  // carrier warble: alternating originate/answer tones
+  for (let i = 0; i < 6; i++) {
+    tone(i % 2 ? 1200 : 2250, 1550 + i * 130, 110, 'square', 0.012);
+  }
+  // negotiation screech: fast pseudo-random chirps
+  const chirps = [1830, 990, 2110, 1370, 2510, 760, 1650, 2010, 1150, 2390];
+  chirps.forEach((f, i) => {
+    tone(f, 2350 + i * 55, 45, 'sawtooth', 0.008);
+  });
+  // settled carrier hum
+  tone(1070, 2950, 260, 'sine', 0.012);
+}
+
 /** A buddy signing on: two rising notes, the era's doorbell. */
 export function playBuddyOn(): void {
   tone(523, 0, 120, 'square', 0.03);

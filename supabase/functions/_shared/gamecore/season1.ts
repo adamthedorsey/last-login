@@ -352,6 +352,7 @@ export const SEASON1: SeasonContent = {
     { id: 'pf.clock', kind: 'shortcut', name: 'Clock', icon: 'clock', parentId: 'folder.programs', meta: { appId: 'clock', modifiedAt: '1996-11-20' } },
     { id: 'pf.display', kind: 'shortcut', name: 'Display', icon: 'display', parentId: 'folder.programs', meta: { appId: 'display', modifiedAt: '1996-11-20' } },
     { id: 'pf.sysmon', kind: 'shortcut', name: 'System Monitor', icon: 'sysmon', parentId: 'folder.programs', meta: { appId: 'sysmon', modifiedAt: '1996-11-20' } },
+    { id: 'pf.dialup', kind: 'shortcut', name: 'Dial-Up Networking', icon: 'dialup', parentId: 'folder.programs', meta: { appId: 'dialup', modifiedAt: '1997-06-30' } },
     {
       id: 'folder.school',
       kind: 'folder',
@@ -1014,6 +1015,7 @@ warm anyway.
       // ACT 2. Sadie does the player's thinking with them — and clears Chad.
       id: 'email.sadie.notchad',
       kind: 'email',
+      arrivesOnline: true,
       name: 'it’s not chad',
       icon: 'mail',
       parentId: 'mailbox.inbox',
@@ -1053,6 +1055,7 @@ girl with a sketchbook. watch me.
       // he still talks to.
       id: 'email.ruth.yourdad',
       kind: 'email',
+      arrivesOnline: true,
       name: 'about your daddy',
       icon: 'mail',
       parentId: 'mailbox.inbox',
@@ -1133,6 +1136,7 @@ If anyone reads this who loves her: look after what she was carrying.
       // PATH B for the-pipeline. Sam stops being careful.
       id: 'email.sam.plain',
       kind: 'email',
+      arrivesOnline: true,
       name: 'what i should have said',
       icon: 'mail',
       parentId: 'mailbox.inbox',
@@ -1178,6 +1182,7 @@ this county doing my job. Look at where the money goes.
       // ACT 3. Rebecca names the shape.
       id: 'email.rebecca',
       kind: 'email',
+      arrivesOnline: true,
       name: 'to whoever is going through her things',
       icon: 'mail',
       parentId: 'mailbox.inbox',
@@ -1495,6 +1500,13 @@ and things go back to nor
       name: 'Solitaire',
       icon: 'game',
       meta: { appId: 'solitaire', desktop: { x: 216, y: 120 } },
+    },
+    {
+      id: 'shortcut.dialup',
+      kind: 'shortcut',
+      name: 'WestWind Online',
+      icon: 'dialup',
+      meta: { appId: 'dialup', desktop: { x: 216, y: 216 } },
     },
     {
       id: 'shortcut.recycle',
