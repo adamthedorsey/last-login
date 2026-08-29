@@ -112,10 +112,10 @@ const BodyText = styled.div`
 function fmtDate(iso?: string): string {
   if (!iso) return '';
   const d = new Date(iso);
-  return `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(2)} ${d
-    .getHours()
-    .toString()
-    .padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+  const h12 = d.getHours() % 12 || 12;
+  const mm = d.getMinutes().toString().padStart(2, '0');
+  const ampm = d.getHours() >= 12 ? 'PM' : 'AM';
+  return `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(2)} ${h12}:${mm} ${ampm}`;
 }
 
 export function MailApp() {
