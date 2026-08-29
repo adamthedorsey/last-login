@@ -143,7 +143,7 @@ export function MailApp() {
         <Button disabled>Compose</Button>
         <Button disabled>Reply</Button>
         <span style={{ fontSize: 12, marginLeft: 'auto', color: '#444' }}>
-          casey_b@westwind.net
+          casey_t@westwind.net
         </span>
       </Toolbar>
       <Layout>

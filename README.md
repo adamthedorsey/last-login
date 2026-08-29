@@ -5,8 +5,8 @@ personal computer from 1997 — the computer **is** the game world. They read em
 scroll instant-messenger logs, open files, browse a tiny fictional web, and piece
 together what happened.
 
-Season 1: **The Overlook** — Maple Glen, October 1997. Casey Brennan, 16, has been
-missing for a week. Her machine is still on.
+Season 1: **Without a Trace** — Humble, West Virginia, October 1997. Casey
+Taylor, 16, has been missing for a week. Her machine is still on.
 
 Everything is fictional: the OS ("Microtech Horizons 97"), the ISP ("WestWind
 Online"), the messenger ("BuddyLine"), the browser ("NetVoyager"), the search
@@ -229,27 +229,22 @@ supabase test db      # pgTAP RLS tests (needs local stack)
 
 ## Demo walkthrough (spoilers)
 
-1. **Boot / login** — the sticky note ("mom's flower + the year") + the sunflower
-   photo motif → password `sunflower97`.
-2. **Desktop** — mundane 1997 teenage machine: homework, mixtape lists, band fan
-   pages, chain letters, a cat photo. The local paper's site mentions the search
-   for Casey.
-3. **WestWind Mail** — Dana's *"please write back"* (Oct 11): Casey said she was
-   meeting Mel at the overlook; Mel provably wasn't there. → discovery **The
-   overlook plan** (a quiet "case notes updated" toast).
-4. **Chat** — a buddy named **GhostBridge** now stands out; its saved log
-   from the night of Oct 10 shows someone arranging the meeting, proving identity
-   with a secret only Mel should know, and demanding the logs be deleted. →
-   **GhostBridge**.
-5. **Notepad** — `My Documents\personal stuff\oct_pages.txt` (now visible): Casey's
-   diary doubts — "GhostBridge types like someone doing an impression of a person…
-   it has to be mel. unless somehow it isn't." → **The third screen name**, end of
-   demo. The desktop stays explorable.
+1. **Boot / login** — the sticky note ("mom's flower + the year") + the
+   sunflower photos → password `sunflower97`. Note who signed the sticky note.
+2. **Act 1** — Sadie's *"please write back"*: Casey was meeting someone at the
+   river and told no one who → the Recycle Bin holds a chat log she was told
+   to delete: GhostBridge proved himself with a word only Sadie knew. (It's
+   also floating on the screen saver. It always was.)
+3. **Act 2** — Sadie's *"it's not chad"* (you don't get jealous of yourself) →
+   Aunt Ruth: Frank saw a clean, quiet, dark 4x4 at the bend. Not Chad's.
+4. **Act 3** — a "history notes" file that is no such thing (the ledger:
+   Sparks writes, Value-Med fills) → Sam Reed's forwarded letter → Rebecca
+   Wright: her first husband used to answer her mail *as her* → the deleted
+   diary: modified and deleted at **2:14 AM, October 11** — hours after Casey
+   vanished. Whoever it was didn't break in. They were already home. END.
 
-Also gated: searching "overlook" on SearchHound only surfaces the MapFinder page
-for Miller Point after step 3.
-
----
+Full design docs (heavy spoilers): `story/truth-timeline.md`,
+`story/who-knows-what.md`, and the generated `docs/clue-graph.md`.
 
 ## Known limitations
 

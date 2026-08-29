@@ -3,6 +3,7 @@ import styled from 'styled-components';
 // NOTE: react95's Slider relies on findDOMNode (removed in React 19) — avoid it.
 import { Button, GroupBox, Monitor, Select, Tab, TabBody, Tabs } from 'react95';
 import { useSettingsStore, WALLPAPERS } from '../os/settingsStore';
+import { useGame } from '../game/gameContext';
 
 const Center = styled.div`
   display: flex;
@@ -13,7 +14,9 @@ const Center = styled.div`
 const SaverPreview = styled.div`
   width: 100%;
   height: 100%;
-  background: #0a000a;
+  background: #000 radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.35) 0.5px, transparent 1px),
+    radial-gradient(circle at 70% 25%, rgba(255, 255, 255, 0.3) 0.5px, transparent 1px),
+    radial-gradient(circle at 55% 70%, rgba(255, 255, 255, 0.3) 0.5px, transparent 1px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,6 +28,7 @@ const SaverPreview = styled.div`
 export function Display() {
   const { wallpaper, saverMinutes, setWallpaper, setSaverMinutes, previewSaver } =
     useSettingsStore();
+  const { view } = useGame();
   const [tab, setTab] = useState(0);
 
   return (
@@ -57,7 +61,7 @@ export function Display() {
           <>
             <Center>
               <Monitor>
-                <SaverPreview>✿ casey ✿</SaverPreview>
+                <SaverPreview>{view?.saverText ?? 'starfield'}</SaverPreview>
               </Monitor>
             </Center>
             <GroupBox label="Wait before starting">
@@ -77,7 +81,7 @@ export function Display() {
               </div>
             </GroupBox>
             <div style={{ fontSize: 12, color: '#555', marginTop: 8 }}>
-              Saver: "casey" — set up before Oct 10. It still runs.
+              Saver: "Starfield" with owner's text. Set up before October 10. It still runs.
             </div>
           </>
         )}

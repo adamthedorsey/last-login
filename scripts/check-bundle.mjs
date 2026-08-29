@@ -12,12 +12,13 @@ const DIST = new URL('../dist', import.meta.url).pathname;
 // appear in dist/, the content pipeline is broken.
 const FORBIDDEN = [
   'sunflower97', // login password
-  'GhostBridge', // gated character
-  'ghostbridge-logs', // discovery id
-  'third-screen-name', // final discovery id
-  'oct_pages', // gated diary filename
-  'overlook. 10', // gated IM line
-  'Dana believed Casey', // discovery description
+  'GhostBridge', // the impersonator
+  'junebug', // the code word (served via StateView, never client code)
+  'stolen-intimacy', // discovery id
+  'the-house', // final discovery id
+  'bl_log_ghstbrdg', // recovered log filename
+  'Ask him about my mail', // Rebecca's reveal line
+  'wv history extra notes', // hidden ledger filename
   'SEASON1', // content export name
   'generateNeighborhood', // web generator (server-side content tooling)
   'radioactive_dave', // generated-web identity pool

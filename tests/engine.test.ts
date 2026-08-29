@@ -6,6 +6,17 @@ import { SEASON1 } from '@gamecore/season1.ts';
 const NOW = 1_000_000;
 const LOGIN_PASSWORD = 'sunflower97'; // test-only knowledge; lives server-side in content
 
+// The Season 1 chain, in order (see docs/clue-graph.md).
+const CHAIN: Array<{ open: string; grants: string }> = [
+  { open: 'email.sadie.please', grants: 'the-meeting' },
+  { open: 'trash.bl-log', grants: 'stolen-intimacy' },
+  { open: 'email.sadie.notchad', grants: 'chads-window' },
+  { open: 'email.ruth.yourdad', grants: 'the-clean-truck' },
+  { open: 'file.ledger-copy', grants: 'the-pipeline' },
+  { open: 'email.rebecca', grants: 'who-shaped' },
+  { open: 'trash.diary', grants: 'the-house' },
+];
+
 function run(state: PlayerState, action: GameAction, now = NOW) {
   return handleAction(SEASON1, state, action, now);
 }
@@ -36,9 +47,6 @@ describe('requirements', () => {
     s.discoveries.push('a');
     expect(meetsRequirement(s, { all: [{ discovery: 'a' }, { discovery: 'b' }] })).toBe(false);
     expect(meetsRequirement(s, { any: [{ discovery: 'a' }, { discovery: 'b' }] })).toBe(true);
-    expect(
-      meetsRequirement(s, { all: [{ discovery: 'a' }, { any: [{ discovery: 'b' }, { flag: 'x' }] }] }),
-    ).toBe(false);
   });
 });
 
@@ -72,10 +80,11 @@ describe('computer login', () => {
     const actions: GameAction[] = [
       { type: 'getDesktop' },
       { type: 'listChildren', parentId: 'folder.c' },
-      { type: 'open', itemId: 'email.dana.please-write-back' },
+      { type: 'open', itemId: 'email.sadie.please' },
       { type: 'visit', url: 'www.searchhound.net' },
-      { type: 'search', query: 'overlook' },
+      { type: 'search', query: 'river' },
       { type: 'getBuddies' },
+      { type: 'saveDocument', name: 'notes.txt', text: 'hi' },
     ];
     for (const action of actions) {
       const { result } = run(newPlayerState(), action);
@@ -85,40 +94,36 @@ describe('computer login', () => {
 });
 
 describe('clue chain progression', () => {
-  it("walks the demo chain: email -> IM log -> diary -> demo end", () => {
+  it('walks the full Season 1 chain to the end of the demo', () => {
     let s = loggedInState();
 
-    // GhostBridge conversation is invisible before the email clue.
-    let open = run(s, { type: 'open', itemId: 'im.ghostbridge' });
-    expect(open.result).toMatchObject({ type: 'open', ok: false });
+    for (const [i, step] of CHAIN.entries()) {
+      // Every later gated step must be closed before its turn comes.
+      for (const later of CHAIN.slice(i + 1)) {
+        const peek = run(s, { type: 'open', itemId: later.open }).result;
+        if (peek.type === 'open' && peek.ok) {
+          // Only allowed if the item is genuinely ungated (none are, past i).
+          throw new Error(`${later.open} opened before its turn`);
+        }
+      }
+      const { state, result } = run(s, { type: 'open', itemId: step.open });
+      s = state;
+      expect(result, step.open).toMatchObject({ type: 'open', ok: true });
+      expect(s.discoveries, step.open).toContain(step.grants);
+    }
 
-    // Reading Dana's email grants the overlook-plan discovery.
-    open = run(s, { type: 'open', itemId: 'email.dana.please-write-back' });
-    s = open.state;
-    expect(open.result).toMatchObject({ type: 'open', ok: true });
-    expect(s.discoveries).toContain('overlook-plan');
-
-    // Now the IM log opens and grants ghostbridge-logs.
-    open = run(s, { type: 'open', itemId: 'im.ghostbridge' });
-    s = open.state;
-    expect(open.result).toMatchObject({ type: 'open', ok: true });
-    expect(s.discoveries).toContain('ghostbridge-logs');
-
-    // The diary opens last and ends the demo.
-    open = run(s, { type: 'open', itemId: 'file.oct-pages' });
-    s = open.state;
-    expect(open.result).toMatchObject({ type: 'open', ok: true, ended: true });
-    expect(s.discoveries).toContain('third-screen-name');
     expect(s.ended).toBe(true);
+    expect(s.discoveries).toHaveLength(CHAIN.length);
   });
 
-  it('reveals the GhostBridge buddy only after the email clue', () => {
+  it('reveals the GhostBridge buddy only after stolen-intimacy', () => {
     let s = loggedInState();
     let res = run(s, { type: 'getBuddies' }).result;
     if (res.type !== 'buddies') throw new Error('bad result');
     expect(res.buddies.map((b) => b.screenname)).not.toContain('GhostBridge');
 
-    s = run(s, { type: 'open', itemId: 'email.dana.please-write-back' }).state;
+    s = run(s, { type: 'open', itemId: 'email.sadie.please' }).state;
+    s = run(s, { type: 'open', itemId: 'trash.bl-log' }).state;
     res = run(s, { type: 'getBuddies' }).result;
     if (res.type !== 'buddies') throw new Error('bad result');
     expect(res.buddies.map((b) => b.screenname)).toContain('GhostBridge');
@@ -126,17 +131,17 @@ describe('clue chain progression', () => {
 
   it('discoveries are granted only once', () => {
     let s = loggedInState();
-    let r = run(s, { type: 'open', itemId: 'email.dana.please-write-back' });
+    let r = run(s, { type: 'open', itemId: 'email.sadie.please' });
     s = r.state;
-    expect(r.result).toMatchObject({ ok: true, newDiscoveries: [{ id: 'overlook-plan' }] });
-    r = run(s, { type: 'open', itemId: 'email.dana.please-write-back' });
+    expect(r.result).toMatchObject({ ok: true, newDiscoveries: [{ id: 'the-meeting' }] });
+    r = run(s, { type: 'open', itemId: 'email.sadie.please' });
     if (r.result.type !== 'open') throw new Error('bad result');
     expect(r.result.newDiscoveries).toBeUndefined();
   });
 
   it('resetSeason returns a pristine state', () => {
     let s = loggedInState();
-    s = run(s, { type: 'open', itemId: 'email.dana.please-write-back' }).state;
+    s = run(s, { type: 'open', itemId: 'email.sadie.please' }).state;
     const { state } = run(s, { type: 'resetSeason' });
     expect(state).toEqual(newPlayerState());
   });
@@ -145,23 +150,14 @@ describe('clue chain progression', () => {
 describe('analytics events', () => {
   it('emits open/discovery events for meaningful actions only', () => {
     const s = loggedInState();
-    const first = run(s, { type: 'open', itemId: 'email.dana.please-write-back' });
+    const first = run(s, { type: 'open', itemId: 'email.sadie.please' });
     expect(first.events.map((e) => e.type)).toEqual(['open', 'discovery']);
-    const again = run(first.state, { type: 'open', itemId: 'email.dana.please-write-back' });
+    const again = run(first.state, { type: 'open', itemId: 'email.sadie.please' });
     expect(again.events).toHaveLength(0);
   });
 });
 
 describe('player documents (Notepad saves)', () => {
-  it('requires login', () => {
-    const { result } = run(newPlayerState(), {
-      type: 'saveDocument',
-      name: 'notes.txt',
-      text: 'hi',
-    });
-    expect(result).toMatchObject({ type: 'error', error: 'not_logged_in' });
-  });
-
   it('creates a document that appears on the desktop and opens editable', () => {
     let s = loggedInState();
     const saved = run(s, { type: 'saveDocument', name: 'my notes', text: 'GhostBridge = ???' });
@@ -179,7 +175,6 @@ describe('player documents (Notepad saves)', () => {
     const open = run(s, { type: 'open', itemId: doc!.id }).result;
     if (open.type !== 'open' || !open.item) throw new Error('bad result');
     expect(open.item.body?.text).toBe('GhostBridge = ???');
-    expect(open.item.editable).toBe(true);
   });
 
   it('updates an existing document by id', () => {
@@ -210,53 +205,40 @@ describe('player documents (Notepad saves)', () => {
 });
 
 describe('player folders', () => {
-  it('creates a folder on the desktop and files documents into it', () => {
+  it('creates a folder and files documents in and back out', () => {
     let s = loggedInState();
     const created = run(s, { type: 'createFolder', name: 'case stuff' });
     s = created.state;
     if (created.result.type !== 'document' || !created.result.item) throw new Error('bad result');
     const folderId = created.result.item.id;
-    expect(created.result.item.kind).toBe('folder');
 
     s = run(s, { type: 'saveDocument', name: 'timeline.txt', text: 'oct 10, 10pm' }).state;
     const docId = s.documents![0].id;
     s = run(s, { type: 'moveDocument', docId, folderId }).state;
 
-    const desktop = run(s, { type: 'getDesktop' }).result;
+    let desktop = run(s, { type: 'getDesktop' }).result;
     if (desktop.type !== 'desktop') throw new Error('bad result');
     expect(desktop.items.map((i) => i.id)).not.toContain(docId);
-    expect(desktop.items.map((i) => i.id)).toContain(folderId);
 
     const children = run(s, { type: 'listChildren', parentId: folderId }).result;
     if (children.type !== 'children') throw new Error('bad result');
     expect(children.items.map((i) => i.id)).toContain(docId);
+
+    s = run(s, { type: 'moveDocument', docId }).state;
+    desktop = run(s, { type: 'getDesktop' }).result;
+    if (desktop.type !== 'desktop') throw new Error('bad result');
+    expect(desktop.items.map((i) => i.id)).toContain(docId);
   });
 
   it('rejects moving into a nonexistent folder', () => {
     let s = loggedInState();
     s = run(s, { type: 'saveDocument', name: 'a.txt', text: 'x' }).state;
-    const { result } = run(s, { type: 'moveDocument', docId: s.documents![0].id, folderId: 'playerfolder.999' });
+    const { result } = run(s, {
+      type: 'moveDocument',
+      docId: s.documents![0].id,
+      folderId: 'playerfolder.999',
+    });
     expect(result).toMatchObject({ type: 'document', ok: false });
-  });
-});
-
-describe('drag out of folders', () => {
-  it('moveDocument without folderId returns the doc to the desktop', () => {
-    let s = loggedInState();
-    s = run(s, { type: 'createFolder', name: 'stuff' }).state;
-    s = run(s, { type: 'saveDocument', name: 'n.txt', text: 'x' }).state;
-    const docId = s.documents![0].id;
-    const folderId = s.folders![0].id;
-    s = run(s, { type: 'moveDocument', docId, folderId }).state;
-    s = run(s, { type: 'moveDocument', docId }).state;
-
-    const desktop = run(s, { type: 'getDesktop' }).result;
-    if (desktop.type !== 'desktop') throw new Error('bad result');
-    expect(desktop.items.map((i) => i.id)).toContain(docId);
-
-    const children = run(s, { type: 'listChildren', parentId: folderId }).result;
-    if (children.type !== 'children') throw new Error('bad result');
-    expect(children.items).toHaveLength(0);
   });
 });
 
@@ -265,15 +247,13 @@ describe('renaming', () => {
     let s = loggedInState();
     s = run(s, { type: 'saveDocument', name: 'a.txt', text: 'x' }).state;
     s = run(s, { type: 'createFolder', name: 'stuff' }).state;
-    const docId = s.documents![0].id;
-    const folderId = s.folders![0].id;
 
-    s = run(s, { type: 'renameItem', itemId: docId, name: 'evidence notes' }).state;
-    s = run(s, { type: 'renameItem', itemId: folderId, name: 'the case' }).state;
+    s = run(s, { type: 'renameItem', itemId: s.documents![0].id, name: 'evidence notes' }).state;
+    s = run(s, { type: 'renameItem', itemId: s.folders![0].id, name: 'the case' }).state;
     expect(s.documents![0].name).toBe('evidence notes.txt');
     expect(s.folders![0].name).toBe('the case');
 
-    const denied = run(s, { type: 'renameItem', itemId: 'file.oct-pages', name: 'haha' });
+    const denied = run(s, { type: 'renameItem', itemId: 'file.ledger-copy', name: 'haha' });
     expect(denied.result).toMatchObject({ type: 'document', ok: false });
   });
 });

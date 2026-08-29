@@ -1,10 +1,10 @@
-# Clue graph — Last Login — Season 1: The Overlook
+# Clue graph — Last Login — Season 1: Without a Trace
 
 > GENERATED — do not edit. Source of truth: `season1.ts`. Regenerate: `npm run graph`
 >
-> In-world date: 1997-10-18 · 90 items
-> (3 gated · 3 granting · ~84 mundane camouflage) ·
-> 3 discoveries
+> In-world date: 1997-10-18 · 95 items
+> (7 gated · 7 granting · ~81 mundane camouflage) ·
+> 7 discoveries
 
 ```mermaid
 flowchart TD
@@ -15,21 +15,37 @@ flowchart TD
   classDef note fill:none,stroke:none,color:#888
   login[/"COMPUTER LOGIN<br/><i>password: login.casey</i>"/]:::locked
   login ~~~ loginNote["everything below requires the login"]:::note
-  d_overlook_plan(["The overlook plan"]):::discovery
-  d_ghostbridge_logs(["GhostBridge"]):::discovery
-  d_third_screen_name(["The third screen name<br/><b>END OF SEASON</b>"]):::finale
-  i_file_oct_pages["oct_pages.txt<br/><i>file</i>"]:::item
-  i_file_oct_pages ==>|grants| d_third_screen_name
-  d_ghostbridge_logs -->|requires| i_file_oct_pages
-  i_email_dana_please_write_back["please write back<br/><i>email</i>"]:::item
-  i_email_dana_please_write_back ==>|grants| d_overlook_plan
-  i_im_ghostbridge["GhostBridge<br/><i>IM log</i>"]:::item
-  i_im_ghostbridge ==>|grants| d_ghostbridge_logs
-  d_overlook_plan -->|requires| i_im_ghostbridge
-  i_web_mapfinder_overlook["MapFinder: Miller Point Overlook<br/><i>web</i>"]:::item
-  d_overlook_plan -->|requires| i_web_mapfinder_overlook
+  d_the_meeting(["The meeting"]):::discovery
+  d_stolen_intimacy(["Stolen intimacy"]):::discovery
+  d_chads_window(["Chad’s window"]):::discovery
+  d_the_clean_truck(["The clean dark truck"]):::discovery
+  d_the_pipeline(["The pipeline"]):::discovery
+  d_who_shaped(["A familiar shape"]):::discovery
+  d_the_house(["The house<br/><b>END OF SEASON</b>"]):::finale
+  i_file_ledger_copy["wv history extra notes.txt<br/><i>file</i>"]:::item
+  i_file_ledger_copy ==>|grants| d_the_pipeline
+  d_the_clean_truck -->|requires| i_file_ledger_copy
+  i_email_sadie_please["please write back<br/><i>email</i>"]:::item
+  i_email_sadie_please ==>|grants| d_the_meeting
+  i_email_sadie_notchad["it’s not chad<br/><i>email</i>"]:::item
+  i_email_sadie_notchad ==>|grants| d_chads_window
+  d_stolen_intimacy -->|requires| i_email_sadie_notchad
+  i_email_ruth_yourdad["about your daddy<br/><i>email</i>"]:::item
+  i_email_ruth_yourdad ==>|grants| d_the_clean_truck
+  d_chads_window -->|requires| i_email_ruth_yourdad
+  i_email_rebecca["to whoever is going through her things<br/><i>email</i>"]:::item
+  i_email_rebecca ==>|grants| d_who_shaped
+  d_the_pipeline -->|requires| i_email_rebecca
+  i_trash_bl_log["bl_log_ghstbrdg.txt<br/><i>recycle bin</i>"]:::item
+  i_trash_bl_log ==>|grants| d_stolen_intimacy
+  d_the_meeting -->|requires| i_trash_bl_log
+  i_trash_diary["diary.doc<br/><i>recycle bin</i>"]:::item
+  i_trash_diary ==>|grants| d_the_house
+  d_who_shaped -->|requires| i_trash_diary
+  i_web_mapfinder_bend["MapFinder: Route 9 river bend<br/><i>web</i>"]:::item
+  d_the_meeting -->|requires| i_web_mapfinder_bend
   b_GhostBridge["GhostBridge<br/><i>buddy appears</i>"]:::item
-  d_overlook_plan -->|requires| b_GhostBridge
+  d_stolen_intimacy -->|requires| b_GhostBridge
 ```
 
 Legend: rectangles are evidence items · stadiums are discoveries · slashed boxes

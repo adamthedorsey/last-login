@@ -1,45 +1,49 @@
 /**
- * SEASON 1 — "The Overlook" — Maple Glen, October 1997.
+ * SEASON 1 — "Without a Trace" — Humble, West Virginia, October 1997.
  *
  * SERVER-ONLY STORY DATA. This module is imported by the Supabase Edge
  * Function and (in local development only) by the dev in-browser adapter.
  * It must never be reachable from a production client bundle — the
  * `check:bundle` script enforces this.
  *
- * The machine belongs to Casey Brennan, 16. She has been missing since
+ * Canon: story/truth-timeline.md and story/who-knows-what.md (SPOILERS).
+ * The machine belongs to Casey Taylor, 16. She has been missing since
  * Friday, October 10. The in-world clock is frozen at Saturday, October 18,
  * 9:47 PM — the night someone finally sits down at her computer.
  *
- * Demo clue chain:
- *   login -> desktop -> Dana's email (overlook-plan)
- *         -> GhostBridge IM log (ghostbridge-logs)
- *         -> oct_pages.txt diary (third-screen-name, ends demo)
+ * Clue chain (see docs/clue-graph.md, regenerated from this file):
+ *  ACT 1  sadie's email -> the-meeting -> recovered IM log -> stolen-intimacy
+ *  ACT 2  sadie again -> chads-window -> aunt ruth -> the-clean-truck
+ *  ACT 3  hidden ledger copy -> the-pipeline -> rebecca -> who-shaped
+ *         -> the deleted diary -> the-house (END OF SEASON)
  */
 
 import type { SeasonContent } from './types.ts';
 import { generateNeighborhood } from './webgen.ts';
 
 // Procedurally generated GeoCities-style filler web (fixed seed = stable
-// world). Casey's and Mel's hand-authored pages headline the directory.
+// world). Casey's and Sadie's hand-authored pages headline the directory.
 const GENERATED_WEB = generateNeighborhood(19971018, 8, [
   { title: "~*~ casey's corner ~*~", url: 'www.citypages.net/~sunflwrc81' },
-  { title: "mel's page", url: 'www.citypages.net/~melwave' },
+  { title: "sadie draws (sometimes)", url: 'www.citypages.net/~sadiedraws77' },
 ]);
 
 export const SEASON1: SeasonContent = {
   slug: 'season-1',
-  title: 'Last Login — Season 1: The Overlook',
+  title: 'Last Login — Season 1: Without a Trace',
   clock: { now: '1997-10-18T21:47:00' },
   computer: {
-    owner: 'Casey Brennan',
+    owner: 'Casey Taylor',
     loginUser: 'casey',
     loginTargetId: 'login.casey',
     // Rendered as a sticky note taped beside the login prompt.
+    // (Signed "J". Remember that later.)
     loginHint: 'C — quit using mom’s flower + the year. anyone could guess it. — J',
+    // Casey set her screen saver text herself. It floats there whenever the
+    // machine idles — which means everyone in the house has seen it.
+    saverText: 'junebug',
   },
   passwords: {
-    // Placeholder v1 login puzzle. The sticky note + the sunflower photo on
-    // the desk (login screen art) point here.
     'login.casey': { password: 'sunflower97' },
   },
   wallpaper: 'teal',
@@ -49,60 +53,78 @@ export const SEASON1: SeasonContent = {
 
   discoveries: [
     {
-      id: 'overlook-plan',
-      title: 'The overlook plan',
+      id: 'the-meeting',
+      title: 'The meeting',
       description:
-        "Dana believed Casey went to meet Mel at the overlook on Friday night. Mel swears no such plan was ever made.",
+        'Casey told Sadie she was meeting someone the night of the 10th — down by the river — and wouldn’t say who. Nobody in her life knows who.',
     },
     {
-      id: 'ghostbridge-logs',
-      title: 'GhostBridge',
+      id: 'stolen-intimacy',
+      title: 'Stolen intimacy',
       description:
-        'Casey spent her last night online talking to a screen name nobody in her life recognizes — and it asked her to delete the logs.',
+        'GhostBridge proved himself with a word only Sadie should know. Whoever he is, he had been reading Casey’s private world.',
     },
     {
-      id: 'third-screen-name',
-      title: 'The third screen name',
+      id: 'chads-window',
+      title: 'Chad’s window',
       description:
-        'Casey thought she was talking to Mel. Mel never sent those messages. Whoever was behind GhostBridge knew things only Mel should know.',
+        'Chad spent that whole week jealous of “some guy she talks to online at 2am.” You don’t get jealous of yourself.',
+    },
+    {
+      id: 'the-clean-truck',
+      title: 'The clean dark truck',
+      description:
+        'Frank saw a quiet, clean 4x4 stop at the bend that night. Chad’s lifted truck can be heard three streets away — and Frank knows every engine in this county.',
+    },
+    {
+      id: 'the-pipeline',
+      title: 'The pipeline',
+      description:
+        'Dr. Sparks writes them. Value-Med fills them. Casey copied a page of the ledger — dates, initials, cash — and hid it where nobody would look.',
+    },
+    {
+      id: 'who-shaped',
+      title: 'A familiar shape',
+      description:
+        'Rebecca Wright’s first husband used to read her mail and answer it in her own voice. She recognizes the pattern. Now so do you.',
+    },
+    {
+      id: 'the-house',
+      title: 'The house',
+      description:
+        'Someone used this computer at 2:14 AM on October 11 — hours after Casey disappeared. They read her diary, and then they deleted it. They didn’t break in. They were already home.',
       endsDemo: true,
     },
   ],
 
   buddies: [
     {
-      screenname: 'MelWave81',
-      alias: 'mel',
+      screenname: 'sadiedraws77',
+      alias: 'sadie',
+      group: 'Buddies',
+      status: 'online',
+      conversationId: 'im.sadie',
+    },
+    {
+      screenname: 'AngelJx',
+      alias: 'angel',
       group: 'Buddies',
       status: 'away',
-      awayMessage: 'not here. leave one.',
-      conversationId: 'im.melwave81',
+      awayMessage: 'grounded. 4ever apparently.',
+      conversationId: 'im.angel',
     },
     {
-      screenname: 'beccs8r',
-      alias: 'becca',
+      screenname: 'BigChad4x4',
+      alias: 'chad',
       group: 'Buddies',
-      status: 'online',
-      conversationId: 'im.beccs8r',
-    },
-    {
-      screenname: 'DHartnell',
-      alias: 'dana',
-      group: 'Buddies',
-      status: 'online',
-    },
-    {
-      screenname: 'jjbrennan',
-      alias: 'jesse (bro)',
-      group: 'Family',
       status: 'offline',
     },
     {
       screenname: 'GhostBridge',
       group: 'Buddies',
       status: 'offline',
-      conversationId: 'im.ghostbridge',
-      requires: { discovery: 'overlook-plan' },
+      // His logs are gone from the messenger. One copy survived elsewhere.
+      requires: { discovery: 'stolen-intimacy' },
     },
   ],
 
@@ -178,7 +200,7 @@ export const SEASON1: SeasonContent = {
       name: 'personal stuff',
       icon: 'folder',
       parentId: 'folder.my-documents',
-      meta: { path: 'C:\\My Documents\\personal stuff', modifiedAt: '1997-10-10' },
+      meta: { path: 'C:\\My Documents\\personal stuff', modifiedAt: '1997-10-09' },
     },
     {
       id: 'folder.writing',
@@ -189,29 +211,30 @@ export const SEASON1: SeasonContent = {
       meta: { path: 'C:\\My Documents\\Writing!!', modifiedAt: '1997-09-30' },
     },
 
-    // --- School (boring on purpose) ---
+    // --- School (boring on purpose — except one file that is not) ---
     {
-      id: 'file.civilwar-report',
+      id: 'file.minewars-report',
       kind: 'document',
-      name: 'report_civilwar_FINAL2.txt',
+      name: 'wv history - mine wars essay.txt',
       icon: 'doc',
       parentId: 'folder.school',
       meta: { createdAt: '1997-10-02', modifiedAt: '1997-10-08', sizeKb: 6 },
       body: {
-        text: `THE HOMEFRONT ECONOMY, 1861-1865
-Casey Brennan, Per. 3, Mr. Whitfield
+        text: `THE MINE WARS AND WHAT THEY COST
+Casey Taylor, Per. 3, Mr. Estep
 
-The war changed daily life for ordinary families in ways textbooks
-mostly skip. Prices of coffee and cloth rose sharply. Women ran farms
-and shops. Letters took weeks to arrive, if they arrived at all.
+In 1921, ten thousand miners marched on Blair Mountain because the
+companies owned the houses, the stores, the scales that weighed the
+coal, and the men who did the weighing. When everything in a town runs
+through one set of hands, the town stops being able to say no.
 
-(NOTE TO SELF: whitfield wants 3 pages. this is 1.5. pad the
-conclusion. do NOT forget the bibliography this time)
+(NOTE TO SELF: estep wants "relevance to today." careful how i word
+that one.)
 
-Sources so far:
-- library encyclopedia vol 4
-- that PBS-looking documentary grandpa taped
-- searchhound "civil war economy" (mostly junk)`,
+Sources:
+- library, WV history shelf (all 4 books)
+- grandpa taylor's stories (counts as a primary source??)
+- searchhound "blair mountain" (mostly junk)`,
       },
     },
     {
@@ -225,9 +248,8 @@ Sources so far:
         text: `p.114 #1-19 odd
 3) x = 7
 5) x = -2
-7) x = 4/3 ?? check w/ mel
+7) x = 4/3 ?? check w/ sadie
 9) skipped, ask in class
-11) x = 11
 13) no idea. NO idea.
 
 quiz friday (the 10th) — STUDY THURS`,
@@ -241,16 +263,56 @@ quiz friday (the 10th) — STUDY THURS`,
       parentId: 'folder.school',
       meta: { createdAt: '1997-09-29', modifiedAt: '1997-09-29', sizeKb: 2 },
       body: {
-        text: `English 10 — journal, week 4
+        text: `English 11 — journal, week 4
 Prompt: "Describe a place that matters to you."
 
-The reservoir in summer, I guess. Everyone goes to the swim beach side
-but if you walk the fire road past the pump house there's a spot where
-the pines open up and you can see the whole valley. Dad used to take us
-up there before he moved. It's quieter than anywhere.
+The bend on the river out Route 9, I guess. Everybody swims at the
+park side but if you take the fire road past mile marker 6 there's a
+spot where the bank opens up and the water goes slow and green. Dad
+taught me to skip rocks there before everything. He can still do
+eleven. My record is six.
 
-(ms. okafor said "lovely detail" on my last one so I'm keeping the
+It's quiet in a way the rest of this town isn't. Nobody watches you
+there.
+
+(ms. combs wrote "lovely detail" on my last one so i'm keeping the
 nature thing going. easy A.)`,
+      },
+    },
+    {
+      // ACT 3 OPENER — the ledger copy, hidden behind the world's most
+      // boring filename. Casey learned camouflage from her own town.
+      id: 'file.ledger-copy',
+      kind: 'document',
+      name: 'wv history extra notes.txt',
+      icon: 'doc',
+      parentId: 'folder.school',
+      meta: { createdAt: '1997-10-05', modifiedAt: '1997-10-05', sizeKb: 2 },
+      requires: { discovery: 'the-clean-truck' },
+      onOpen: { discover: ['the-pipeline'] },
+      body: {
+        text: `[not history notes. if you found this you were looking.]
+
+copied from the page in the den desk, 10/5. exact as i could.
+
+  9/02   T.M.   3   $150   V-M   ok
+  9/06   R.C.   3   $180   V-M   ok
+  9/12   D.K.   4   $240   V-M   ok - W.S. sat hrs
+  9/19   T.M.   3   $150   V-M   ok
+  9/26   L.B.   6   $360   V-M   W.S. — "no more walk-ins"
+  10/03  R.C.   3   $180   V-M   ok
+
+V-M is the pharmacy. W.S. — there is one W.S. in this town and
+everybody calls him Win.
+
+the "patients" park out front of sparks' office with license plates
+from three counties away. saturday hours. cash.
+
+i put the real page back. this is my copy. if something happens to
+the page, this is still here.
+
+if something happens to ME — sadie, it's in the SCHOOL folder,
+because nobody ever looks at homework.`,
       },
     },
 
@@ -263,21 +325,21 @@ nature thing going. easy A.)`,
       parentId: 'folder.personal',
       meta: { createdAt: '1997-08-19', modifiedAt: '1997-10-04', sizeKb: 1 },
       body: {
-        text: `MIXTAPE FOR DANA (side A)
+        text: `MIXTAPE FOR SADIE (side A)
 1. solar flare - static heart
-2. the plimsouls?? ask jesse
+2. velvet june - anywhere but here
 3. that song from the radio tues (find out name)
-4. velvet june - anywhere but here
-5. solar flare - carousel
+4. solar flare - carousel
+5. something slow for the end. undecided.
 
 THINGS I NEED
 - new batteries for the discman
 - blank tapes (maxell, NOT the cheap ones)
-- $$ for the fair. ask mom. beg mom.
+- $$ for homecoming. ask mom. beg mom.
 
 PEOPLE WHO OWE ME
-- becca $4 (movie)
-- jesse infinite dollars (emotional damages)`,
+- angel $4 (movie)
+- nobody else. this town is broke.`,
       },
     },
     {
@@ -290,84 +352,42 @@ PEOPLE WHO OWE ME
       body: {
         text: `** if anyone reads this i will literally die **
 
-"COIN ON THE TRACKS"
-we put a coin on the tracks in june
-flattened silver, cheap little moon
-you said keep it, i kept it too
-some things stay even when people move
+"ROUTE 9"
+green water going slow / six skips and the seventh sank
+you said count again, kiddo / i've been counting since you left
 
-(chorus needs work. everything needs work.)
+(too sad? it's about dad. everything's about somebody.)
 
 "UNTITLED 3"
 the porch light stays on all night now
 moths keep faith better than people do
 
-(too sad? too sad.)`,
-      },
-    },
-    {
-      id: 'file.oct-pages',
-      kind: 'document',
-      name: 'oct_pages.txt',
-      icon: 'doc',
-      parentId: 'folder.personal',
-      meta: { createdAt: '1997-10-01', modifiedAt: '1997-10-10', sizeKb: 3 },
-      requires: { discovery: 'ghostbridge-logs' },
-      onOpen: { discover: ['third-screen-name'] },
-      body: {
-        text: `oct 1 — mom took double shifts again. house is SO quiet. jesse called
-from state, talked for an hour about his roommate's ferret. a FERRET.
-
-oct 5 — fair with dana + becca. won a goldfish, named him Agent. he is
-already looking unwell. godspeed Agent.
-
-oct 9 — ok so. someone new messaged me two nights ago. wouldn't say who
-they were at first, just "you know me." i thought it was becca messing
-around but they knew stuff becca doesn't know. then last night they
-said it. they knew about the bracelet. THE BRACELET. only mel knows
-about the bracelet. only mel on the ENTIRE EARTH.
-
-so it has to be mel, right? new screen name, being weird, whatever.
-that's a mel thing to do.
-
-oct 10 — m wants to meet at the overlook tonight. 10pm. "come alone,
-tell no one, delete the logs." which is dramatic even for mel.
-
-but here's the thing i keep not writing down. mel types "hehe." mel
-can't spell definitely. mel says goodnight like a normal person.
-GhostBridge types like... i don't know. like someone doing an
-impression of a person.
-
-it knew about the bracelet. so it HAS to be mel.
-
-unless somehow it isn't.
-
-going anyway. if this is mel i'm going to kill her.`,
+(chorus needs work. everything needs work.)`,
       },
     },
 
     // --- Writing!! ---
     {
-      id: 'file.lighthouse',
+      id: 'file.riverstory',
       kind: 'document',
-      name: 'story - the lighthouse keeper (unfinished).txt',
+      name: 'story - the ferry keeper (unfinished).txt',
       icon: 'doc',
       parentId: 'folder.writing',
       meta: { createdAt: '1997-09-14', modifiedAt: '1997-09-30', sizeKb: 4 },
       body: {
-        text: `THE LIGHTHOUSE KEEPER (working title)
-by C. Brennan
+        text: `THE FERRY KEEPER (working title)
+by C. Taylor
 
-Marta had kept the light for eleven years and in eleven years she had
-learned that the sea does not take people. People give themselves to
-it, a little at a time, in ways nobody notices until the giving is
-done.
+Marta had run the cable ferry for eleven years, and in eleven years
+she had learned that the river does not take people. People give
+themselves to it, a little at a time, in ways nobody notices until
+the giving is done.
 
 The boy arrived on a Tuesday, soaked through, holding a shoebox.
 "There's a bird in here," he said. "It's not doing so hot."
 
-[chapter 2 goes here. marta fixes the bird. the bird is NOT a metaphor
-mrs okafor, sometimes a bird is a bird]`,
+[chapter 2 goes here. marta fixes the bird. the bird is NOT a
+metaphor ms. combs, sometimes a bird is a bird]`,
       },
     },
 
@@ -381,14 +401,14 @@ mrs okafor, sometimes a bird is a bird]`,
       meta: { createdAt: '1997-10-06', modifiedAt: '1997-10-06', sizeKb: 1 },
       body: {
         text: `SOLAR FLARE — "STATIC HEART" TOUR — FALL 97
-(from the fan club page. saved so I stop losing it)
+(from the fan club page. saved so i stop losing it)
 
-OCT 24 - PORTVALE, CIVIC HALL
-OCT 26 - RIVERTON, THE ARMORY  <-- 2 HRS AWAY. POSSIBLE??
-NOV 01 - CASCADE CITY, FAIRGROUNDS
-NOV 03 - MERIDIAN, STATE THEATER
+OCT 24 - CHARLESTON, CIVIC HALL
+OCT 26 - HUNTINGTON, THE ARMORY  <-- 1 HR AWAY. POSSIBLE??
+NOV 01 - MORGANTOWN, FAIRGROUNDS
+NOV 03 - ROANOKE, STATE THEATER
 
-all ages except meridian. tickets $12 + service charge (robbery)`,
+all ages except roanoke. tickets $12 + service charge (robbery)`,
       },
     },
     {
@@ -405,11 +425,12 @@ Send her to 10 friends within 24 HOURS and something WONDERFUL will
 happen to you by the weekend. Marcy T. of Ohio deleted this message
 and her modem was struck by LIGHTNING. Do not risk it!!!
 
-(becca sent me this. i am keeping it purely as evidence against her)`,
+(angel sent me this because of her NAME. i am keeping it purely as
+evidence against her)`,
       },
     },
 
-    // --- Desktop stray note ---
+    // --- Desktop stray note (read it again after the end.) ---
     {
       id: 'file.readme-first',
       kind: 'document',
@@ -417,43 +438,19 @@ and her modem was struck by LIGHTNING. Do not risk it!!!
       icon: 'doc',
       parentId: 'folder.c',
       meta: {
-        createdAt: '1997-08-30',
-        modifiedAt: '1997-08-30',
+        createdAt: '1997-06-30',
+        modifiedAt: '1997-06-30',
         sizeKb: 1,
         desktop: { x: 312, y: 24 },
       },
       body: {
         text: `casey —
-fixed your sound card AGAIN. you're welcome AGAIN.
-don't install junk off the web. if the modem does the screechy thing,
-unplug it, count to ten, act natural.
-also you left your discman in my car. it's on the fridge.
-— jesse
+got your computer hooked back up after the move. new house, same
+rules: don't install junk off the web, and if the modem does the
+screechy thing, unplug it, count to ten, act natural.
+— J
 
 ps. change your password. i guessed it in one try. ONE.`,
-      },
-    },
-
-    // --- Datebook data (read by the Datebook 97 accessory; not in any folder) ---
-    {
-      id: 'file.datebook-1997',
-      kind: 'document',
-      name: 'datebook.dat',
-      icon: 'doc',
-      meta: { createdAt: '1997-01-04', modifiedAt: '1997-10-09', sizeKb: 2 },
-      body: {
-        text: `1997-09-19: band practice (jesse's garage. bring earplugs)
-1997-09-26: english journal due
-1997-10-03: sleepover @ mel's
-1997-10-04: FAIR!!! w/ d + b
-1997-10-09: STUDY. quiz tmrw. actually study
-1997-10-10: algebra quiz
-1997-10-10: ★ 10pm
-1997-10-14: dana bday ideas?? (NOT a mixtape again. ok maybe a mixtape)
-1997-10-21: picture retakes (fix bangs FIRST this time)
-1997-10-25: homecoming - find shoes
-1997-10-26: SOLAR FLARE RIVERTON?? beg mom. beg harder
-1997-11-27: thanksgiving @ aunt patty's (ron. turkey. fire dept on standby)`,
       },
     },
 
@@ -469,20 +466,20 @@ ps. change your password. i guessed it in one try. ONE.`,
       meta: {
         createdAt: '1997-08-23',
         sizeKb: 84,
-        caption: 'county fair w/ dana + becca. becca lost her churro on this ride.',
+        caption: 'county fair w/ sadie + angel. angel lost her churro on this ride.',
         photoSrc: '/photos/fair_ferris.svg',
       },
     },
     {
       id: 'photo.lockers',
       kind: 'photo',
-      name: 'me_and_dana_lockers.gif',
+      name: 'me_and_sadie_lockers.gif',
       icon: 'photo',
       parentId: 'folder.pictures',
       meta: {
         createdAt: '1997-09-05',
         sizeKb: 71,
-        caption: 'first week of sophomore year. dana decorated my locker. it is SO much.',
+        caption: 'first week of junior year. sadie decorated my locker. it is SO much.',
         photoSrc: '/photos/lockers.svg',
       },
     },
@@ -500,28 +497,28 @@ ps. change your password. i guessed it in one try. ONE.`,
       },
     },
     {
-      id: 'photo.reservoir',
+      id: 'photo.river',
       kind: 'photo',
-      name: 'reservoir_last_swim.gif',
+      name: 'river_last_swim.gif',
       icon: 'photo',
       parentId: 'folder.pictures',
       meta: {
         createdAt: '1997-08-31',
         sizeKb: 90,
-        caption: 'last swim of summer. water was FREEZING. worth it.',
+        caption: "the bend out route 9, last swim of summer. dad's spot. six skips, still my record.",
         photoSrc: '/photos/reservoir.svg',
       },
     },
     {
       id: 'photo.garage',
       kind: 'photo',
-      name: 'jesses_band_garage.gif',
+      name: 'garage_band.gif',
       icon: 'photo',
       parentId: 'folder.pictures',
       meta: {
         createdAt: '1997-06-14',
         sizeKb: 77,
-        caption: "jesse's band practicing. they are not good. do not tell jesse.",
+        caption: "sadie's cousin's band practicing. they are not good. do not tell them.",
         photoSrc: '/photos/garage.svg',
       },
     },
@@ -534,7 +531,7 @@ ps. change your password. i guessed it in one try. ONE.`,
       meta: {
         createdAt: '1997-04-12',
         sizeKb: 82,
-        caption: 'mom made the cake herself. it leaned. we loved it.',
+        caption: 'mom made the cake herself. it leaned. we loved it. (before the wedding, before everything.)',
         photoSrc: '/photos/sweet16.svg',
       },
     },
@@ -547,7 +544,7 @@ ps. change your password. i guessed it in one try. ONE.`,
       meta: {
         createdAt: '1997-09-20',
         sizeKb: 88,
-        caption: "dana burst in and took this 'for posterity.' me and the beast, deep in cyberspace.",
+        caption: "sadie burst in and took this 'for posterity.' me and the beast, deep in cyberspace.",
         photoSrc: '/photos/casey_at_computer.jpg',
       },
     },
@@ -566,143 +563,82 @@ ps. change your password. i guessed it in one try. ONE.`,
     },
 
     // =====================================================================
-    // EMAIL — WestWind Mail, casey_b@westwind.net
+    // EMAIL — WestWind Mail, casey_t@westwind.net
     // =====================================================================
     { id: 'mailbox.inbox', kind: 'mailbox', name: 'Inbox', icon: 'mailbox' },
     { id: 'mailbox.sent', kind: 'mailbox', name: 'Sent', icon: 'mailbox' },
     { id: 'mailbox.deleted', kind: 'mailbox', name: 'Deleted', icon: 'mailbox-trash' },
 
-    // --- Inbox ---
+    // --- Inbox: before the 10th (mundane life) ---
     {
-      id: 'email.dana.please-write-back',
+      id: 'email.mom.dinner',
       kind: 'email',
-      name: 'please write back',
+      name: 'dinner + this weekend',
       icon: 'mail',
       parentId: 'mailbox.inbox',
       meta: {
-        from: 'Dana Hartnell <dhartnell@westwind.net>',
-        to: 'casey_b@westwind.net',
-        date: '1997-10-11T16:22:00',
-      },
-      onOpen: { discover: ['overlook-plan'] },
-      body: {
-        text: `casey.
-
-i don't even know why i'm writing this. maybe you'll dial in from
-somewhere and see it. maybe your mom will. i don't know.
-
-the police talked to me AGAIN today. i told them what i told them
-before. you said you were meeting mel at the overlook friday night.
-that's what you told me at lunch. "meeting mel, don't wait up, it's a
-whole thing."
-
-but casey. mel says there was no plan. she wasn't even home friday,
-she was at her cousin's in portvale, her mom confirmed it. she found
-out you said that and she cried in the bathroom for the whole of
-third period.
-
-so either mel is lying, which — it's MEL. or you lied to me. and you
-don't lie to me. you never lie to me.
-
-who were you actually going to meet?
-
-please just write back. i'm not even mad. i just want you to write
-back.
-
-- d`,
-      },
-    },
-    {
-      id: 'email.dana.answer-me',
-      kind: 'email',
-      name: '(no subject)',
-      icon: 'mail',
-      parentId: 'mailbox.inbox',
-      meta: {
-        from: 'Dana Hartnell <dhartnell@westwind.net>',
-        to: 'casey_b@westwind.net',
-        date: '1997-10-14T23:05:00',
-      },
-      body: {
-        text: `it's late and your porch light is on. i can see it from my window.
-your mom leaves it on for you.
-
-ok.
-
-that's all. that's the whole email.
-
-- d`,
-      },
-    },
-    {
-      id: 'email.mom.leftovers',
-      kind: 'email',
-      name: 'dinner',
-      icon: 'mail',
-      parentId: 'mailbox.inbox',
-      meta: {
-        from: 'Linda Brennan <lbrennan@westwind.net>',
-        to: 'casey_b@westwind.net',
+        from: 'Leslie Wright <lwright@westwind.net>',
+        to: 'casey_t@westwind.net',
         date: '1997-10-09T17:41:00',
       },
       body: {
-        text: `Casey - working the late shift again tonight, there's leftover
+        text: `Casey - Jon and I are at the Hendersons' until late, there's leftover
 casserole in the fridge, the GOOD tupperware not the mystery one in
-the back. Feed Buster, do your homework, don't stay on that computer
-all night, the phone bill was $$$ last month.
+the back. Feed Buster. Homework before computer, I mean it, the phone
+bill was $$$ last month.
 
-Love you. Mom
+Also your father called the house again. I know, I know. Just - if
+you want to see him this weekend that's fine, tell me first, ok?
 
-P.S. Aunt Patty says you never answered her email about Thanksgiving.
-Answer your aunt.`,
+Love you. Mom`,
       },
     },
     {
       id: 'email.school.newsletter',
       kind: 'email',
-      name: 'MGH FALCON FLYER - Week of Oct 6',
+      name: 'WILDCAT WEEKLY - Week of Oct 6',
       icon: 'mail',
       parentId: 'mailbox.inbox',
       meta: {
-        from: 'Maple Glen High School <office@mapleglen.k12.net>',
-        to: 'students@mapleglen.k12.net',
+        from: 'Franklin Walker Community High <office@fwch.k12.wv.net>',
+        to: 'students@fwch.k12.wv.net',
         date: '1997-10-08T09:00:00',
       },
       body: {
-        text: `THE FALCON FLYER — Maple Glen High School — Week of October 6, 1997
+        text: `THE WILDCAT WEEKLY — Franklin Walker Community High — Oct 6, 1997
 
-* FALL SPORTS: Varsity soccer defeats Riverton 2-1. JV volleyball
-  hosts Portvale Thursday.
+* FALL SPORTS: Varsity football falls to Man 21-14. JV volleyball
+  hosts Logan Thursday.
 * PICTURE RETAKES are October 21. Forms in the front office.
 * The HOMECOMING DANCE is October 25 in the main gym. Theme:
   "A Night Under the Stars." Tickets $5 at lunch.
-* REMINDER: The fire road behind the reservoir is CLOSED to students.
-  This is county property. Violators will be cited.
+* REMINDER: The fire road off Route 9 past mile marker 6 is COUNTY
+  PROPERTY and closed after dusk. Violators will be cited.
 * Chess club needs members. Seriously. Anyone. Please.`,
       },
     },
     {
-      id: 'email.becca.chain',
+      id: 'email.angel.chain',
       kind: 'email',
       name: 'FW: FW: FW: THE GOOD LUCK ANGEL!!!',
       icon: 'mail',
       parentId: 'mailbox.inbox',
       meta: {
-        from: 'becca t <beccs8r@westwind.net>',
-        to: 'casey_b@westwind.net',
+        from: 'angel jackson <angeljx@westwind.net>',
+        to: 'casey_t@westwind.net',
         date: '1997-10-07T20:14:00',
       },
       body: {
         text: `>>> SEND TO 10 FRIENDS IN 24 HOURS OR ELSE <<<
 
-ok i KNOW you don't believe in these but marcy t. of ohio's modem
-got struck by LIGHTNING casey. LIGHTNING. i'm not taking chances
-and neither should you.
+ok 1) it has my NAME on it so it's basically legally binding and
+2) marcy t. of ohio's modem got struck by LIGHTNING casey. i'm not
+taking chances and neither should you.
 
-(also are we still on for the fair pics? my mom finally got the film
-developed. you look cute, i look like i'm being arrested.)
+(also fair pics came back from the developer. you look cute, i look
+like i'm being arrested.)
 
-xoxo becca`,
+xoxo angel`,
       },
     },
     {
@@ -722,31 +658,10 @@ xoxo becca`,
 1) TOUR DATES CONFIRMED (see the website for the full list!)
 2) StaticHeartGrrl asks: is the hidden track on side B real or a
    pressing error? (17 replies. it's getting heated.)
-3) Trade board: I have a RIVERTON 96 bootleg tape, looking for the
-   acoustic radio session. No rippers this time please.
+3) Trade board: HUNTINGTON 96 bootleg tape, looking for the acoustic
+   radio session. No rippers this time please.
 
 To unsubscribe, reply UNSUBSCRIBE. (This has never once worked.)`,
-      },
-    },
-    {
-      id: 'email.aunt-patty',
-      kind: 'email',
-      name: 'Thanksgiving??',
-      icon: 'mail',
-      parentId: 'mailbox.inbox',
-      meta: {
-        from: 'Patricia Kowalski <pkowalski@westwind.net>',
-        to: 'casey_b@westwind.net',
-        date: '1997-10-05T11:12:00',
-      },
-      body: {
-        text: `Hi sweetheart! It's your Aunt Patty! I am typing this on Ron's new
-computer so forgive me if it comes out strange. Are you and your mom
-and Jesse coming for Thanksgiving? Ron is deep-frying the turkey this
-year which the fire department has opinions about. Let me know!! Love,
-Aunt Patty
-
-P.S. how do I make the letters bigger. Ron doesn't know either.`,
       },
     },
     {
@@ -757,13 +672,13 @@ P.S. how do I make the letters bigger. Ron doesn't know either.`,
       parentId: 'mailbox.inbox',
       meta: {
         from: 'WestWind Online <postmaster@westwind.net>',
-        to: 'casey_b@westwind.net',
+        to: 'casey_t@westwind.net',
         date: '1997-10-03T04:00:00',
       },
       body: {
         text: `Dear WestWind Member,
 
-Your mailbox (casey_b) is at 80% of its 2 MB storage limit. To avoid
+Your mailbox (casey_t) is at 80% of its 2 MB storage limit. To avoid
 missed messages, please delete old mail or upgrade to WestWind GOLD
 for just $4.95/month and enjoy a spacious 10 MB.
 
@@ -772,49 +687,337 @@ Member Services | Dial-up Support: 1-800-555-0134`,
       },
     },
 
-    // --- Sent ---
+    // --- Inbox: the 10th and after ---
     {
-      id: 'email.sent.dana-homework',
+      // Sent at 6:02 PM on the 10th. She never read it. Read it twice.
+      id: 'email.chad.sorry',
       kind: 'email',
-      name: 're: did you do the algebra',
+      name: 'im sorry ok',
       icon: 'mail',
-      parentId: 'mailbox.sent',
+      parentId: 'mailbox.inbox',
       meta: {
-        from: 'casey_b@westwind.net',
-        to: 'Dana Hartnell <dhartnell@westwind.net>',
-        date: '1997-10-09T21:58:00',
+        from: 'chad daniels <bigchad4x4@westwind.net>',
+        to: 'casey_t@westwind.net',
+        date: '1997-10-10T18:02:00',
       },
       body: {
-        text: `> did you do the algebra or are we both doomed
+        text: `ok so that went bad. i shouldnt of grabbed your arm like that in
+front of everybody. im sorry. i mean it.
 
-did most of it. #13 is a war crime. copy mine at lunch.
+but casey you gotta see it from where im standing. every nite this
+week your line is busy till 2am. angel says your "on the computer."
+talking to WHO. you wont say. you go all quiet when i ask. what am i
+suposed to think.
 
-can't talk tonight - busy online. tell you about it later. maybe.
-it's kind of a weird thing.
+whatever it is just tell me. even if its bad. im at genes with the
+guys tonite, dont wanna sit home mad. call the bar if you want, ask
+for me.
 
 - c`,
       },
     },
     {
-      id: 'email.sent.mom-cat',
+      // ACT 1 IGNITION. Reading this grants the-meeting.
+      id: 'email.sadie.please',
       kind: 'email',
-      name: 're: dinner',
+      name: 'please write back',
+      icon: 'mail',
+      parentId: 'mailbox.inbox',
+      onOpen: { discover: ['the-meeting'] },
+      meta: {
+        from: 'Sadie Thompson <sadiedraws77@westwind.net>',
+        to: 'casey_t@westwind.net',
+        date: '1997-10-11T16:22:00',
+      },
+      body: {
+        text: `casey.
+
+i don't even know why i'm writing this. maybe you'll dial in from
+somewhere and see it. maybe your mom will. i don't know.
+
+the police talked to me AGAIN today. i told them what i told them
+before. thursday night on the porch you said you were meeting
+someone friday. down by the river. "it's a whole thing, i'll tell
+you saturday." you were EXCITED, casey. and scared. both at once. i
+should have made you tell me. i keep thinking if i'd just made you
+tell me.
+
+you don't do things like this. you don't just GO somewhere at night
+and not tell me who. you tell me everything. you have told me
+everything since second grade.
+
+so either you didn't know who it was either. or you thought you did.
+
+please just write back. i'm not even mad. i just want you to write
+back.
+
+- s`,
+      },
+    },
+    {
+      id: 'email.church.prayer',
+      kind: 'email',
+      name: 'Prayer chain for the Taylor family',
+      icon: 'mail',
+      parentId: 'mailbox.inbox',
+      meta: {
+        from: 'Grace Fellowship Hall <fellowship@gracewv.net>',
+        to: 'congregation@gracewv.net',
+        date: '1997-10-13T08:15:00',
+      },
+      body: {
+        text: `Dear friends,
+
+Please hold Leslie, Jonathan, and Frank, and all who love Casey, in
+your prayers this week. The sheriff's office asks volunteers for the
+search to meet at the Route 9 trailhead at 7 AM Saturday, dress warm.
+
+Father Mike at St. Mark's will hold a joint vigil Friday evening —
+all denominations welcome, which he asked us to underline twice.
+
+Casseroles can be left with Dorothy. She has a system.
+
+In faith,
+Grace Fellowship Hall`,
+      },
+    },
+    {
+      id: 'email.angel.sorry',
+      kind: 'email',
+      name: '(no subject)',
+      icon: 'mail',
+      parentId: 'mailbox.inbox',
+      meta: {
+        from: 'angel jackson <angeljx@westwind.net>',
+        to: 'casey_t@westwind.net',
+        date: '1997-10-14T23:40:00',
+      },
+      body: {
+        text: `i told them the truth today. the real one. i know it looks bad that
+i changed it. i KNOW.
+
+i said i dropped you home at 8 because if i said we were out back of
+gene's my cousin loses his job and probably worse, and my mom -- you
+know how my mom is. it didn't seem like it MATTERED, you were HOME
+after, i watched you walk in.
+
+now everybody looks at me in the hall like i did something. sadie
+won't hardly talk to me.
+
+wherever you are i'm sorry. i'd take it back. the wine coolers were
+warm anyway.
+
+- a`,
+      },
+    },
+    {
+      // ACT 2. Sadie does the player's thinking with them — and clears Chad.
+      id: 'email.sadie.notchad',
+      kind: 'email',
+      name: 'it’s not chad',
+      icon: 'mail',
+      parentId: 'mailbox.inbox',
+      requires: { discovery: 'stolen-intimacy' },
+      onOpen: { discover: ['chads-window'] },
+      meta: {
+        from: 'Sadie Thompson <sadiedraws77@westwind.net>',
+        to: 'casey_t@westwind.net',
+        date: '1997-10-15T21:03:00',
+      },
+      body: {
+        text: `they took chad in again today. third time. half the school has him
+convicted because of the parking lot thing and because he's, well,
+chad.
+
+but casey, listen. it's not him. and i can prove it with his own
+stupid jealousy.
+
+that whole last week he kept cornering ME. "who's she talking to at
+2am. is it a guy from man? is it somebody from charleston?" he was
+OBSESSED with who you were talking to online. begging me to tell him.
+
+if chad was the one talking to you, what was he jealous OF?
+
+whoever it was, it was somebody who didn't need to ask me anything.
+somebody who already knew things. and that list is so short it's
+basically just me. and it wasn't me.
+
+i'm going to keep pulling on this even if nobody listens to a fat
+girl with a sketchbook. watch me.
+
+- s`,
+      },
+    },
+    {
+      // ACT 2 FINALE. Frank's sighting, routed through the one relative
+      // he still talks to.
+      id: 'email.ruth.yourdad',
+      kind: 'email',
+      name: 'about your daddy',
+      icon: 'mail',
+      parentId: 'mailbox.inbox',
+      requires: { discovery: 'chads-window' },
+      onOpen: { discover: ['the-clean-truck'] },
+      meta: {
+        from: 'Ruth Taylor Combs <rcombs@westwind.net>',
+        to: 'casey_t@westwind.net',
+        date: '1997-10-16T19:20:00',
+      },
+      body: {
+        text: `Casey honey, it's your Aunt Ruth. I don't know who reads this now.
+Maybe nobody. I'm writing it anyway because somebody in this county
+ought to write down the truth someplace.
+
+They keep saying your daddy's name in town like a verdict. Because
+it's his road. Because he drinks. Because he's Frank.
+
+Here is what my brother told me, and Frank Taylor has never once
+lied to me in fifty years: Friday night he was on his porch. Around
+ten he watched a vehicle come up the fire road and stop at the bend.
+A DARK 4x4, CLEAN, quiet, newer. Sat there with the lights off.
+
+Honey, your daddy can name every engine in this county with his eyes
+shut. He said, and I quote, "It wasn't the Daniels boy. That truck of
+his you can hear from the church. This one was somebody who washes
+his car."
+
+He won't tell the sheriff. He'd been drinking and he's got the old
+trouble on his record and he is CERTAIN they'll twist it on him. He
+told me instead. Now I've told you, whoever you are.
+
+Somebody who washes his car. In this town that's a short list too.
+
+Aunt Ruth`,
+      },
+    },
+    {
+      // ACT 3 texture — cryptic on first read, devastating after the-pipeline.
+      id: 'email.sam.question',
+      kind: 'email',
+      name: 'you asked me a question',
+      icon: 'mail',
+      parentId: 'mailbox.inbox',
+      meta: {
+        from: 'Samuel Reed <sreed@reedsdrug.westwind.net>',
+        to: 'casey_t@westwind.net',
+        date: '1997-10-17T08:05:00',
+      },
+      body: {
+        text: `Dear Casey,
+
+Two weeks ago you stood at my counter and asked me, very carefully,
+"if a doctor writes too many prescriptions, who checks?" I gave you
+the short answer. The state board. I should have given you the long
+one, which is: nobody, child. Nobody checks. That is the whole
+problem and you had already figured it out.
+
+I am forwarding below the letter I sent the Board of Pharmacy in
+September. They have not answered. I no longer expect them to.
+
+I don't know what you found or where you were going with it. But I
+have been fifty-eight years in this town, and I know that a girl
+asked me the right question and eight days later she was gone.
+
+If anyone reads this who loves her: look after what she was carrying.
+
+- Sam Reed
+
+> To the WV Board of Pharmacy: I write regarding a pattern of
+> scheduled-narcotic prescriptions originating from a single local
+> practice and filled at a single local pharmacy, in volumes that in
+> forty years of practice I have never...
+> [letter continues]`,
+      },
+    },
+    {
+      // ACT 3. Rebecca names the shape.
+      id: 'email.rebecca',
+      kind: 'email',
+      name: 'to whoever is going through her things',
+      icon: 'mail',
+      parentId: 'mailbox.inbox',
+      requires: { discovery: 'the-pipeline' },
+      onOpen: { discover: ['who-shaped'] },
+      meta: {
+        from: 'R. Wright <rwright@mailhouse.net>',
+        to: 'casey_t@westwind.net',
+        date: '1997-10-16T23:55:00',
+      },
+      body: {
+        text: `I don't know who reads a missing girl's mail. Her mother, maybe.
+The police, if anyone made them. I am counting on it being somebody.
+
+My name is Rebecca Wright. I was married to Jonathan Wright for six
+years. I read about the girl in the Register. I saw his name in the
+list of family. I have started this letter four times.
+
+I will just say it plain.
+
+When we were married, Jonathan read my mail. All of it. I found out
+because he ANSWERED some of it. As me. My own cousin got letters in
+my voice for a year — my phrases, my jokes, things only I would
+know — and never suspected, because Jonathan pays attention. It is
+the only thing he truly does. He pays attention, and then he becomes
+the person you trust.
+
+When I finally left he told me, calm as church, that no one would
+believe me. For six years no one did.
+
+If that girl trusted somebody she shouldn't have, ask how that
+somebody knew what to say.
+
+Ask him about my mail. 1989 to 1991. Ask him.
+
+R.W.`,
+      },
+    },
+
+    // --- Sent ---
+    {
+      id: 'email.sent.sadie',
+      kind: 'email',
+      name: 're: porch tonight?',
       icon: 'mail',
       parentId: 'mailbox.sent',
       meta: {
-        from: 'casey_b@westwind.net',
-        to: 'Linda Brennan <lbrennan@westwind.net>',
+        from: 'casey_t@westwind.net',
+        to: 'Sadie Thompson <sadiedraws77@westwind.net>',
+        date: '1997-10-09T21:58:00',
+      },
+      body: {
+        text: `> porch? i have twizzlers and a new theory about the vice principal
+
+can't tonight - busy online. tell you about it saturday. all of it,
+i promise. it's kind of a big thing and i want to be SURE first.
+
+saturday. porch. bring the twizzlers.
+
+- c`,
+      },
+    },
+    {
+      id: 'email.sent.mom',
+      kind: 'email',
+      name: 're: dinner + this weekend',
+      icon: 'mail',
+      parentId: 'mailbox.sent',
+      meta: {
+        from: 'casey_t@westwind.net',
+        to: 'Leslie Wright <lwright@westwind.net>',
         date: '1997-10-09T18:03:00',
       },
       body: {
-        text: `yes i fed buster. yes the good tupperware. yes i'll answer aunt patty.
-the phone bill is jesse's fault historically and spiritually.
+        text: `yes i fed buster. yes the good tupperware. and yeah - tell dad
+maybe sunday? i kind of want to see him.
+
+the phone bill is not my fault, tell your husband the modem is FOR
+the phone line, that's the whole point of it.
 
 love you, bye, i'm fine`,
       },
     },
 
-    // --- Deleted ---
+    // --- Deleted (mundane) ---
     {
       id: 'email.deleted.coupon',
       kind: 'email',
@@ -823,7 +1026,7 @@ love you, bye, i'm fine`,
       parentId: 'mailbox.deleted',
       meta: {
         from: 'Compu-Barn Superstore <deals@compubarn.net>',
-        to: 'casey_b@westwind.net',
+        to: 'casey_t@westwind.net',
         date: '1997-10-02T12:00:00',
       },
       body: {
@@ -834,100 +1037,62 @@ Practically Giving It Away (Legal: we are not giving it away.)`,
     },
 
     // =====================================================================
-    // INSTANT MESSENGER — BuddyLine, screen name SunflwrC81
+    // INSTANT MESSENGER — BuddyLine network, screen name SunflwrC81
     // =====================================================================
     {
-      id: 'im.melwave81',
+      id: 'im.sadie',
       kind: 'im_conversation',
-      name: 'MelWave81',
+      name: 'sadiedraws77',
       icon: 'im',
-      meta: { screenname: 'MelWave81', alias: 'mel', logDate: '1997-10-08' },
+      meta: { screenname: 'sadiedraws77', alias: 'sadie', logDate: '1997-10-03' },
       body: {
         messages: [
-          { from: 'MelWave81', at: '8:12 PM', text: 'did u start the civil war thing' },
-          { from: 'SunflwrC81', at: '8:12 PM', text: 'define started' },
-          { from: 'MelWave81', at: '8:13 PM', text: 'hehe. so no' },
-          { from: 'SunflwrC81', at: '8:13 PM', text: 'i have a TITLE. titles are half the battle' },
-          { from: 'MelWave81', at: '8:14 PM', text: 'the battle is definately the other half' },
-          { from: 'SunflwrC81', at: '8:14 PM', text: '*definitely' },
-          { from: 'MelWave81', at: '8:14 PM', text: 'i will block u' },
-          { from: 'SunflwrC81', at: '8:16 PM', text: 'becca wants to do a thing at the reservoir sat. u in?' },
-          { from: 'MelWave81', at: '8:17 PM', text: 'cant. cousins in portvale this wkend. moms making me' },
-          { from: 'SunflwrC81', at: '8:17 PM', text: 'boooo' },
-          { from: 'MelWave81', at: '8:19 PM', text: 'hey random but. u still have it right' },
-          { from: 'SunflwrC81', at: '8:19 PM', text: 'have what' },
-          { from: 'MelWave81', at: '8:19 PM', text: 'u KNOW what. bracelet' },
-          { from: 'SunflwrC81', at: '8:20 PM', text: 'obviously. its in the box in the box in the box' },
-          { from: 'MelWave81', at: '8:20 PM', text: 'good. ok. that stays us-only FOREVER. swear again' },
-          { from: 'SunflwrC81', at: '8:20 PM', text: 'i swear AGAIN. u weirdo. nobody knows. nobody will ever know' },
-          { from: 'MelWave81', at: '8:21 PM', text: 'ok hehe. gnight casey' },
-          { from: 'SunflwrC81', at: '8:21 PM', text: 'night mel' },
+          { from: 'sadiedraws77', at: '9:02 PM', text: 'ur mom said yes to the sleepover right' },
+          { from: 'SunflwrC81', at: '9:02 PM', text: 'yes. jon said "as long as your homework is done" like he\'s my dad' },
+          { from: 'sadiedraws77', at: '9:03 PM', text: 'ugh. ok bring the fair pics' },
+          { from: 'SunflwrC81', at: '9:03 PM', text: 'and MY radio. yours eats tapes' },
+          { from: 'sadiedraws77', at: '9:04 PM', text: 'it ate ONE tape ONE time' },
+          { from: 'sadiedraws77', at: '9:07 PM', text: 'hey serious second. u seemed weird at lunch. weird-weird not tired-weird' },
+          { from: 'SunflwrC81', at: '9:08 PM', text: 'i\'m ok. theres just. stuff at the house. i\'ll tell u when i\'m sure' },
+          { from: 'sadiedraws77', at: '9:08 PM', text: 'ok new rule. if it ever gets Actually Bad u say junebug and i come get u. no questions. day or night' },
+          { from: 'SunflwrC81', at: '9:09 PM', text: 'junebug?? why junebug' },
+          { from: 'sadiedraws77', at: '9:09 PM', text: 'first thing i ever drew that looked like the thing. second grade. u kept it' },
+          { from: 'SunflwrC81', at: '9:10 PM', text: 'i still have it somewhere. ok. junebug. deal.' },
+          { from: 'sadiedraws77', at: '9:10 PM', text: 'deal. and nobody else EVER gets that word. it\'s ours' },
+          { from: 'SunflwrC81', at: '9:11 PM', text: 'ours. gnight weirdo' },
+          { from: 'sadiedraws77', at: '9:11 PM', text: 'gnight. saturday!!' },
         ],
       },
     },
     {
-      id: 'im.beccs8r',
+      id: 'im.angel',
       kind: 'im_conversation',
-      name: 'beccs8r',
+      name: 'AngelJx',
       icon: 'im',
-      meta: { screenname: 'beccs8r', alias: 'becca', logDate: '1997-10-09' },
+      meta: { screenname: 'AngelJx', alias: 'angel', logDate: '1997-10-09' },
       body: {
         messages: [
-          { from: 'beccs8r', at: '7:02 PM', text: 'RESERVOIR SATURDAY. spread the word. my brother can drive' },
-          { from: 'SunflwrC81', at: '7:04 PM', text: 'ur brother drives like the car owes him money' },
-          { from: 'beccs8r', at: '7:04 PM', text: 'and yet. free ride' },
-          { from: 'beccs8r', at: '7:05 PM', text: 'did u get my angel email. did u send it to 10 ppl' },
-          { from: 'SunflwrC81', at: '7:05 PM', text: 'i deleted it and i feel STRONGER for it' },
-          { from: 'beccs8r', at: '7:06 PM', text: 'marcy t of ohio casey. LIGHTNING' },
-          { from: 'SunflwrC81', at: '7:08 PM', text: 'gtg. someone msgd me' },
-          { from: 'beccs8r', at: '7:08 PM', text: 'oooooo who' },
-          { from: 'SunflwrC81', at: '7:09 PM', text: 'nobody. tell u later' },
-          { from: 'beccs8r', at: '7:09 PM', text: 'RUDE. fine. sat!!' },
-        ],
-      },
-    },
-    {
-      id: 'im.ghostbridge',
-      kind: 'im_conversation',
-      name: 'GhostBridge',
-      icon: 'im',
-      meta: { screenname: 'GhostBridge', logDate: '1997-10-10' },
-      requires: { discovery: 'overlook-plan' },
-      onOpen: { discover: ['ghostbridge-logs'] },
-      body: {
-        messages: [
-          { from: 'GhostBridge', at: '9:31 PM', text: 'are you alone' },
-          { from: 'SunflwrC81', at: '9:31 PM', text: 'yes?? mom works fridays. u know that' },
-          { from: 'GhostBridge', at: '9:32 PM', text: 'good. tonight then. the overlook. 10 pm.' },
-          { from: 'SunflwrC81', at: '9:32 PM', text: 'ok this has gone on long enough. mel is this you' },
-          { from: 'SunflwrC81', at: '9:32 PM', text: 'why the new name. whats wrong w/ ur normal one' },
-          { from: 'GhostBridge', at: '9:33 PM', text: 'you already know who i am.' },
-          { from: 'SunflwrC81', at: '9:33 PM', text: 'say something only mel would know then' },
-          { from: 'GhostBridge', at: '9:34 PM', text: 'june. the tracks. the coin you flattened.' },
-          { from: 'GhostBridge', at: '9:34 PM', text: 'the bracelet in the box in the box in the box.' },
-          { from: 'SunflwrC81', at: '9:35 PM', text: 'ok. ok fine its you. u had me going honestly' },
-          { from: 'SunflwrC81', at: '9:35 PM', text: 'but ur supposed to be in portvale?? did ur mom cancel' },
-          { from: 'GhostBridge', at: '9:36 PM', text: 'come alone. tell no one. not dana.' },
-          { from: 'SunflwrC81', at: '9:36 PM', text: 'ur being so dramatic tonight lol' },
-          { from: 'GhostBridge', at: '9:37 PM', text: 'and delete these logs after. all of them. promise me.' },
-          { from: 'SunflwrC81', at: '9:37 PM', text: 'FINE i promise. this better be good mel' },
-          { from: 'GhostBridge', at: '9:38 PM', text: 'it will all make sense at the overlook.' },
-          { from: 'GhostBridge', at: '9:38 PM', text: 'goodnight casey' },
-          { from: 'SunflwrC81', at: '9:39 PM', text: 'ok NOW i know something is up. u never say goodnight like that' },
-          { from: 'SunflwrC81', at: '9:39 PM', text: 'mel?' },
-          { from: 'SunflwrC81', at: '9:41 PM', text: 'hello??' },
+          { from: 'AngelJx', at: '7:02 PM', text: 'tomorrow after school. my cousin\'s working the back lot at gene\'s 👀' },
+          { from: 'SunflwrC81', at: '7:04 PM', text: 'angel. it\'s a school night for ur cousin\'s JOB' },
+          { from: 'AngelJx', at: '7:04 PM', text: 'it\'s friday tomorrow. live a little. u need it, u\'ve been a GHOST all week' },
+          { from: 'SunflwrC81', at: '7:06 PM', text: 'ok fine. but i have to be home by 7. i have a thing later' },
+          { from: 'AngelJx', at: '7:06 PM', text: 'what thing' },
+          { from: 'SunflwrC81', at: '7:07 PM', text: 'a thing thing. tell u after' },
+          { from: 'AngelJx', at: '7:07 PM', text: 'ur so mysterious lately. fine. 3:30, don\'t wear the church shoes' },
+          { from: 'SunflwrC81', at: '7:08 PM', text: 'ONE time. gtg someone msgd me' },
+          { from: 'AngelJx', at: '7:08 PM', text: 'ooooooo. TELL ME AFTER' },
         ],
       },
     },
 
     // =====================================================================
-    // RECYCLE BIN
+    // RECYCLE BIN — the machine remembers what people throw away.
     // =====================================================================
     { id: 'folder.recycle', kind: 'folder', name: 'Recycle Bin', icon: 'trash' },
     {
       id: 'trash.essay-draft',
       kind: 'trash_item',
-      name: 'english_essay_draft1.txt',
+      name: 'minewars_draft1.txt',
       icon: 'doc',
       parentId: 'folder.recycle',
       meta: {
@@ -936,10 +1101,10 @@ Practically Giving It Away (Legal: we are not giving it away.)`,
         sizeKb: 2,
       },
       body: {
-        text: `The Homefront Economy
-by Casey Brennan
+        text: `The Mine Wars
+by Casey Taylor
 
-The Civil War was a war that happened in America between 1861 and
+The Mine Wars were a series of wars that happened in the mines
 
 [the rest of the page is blank. a strong start.]`,
       },
@@ -959,29 +1124,96 @@ The Civil War was a war that happened in America between 1861 and
       },
     },
     {
-      id: 'trash.invite-list',
+      // ACT 1 FINALE. She was told to delete it. She deleted it HERE.
+      id: 'trash.bl-log',
       kind: 'trash_item',
-      name: 'sat_invite_list.txt',
+      name: 'bl_log_ghstbrdg.txt',
       icon: 'doc',
       parentId: 'folder.recycle',
+      requires: { discovery: 'the-meeting' },
+      onOpen: { discover: ['stolen-intimacy'] },
       meta: {
         deletedAt: '1997-10-10',
-        originalPath: 'C:\\My Documents',
+        originalPath: 'C:\\Program Files\\Chat\\logs',
+        sizeKb: 2,
+      },
+      body: {
+        text: `[BuddyLine saved log — GhostBridge — 10/10/97]
+
+GhostBridge: is the page somewhere safe
+SunflwrC81: yes. ok my turn. you say you've been building a case on
+  him for two years. you know things. FINE. but i still don't know
+  you're not just some guy
+GhostBridge: what would make you sure
+SunflwrC81: i don't know. something real
+GhostBridge: alright. tonight, when we meet — if you feel unsafe at
+  any point, say junebug, and i'll know it's really you and get you
+  out of there.
+SunflwrC81: ...
+SunflwrC81: how do you know that word
+GhostBridge: i know a lot of things, casey. that's the job. it's how
+  i knew about sparks before you did.
+SunflwrC81: nobody knows that word. two people on EARTH know that
+  word
+GhostBridge: and now a third, who is on your side. the bend. ten
+  o'clock. bring the page. come alone — not the boyfriend, not
+  sadie. and delete these logs, all of them. if he finds out you
+  talked, everything gets worse.
+SunflwrC81: this is crazy. ok. ok. ten.
+GhostBridge: good girl. it will all be over after tonight.
+SunflwrC81: that's a weird way to say it
+GhostBridge: goodnight casey
+SunflwrC81: hello?
+SunflwrC81: hello??`,
+      },
+    },
+    {
+      // FINALE. Deleted at 2:14 AM, October 11. She was already gone.
+      id: 'trash.diary',
+      kind: 'trash_item',
+      name: 'diary.doc',
+      icon: 'doc',
+      parentId: 'folder.recycle',
+      requires: { discovery: 'who-shaped' },
+      onOpen: { discover: ['the-house'] },
+      meta: {
+        deletedAt: '1997-10-11',
+        modifiedAt: '1997-10-11',
+        originalPath: 'C:\\My Documents\\personal stuff',
         sizeKb: 1,
       },
       body: {
-        text: `reservoir sat (beccas thing)
-- me
-- becca (obv)
-- dana
-- mel?? (portvale, probably not)
-- tyler + the other tyler
-- NOT brandon. becca's rules. long story.`,
+        text: `[file partially recovered — most sectors overwritten]
+
+...g 9 — found an envelope of cash in J's good coat looking for the
+truck keys. like, a LOT of cash. probably nothing. probably...
+
+...bottle in the glovebox with some stranger's name on...
+
+...ct 5 — got the page from the desk in the den. copied it. put it
+back EXACT. my hands were shak...
+
+...8 — he knew junebug. HOW. i keep coming back to it. only me and
+s. on the whole ea...
+
+...doesn't matter. if GB can put sparks away then whoever he is,
+he's the only adult actually DOING someth...
+
+...ay night. after tomorrow i tell sadie everything and it's over
+and things go back to nor
+
+[end of recovered data]
+
+[properties — diary.doc]
+  created:   06/02/96
+  modified:  10/11/97  2:14 AM
+  deleted:   10/11/97  2:14 AM
+  last user: this machine`,
       },
     },
 
     // =====================================================================
-    // SHORTCUTS (desktop + start menu launchers)
+    // SHORTCUTS (desktop launchers)
     // =====================================================================
     {
       id: 'shortcut.mail',
@@ -1012,66 +1244,30 @@ The Civil War was a war that happened in America between 1861 and
       meta: { appId: 'notepad', desktop: { x: 216, y: 24 } },
     },
     {
-      id: 'shortcut.recycle',
-      kind: 'shortcut',
-      name: 'Recycle Bin',
-      icon: 'trash',
-      meta: { appId: 'recycle', desktop: { x: 24, y: 408 } },
-    },
-    {
       id: 'shortcut.solitaire',
       kind: 'shortcut',
       name: 'Solitaire',
       icon: 'game',
       meta: { appId: 'solitaire', desktop: { x: 216, y: 120 } },
     },
+    {
+      id: 'shortcut.recycle',
+      kind: 'shortcut',
+      name: 'Recycle Bin',
+      icon: 'trash',
+      meta: { appId: 'recycle', desktop: { x: 24, y: 408 } },
+    },
 
     // =====================================================================
     // BOOKMARKS
     // =====================================================================
     { id: 'folder.bookmarks', kind: 'folder', name: 'Bookmarks', icon: 'folder' },
-    {
-      id: 'bm.searchhound',
-      kind: 'bookmark',
-      name: 'SearchHound',
-      parentId: 'folder.bookmarks',
-      meta: { url: 'www.searchhound.net' },
-    },
-    {
-      id: 'bm.mypage',
-      kind: 'bookmark',
-      name: 'my page!!',
-      parentId: 'folder.bookmarks',
-      meta: { url: 'www.citypages.net/~sunflwrc81' },
-    },
-    {
-      id: 'bm.melpage',
-      kind: 'bookmark',
-      name: "mel's page",
-      parentId: 'folder.bookmarks',
-      meta: { url: 'www.citypages.net/~melwave' },
-    },
-    {
-      id: 'bm.solarflare',
-      kind: 'bookmark',
-      name: 'SOLAR FLARE official',
-      parentId: 'folder.bookmarks',
-      meta: { url: 'www.solarflareband.net' },
-    },
-    {
-      id: 'bm.citypages',
-      kind: 'bookmark',
-      name: 'CityPages directory',
-      parentId: 'folder.bookmarks',
-      meta: { url: 'www.citypages.net' },
-    },
-    {
-      id: 'bm.ledger',
-      kind: 'bookmark',
-      name: 'Maple Glen Ledger',
-      parentId: 'folder.bookmarks',
-      meta: { url: 'www.mapleglenledger.net' },
-    },
+    { id: 'bm.searchhound', kind: 'bookmark', name: 'SearchHound', parentId: 'folder.bookmarks', meta: { url: 'www.searchhound.net' } },
+    { id: 'bm.mypage', kind: 'bookmark', name: 'my page!!', parentId: 'folder.bookmarks', meta: { url: 'www.citypages.net/~sunflwrc81' } },
+    { id: 'bm.sadiepage', kind: 'bookmark', name: "sadie's page", parentId: 'folder.bookmarks', meta: { url: 'www.citypages.net/~sadiedraws77' } },
+    { id: 'bm.solarflare', kind: 'bookmark', name: 'SOLAR FLARE official', parentId: 'folder.bookmarks', meta: { url: 'www.solarflareband.net' } },
+    { id: 'bm.register', kind: 'bookmark', name: 'Humble Register', parentId: 'folder.bookmarks', meta: { url: 'www.humbleregister.net' } },
+    { id: 'bm.citypages', kind: 'bookmark', name: 'CityPages directory', parentId: 'folder.bookmarks', meta: { url: 'www.citypages.net' } },
 
     // =====================================================================
     // THE WEB (fictional, rendered by NetVoyager)
@@ -1089,7 +1285,7 @@ The Civil War was a war that happened in America between 1861 and
           { t: 'searchform' },
           {
             t: 'small',
-            text: 'Tip: To find a person\'s home page, put their name in quotes: "casey brennan". To require a word, put + in front of it. Rex ignores the + but appreciates the effort.',
+            text: 'Tip: To find a person\'s home page, put their name in quotes: "casey taylor". To require a word, put + in front of it. Rex ignores the + but appreciates the effort.',
           },
           { t: 'hr' },
           {
@@ -1098,7 +1294,7 @@ The Civil War was a war that happened in America between 1861 and
           },
           {
             t: 'small',
-            text: 'Or browse by topic: Arts & Entertainment · Computers & Internet · News & Media · Recreation · Regional: Pacific Northwest · Society & Culture',
+            text: 'Or browse by topic: Arts & Entertainment · Computers & Internet · News & Media · Recreation · Regional: Appalachia · Society & Culture',
           },
           { t: 'hr' },
           {
@@ -1114,19 +1310,19 @@ The Civil War was a war that happened in America between 1861 and
       kind: 'webpage',
       name: "casey's corner of the web",
       meta: { url: 'www.citypages.net/~sunflwrc81', siteTitle: "~*~ casey's corner ~*~" },
-      searchText: 'casey brennan maple glen personal homepage sunflower',
+      searchText: 'casey taylor humble personal homepage sunflower',
       body: {
         style: { bg: '#000033', fg: '#ffffcc', link: '#66ffff', font: 'sans', centered: true, accent: '#ff66cc' },
         blocks: [
-          { t: 'h', text: '~*~ welcome to casey\'s corner ~*~' },
+          { t: 'h', text: "~*~ welcome to casey's corner ~*~" },
           { t: 'marquee', text: 'you are visitor number one zillion. under construction FOREVER.' },
           { t: 'img', caption: '[ spinning sunflower gif ]' },
-          { t: 'p', text: 'hi i\'m casey. 16. maple glen (if you know where that is i\'m so sorry). i like: solar flare, my cat buster, writing stories i never finish, the fair, my friends.' },
-          { t: 'p', text: 'i dislike: algebra, chain letters (BECCA), when the modem drops you at 11:58 pm.' },
+          { t: 'p', text: "hi i'm casey. 16. humble west virginia (if you know where that is i'm so sorry). i like: solar flare, my cat buster, the river, writing stories i never finish, my friends." },
+          { t: 'p', text: 'i dislike: algebra, chain letters (ANGEL), when the modem drops you at 11:58 pm, people who ask what my dad is up to.' },
           { t: 'hr' },
           { t: 'sub', text: 'cool links' },
           { t: 'link', text: 'SOLAR FLARE official site', url: 'www.solarflareband.net' },
-          { t: 'link', text: "mel's page (she updates it NEVER)", url: 'www.citypages.net/~melwave' },
+          { t: 'link', text: "sadie's page (actual art on it, not like mine)", url: 'www.citypages.net/~sadiedraws77' },
           { t: 'link', text: 'the CityPages member directory (find ur neighbors)', url: 'www.citypages.net' },
           { t: 'link', text: 'SearchHound', url: 'www.searchhound.net' },
           { t: 'hr' },
@@ -1136,21 +1332,22 @@ The Civil War was a war that happened in America between 1861 and
       },
     },
     {
-      id: 'web.mel-page',
+      id: 'web.sadie-page',
       kind: 'webpage',
-      name: "mel's wave page",
-      meta: { url: 'www.citypages.net/~melwave', siteTitle: "mel's page" },
-      searchText: 'mel melissa page maple glen',
+      name: 'sadie draws (sometimes)',
+      meta: { url: 'www.citypages.net/~sadiedraws77', siteTitle: 'sadie draws (sometimes)' },
+      searchText: 'sadie thompson art sketches drawing humble',
       body: {
-        style: { bg: '#ccffff', fg: '#000066', link: '#cc0066', font: 'sans', centered: true },
+        style: { bg: '#f4f0e4', fg: '#333322', link: '#886600', font: 'sans', centered: true },
         blocks: [
-          { t: 'h', text: "mel's page" },
-          { t: 'p', text: 'this is my page. my friend casey made most of it because i "wasn\'t doing it right." i was doing it fine.' },
-          { t: 'img', caption: '[ picture of a wave. it took 4 minutes to load. worth it? ]' },
-          { t: 'list', items: ['things i like: swimming, my cousins, dogs that look like their owners', 'things i do not like: making web pages'] },
+          { t: 'h', text: 'sadie draws (sometimes)' },
+          { t: 'small', text: 'a page for my sketches. casey made me put them up. blame her.' },
+          { t: 'img', caption: '[ scanned sketch: a girl on a porch, done in ballpoint. it\'s good. it\'s really good. ]' },
+          { t: 'img', caption: '[ scanned sketch: a junebug, second-grade style, kept for sentimental reasons ]' },
+          { t: 'list', items: ['things i draw: people who don\'t know i\'m drawing them', 'things i won\'t draw: your boyfriend, stop asking', 'currently reading: everything true-crime the library has'] },
           { t: 'hr' },
-          { t: 'small', text: 'last updated: march 1997 (casey stop emailing me about this)' },
-          { t: 'counter', value: 87 },
+          { t: 'small', text: 'last updated october 4 1997. (probably a while ago now, whenever you\'re reading this.)' },
+          { t: 'counter', value: 312 },
         ],
       },
     },
@@ -1166,7 +1363,7 @@ The Civil War was a war that happened in America between 1861 and
           { t: 'h', text: 'SOLAR FLARE' },
           { t: 'sub', text: 'new album "STATIC HEART" out now on Meridian Records' },
           { t: 'img', caption: '[ band photo: four people refusing to smile ]' },
-          { t: 'p', text: 'FALL TOUR ON SALE NOW. Portvale, Riverton, Cascade City, Meridian. All ages except Meridian (sorry, Meridian).' },
+          { t: 'p', text: 'FALL TOUR ON SALE NOW. Charleston, Huntington, Morgantown, Roanoke. All ages except Roanoke (sorry, Roanoke).' },
           { t: 'link', text: 'join the FAN CIRCLE mailing list', url: 'www.solarflareband.net' },
           { t: 'hr' },
           { t: 'small', text: 'webmaster: dennis. yes the drummer. no i will not fix the guestbook.' },
@@ -1174,45 +1371,45 @@ The Civil War was a war that happened in America between 1861 and
       },
     },
     {
-      id: 'web.ledger',
+      id: 'web.register',
       kind: 'webpage',
-      name: 'Maple Glen Ledger',
-      meta: { url: 'www.mapleglenledger.net', siteTitle: 'The Maple Glen Ledger — Online Edition' },
-      searchText: 'maple glen ledger news casey brennan missing search reservoir overlook',
+      name: 'The Humble Register',
+      meta: { url: 'www.humbleregister.net', siteTitle: 'The Humble Register — Online Edition' },
+      searchText: 'humble register news casey taylor missing search route 9 river bend',
       body: {
         style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
         blocks: [
-          { t: 'h', text: 'The Maple Glen Ledger' },
+          { t: 'h', text: 'The Humble Register' },
           { t: 'small', text: 'Online Edition — Updated Wednesdays (usually) — Oct. 15, 1997' },
           { t: 'hr' },
           { t: 'sub', text: 'SEARCH FOR MISSING TEEN ENTERS SECOND WEEK' },
-          { t: 'p', text: 'The search for Casey Brennan, 16, of Maple Glen, continued this week with volunteers walking the fire roads above the county reservoir. Brennan was last seen the evening of Friday, Oct. 10. Her bicycle was recovered near the Miller Point trailhead the following morning.' },
-          { t: 'p', text: 'Sheriff Dale Amundsen urged residents with information to come forward. "Somebody saw something," Amundsen said. "In a town this size, somebody always has."' },
-          { t: 'p', text: 'A candlelight vigil is planned Friday at the high school.' },
+          { t: 'p', text: 'The search for Casey Taylor, 16, of Humble, continued this week with volunteers walking the fire roads along the river. Taylor was last seen the evening of Friday, Oct. 10. Her bicycle was recovered near the Route 9 trailhead the following morning.' },
+          { t: 'p', text: 'Sheriff Dale Purvis urged residents with information to come forward. "Somebody saw something," Purvis said. "In a county this size, somebody always has."' },
+          { t: 'p', text: 'A joint vigil is planned Friday evening at St. Mark\'s. The family has asked for privacy. Value-Med Discount Pharmacy has donated flashlights and batteries for the volunteer search teams.' },
           { t: 'hr' },
           { t: 'sub', text: 'ALSO THIS WEEK' },
-          { t: 'list', items: ['County board delays reservoir fence project a third time', 'Falcons soccer edges Riverton 2-1', 'Harvest Festival parking: what to know (bring quarters)'] },
+          { t: 'list', items: ['County board delays Route 9 guardrail project a third time', 'Wildcats fall to Man 21-14; Logan up next', 'Harvest Festival parking: what to know (bring quarters)'] },
           { t: 'hr' },
-          { t: 'small', text: 'The Ledger Online is a service of Maple Glen Printing & Copy. Story tips: tips@mapleglenledger.net' },
+          { t: 'small', text: 'The Register Online is a service of Humble Printing & Copy. Story tips: tips@humbleregister.net' },
         ],
       },
     },
     {
-      id: 'web.mapfinder-overlook',
+      id: 'web.mapfinder-bend',
       kind: 'webpage',
-      name: 'MapFinder: Miller Point Overlook',
-      meta: { url: 'www.mapfinder.net/maps/miller-point', siteTitle: 'MapFinder — Miller Point Overlook' },
-      searchText: 'mapfinder map miller point overlook reservoir fire road directions',
-      requires: { discovery: 'overlook-plan' },
+      name: 'MapFinder: Route 9 river bend',
+      meta: { url: 'www.mapfinder.net/maps/route9-bend', siteTitle: 'MapFinder — Route 9 River Bend' },
+      searchText: 'mapfinder map route 9 river bend fire road mile marker 6 directions',
+      requires: { discovery: 'the-meeting' },
       body: {
         style: { bg: '#f4f4e8', fg: '#222222', link: '#006600', font: 'sans' },
         blocks: [
           { t: 'h', text: 'MapFinder' },
           { t: 'small', text: 'Maps for the Modern Motorist — beta' },
           { t: 'hr' },
-          { t: 'sub', text: 'Miller Point Overlook — Maple Glen County' },
-          { t: 'img', caption: '[ map tile: reservoir, fire road switchbacks, a marked viewpoint at Miller Point ]' },
-          { t: 'p', text: 'Access via County Fire Road 7, north of the reservoir pump house. Gate closed to vehicles after dusk. Foot access is not patrolled. Approx. 25 minutes by bicycle from downtown Maple Glen.' },
+          { t: 'sub', text: 'Route 9 river bend — Humble County, WV' },
+          { t: 'img', caption: '[ map tile: the river, fire road switchbacks past mile marker 6, a marked pull-off at the bend. one residence nearby: a parcel on the ridge above the road. ]' },
+          { t: 'p', text: 'Access via the county fire road off Route 9, past mile marker 6. Gate closed to vehicles after dusk; foot access is not patrolled. Approx. 20 minutes by bicycle from downtown Humble.' },
           { t: 'small', text: 'MapFinder cannot verify current road conditions. Print this page before travelling.' },
         ],
       },
@@ -1220,5 +1417,28 @@ The Civil War was a war that happened in America between 1861 and
 
     // The generated CityPages neighborhood + member directory (see webgen.ts).
     ...GENERATED_WEB,
+
+    // --- Datebook data (read by the Calendar accessory; not in any folder) ---
+    {
+      id: 'file.datebook-1997',
+      kind: 'document',
+      name: 'datebook.dat',
+      icon: 'doc',
+      meta: { createdAt: '1997-01-04', modifiedAt: '1997-10-09', sizeKb: 2 },
+      body: {
+        text: `1997-06-14: mom's wedding. smile.
+1997-08-23: county fair w/ s + a
+1997-09-26: sparks office - sports physical (SATURDAY?? whatever)
+1997-10-03: sleepover @ sadie's
+1997-10-06: pharmacy after school
+1997-10-09: STUDY. quiz tmrw. actually study
+1997-10-10: algebra quiz
+1997-10-10: ★ 10pm
+1997-10-21: picture retakes (fix bangs FIRST this time)
+1997-10-25: homecoming - find shoes
+1997-10-26: SOLAR FLARE HUNTINGTON?? beg mom. beg harder
+1997-11-27: thanksgiving @ aunt ruth's`,
+      },
+    },
   ],
 };

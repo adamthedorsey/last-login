@@ -159,6 +159,8 @@ export interface SeasonContent {
     /** Password target id for the OS login (an entry in `passwords`). */
     loginTargetId: string;
     loginHint?: string;
+    /** The word the owner set in their screen saver. Sometimes a clue. */
+    saverText?: string;
   };
   /** Standalone password targets (e.g. the OS login itself). SERVER ONLY values. */
   passwords: Record<string, { password: string; hint?: string }>;
@@ -282,6 +284,7 @@ export interface StateView {
   owner: string;
   loginUser: string;
   loginHint?: string;
+  saverText?: string;
   wallpaper: string;
   homeUrl: string;
   loggedIn: boolean;

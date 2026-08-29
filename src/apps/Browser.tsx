@@ -337,7 +337,7 @@ function AboutPage() {
           </p>
           <p style={{ fontSize: 13, margin: '6px 0' }}>
             NetVoyager and the comet logo are trademarks of Voyager Communications Corporation in
-            the town of Maple Glen and possibly other places. Other product and brand names are
+            the town of Humble, West Virginia and possibly other places. Other product and brand names are
             trademarks of their respective owners, whoever they may be.
           </p>
         </div>

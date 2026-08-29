@@ -20,8 +20,11 @@
 - **S8 — Chad's alibi hole** — during the meeting window he was writing an
   apology email and drinking behind Gene's [PROPOSED: also buying pills for a
   teammate's injury — which is why he won't say where he was; ironic S1 tie].
-- **S9 — The code word** — Casey & Sadie's private "come get me" token
-  [PROPOSED]. Two people on Earth know it. GhostBridge used it.
+- **S9 — The code word ("junebug")** — Casey & Sadie's private "come get me"
+  token [CANONIZED in-game]. Two people on Earth were TOLD it — but Casey set
+  it as her screen saver text, floating on her idle monitor every night. The
+  list of people who could have SEEN it is exactly: the household. This is a
+  deliberate ambient clue (the player sees the saver long before the log).
 - **S10 — Leslie's willful blindness.** She saw the cash and chose the
   question she didn't ask.
 - **S11 — Jonathan's pattern.** He reads other people's private words and
