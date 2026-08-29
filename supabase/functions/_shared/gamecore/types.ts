@@ -1,0 +1,305 @@
+/**
+ * Shared game-core types.
+ *
+ * IMPORTANT: `ContentItem`, `SeasonContent` and everything that can carry
+ * `requires` / `password` / `onOpen` are SERVER-ONLY shapes. The client may
+ * only ever receive the DTO types at the bottom of this file
+ * (`ItemSummary`, `ItemContent`, `StateView`, ...), produced by redact.ts.
+ */
+
+// ---------------------------------------------------------------------------
+// Requirements (server-side only)
+// ---------------------------------------------------------------------------
+
+export type Requirement =
+  | { all: Requirement[] }
+  | { any: Requirement[] }
+  | { discovery: string }
+  | { opened: string }
+  | { unlocked: string }
+  | { flag: string };
+
+// ---------------------------------------------------------------------------
+// Content model
+// ---------------------------------------------------------------------------
+
+export type ItemKind =
+  | 'folder'
+  | 'document'
+  | 'photo'
+  | 'shortcut' // launches an app (meta.appId) or a URL (meta.url)
+  | 'bookmark' // browser bookmark, meta.url
+  | 'mailbox'
+  | 'email'
+  | 'im_conversation'
+  | 'webpage'
+  | 'trash_item';
+
+export interface ImMessage {
+  from: string; // screen name
+  at: string; // in-world timestamp, e.g. "10:12 PM"
+  text: string;
+}
+
+export type PageBlock =
+  | { t: 'h'; text: string }
+  | { t: 'sub'; text: string }
+  | { t: 'p'; text: string }
+  | { t: 'small'; text: string }
+  | { t: 'link'; text: string; url: string }
+  | { t: 'list'; items: string[] }
+  | { t: 'hr' }
+  | { t: 'img'; caption: string; src?: string }
+  | { t: 'counter'; value: number }
+  | { t: 'marquee'; text: string }
+  /** The site's search form, rendered by the in-game browser at this spot. */
+  | { t: 'searchform' };
+
+export interface PageStyle {
+  bg: string;
+  fg: string;
+  link: string;
+  font: 'serif' | 'sans' | 'mono';
+  centered?: boolean;
+  accent?: string;
+}
+
+export interface ItemMeta {
+  // filesystem
+  createdAt?: string;
+  modifiedAt?: string;
+  sizeKb?: number;
+  path?: string;
+  // email
+  from?: string;
+  to?: string;
+  date?: string;
+  // instant messenger
+  screenname?: string;
+  alias?: string;
+  logDate?: string;
+  // web
+  url?: string;
+  siteTitle?: string;
+  // photos
+  caption?: string;
+  photoSrc?: string;
+  // recycle bin
+  deletedAt?: string;
+  originalPath?: string;
+  // desktop placement
+  desktop?: { x: number; y: number };
+  // shortcuts
+  appId?: string;
+}
+
+export interface ItemBody {
+  text?: string;
+  messages?: ImMessage[];
+  blocks?: PageBlock[];
+  style?: PageStyle;
+}
+
+export interface ContentItem {
+  id: string;
+  kind: ItemKind;
+  name: string;
+  parentId?: string;
+  icon?: string;
+  meta?: ItemMeta;
+  body?: ItemBody;
+  /** Visibility gate. Items failing this are never listed nor openable. SERVER ONLY. */
+  requires?: Requirement;
+  /** If set, item is listed but content is withheld until unlocked. SERVER ONLY. */
+  password?: string;
+  /** Hint shown with the password prompt (safe to send once the prompt is shown). */
+  passwordHint?: string;
+  /** Effects when the item is opened for the first time. SERVER ONLY. */
+  onOpen?: { discover?: string[]; setFlags?: Record<string, boolean> };
+  /** Extra keywords for the in-game search engine. SERVER ONLY (never sent raw). */
+  searchText?: string;
+}
+
+export interface Discovery {
+  id: string;
+  title: string;
+  description: string;
+  endsDemo?: boolean;
+}
+
+export interface Buddy {
+  screenname: string;
+  alias?: string;
+  group: string;
+  status: 'online' | 'offline' | 'away';
+  awayMessage?: string;
+  conversationId?: string;
+  requires?: Requirement; // SERVER ONLY
+}
+
+export interface SeasonContent {
+  slug: string;
+  title: string;
+  /** In-world "now". The player's real clock is never used for in-world time. */
+  clock: { now: string };
+  computer: {
+    owner: string;
+    loginUser: string;
+    /** Password target id for the OS login (an entry in `passwords`). */
+    loginTargetId: string;
+    loginHint?: string;
+  };
+  /** Standalone password targets (e.g. the OS login itself). SERVER ONLY values. */
+  passwords: Record<string, { password: string; hint?: string }>;
+  wallpaper: string;
+  homeUrl: string;
+  items: ContentItem[];
+  discoveries: Discovery[];
+  buddies: Buddy[];
+  maxPasswordAttempts: number;
+  lockoutSeconds: number;
+}
+
+// ---------------------------------------------------------------------------
+// Player state (persisted server-side, per player per season)
+// ---------------------------------------------------------------------------
+
+export interface PlayerState {
+  loggedIn: boolean;
+  opened: string[];
+  discoveries: string[];
+  unlocked: string[];
+  flags: Record<string, boolean>;
+  ended: boolean;
+  passwordAttempts: Record<string, number>;
+  /** Real-world epoch ms until which a target refuses attempts. */
+  lockedUntil: Record<string, number>;
+}
+
+export function newPlayerState(): PlayerState {
+  return {
+    loggedIn: false,
+    opened: [],
+    discoveries: [],
+    unlocked: [],
+    flags: {},
+    ended: false,
+    passwordAttempts: {},
+    lockedUntil: {},
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Actions (client -> server)
+// ---------------------------------------------------------------------------
+
+export type GameAction =
+  | { type: 'getState' }
+  | { type: 'login'; password: string }
+  | { type: 'getDesktop' }
+  | { type: 'listChildren'; parentId: string }
+  | { type: 'open'; itemId: string }
+  | { type: 'attemptPassword'; targetId: string; password: string }
+  | { type: 'visit'; url: string }
+  | { type: 'search'; query: string }
+  | { type: 'getBuddies' }
+  | { type: 'resetSeason' };
+
+// ---------------------------------------------------------------------------
+// DTOs (server -> client). These must never carry requirements/passwords.
+// ---------------------------------------------------------------------------
+
+/** The subset of ItemMeta that is safe to send to the client. */
+export type SafeMeta = Omit<ItemMeta, never>; // structurally identical; meta holds no secrets
+
+export interface ItemSummary {
+  id: string;
+  kind: ItemKind;
+  name: string;
+  icon?: string;
+  parentId?: string;
+  meta?: SafeMeta;
+  /** True when the item needs a password the player hasn't provided yet. */
+  locked?: boolean;
+}
+
+export interface ItemContent extends ItemSummary {
+  body?: ItemBody;
+}
+
+export interface DiscoveryView {
+  id: string;
+  title: string;
+  description: string;
+}
+
+export interface StateView {
+  seasonSlug: string;
+  seasonTitle: string;
+  clockNow: string;
+  owner: string;
+  loginUser: string;
+  loginHint?: string;
+  wallpaper: string;
+  homeUrl: string;
+  loggedIn: boolean;
+  ended: boolean;
+  discoveries: DiscoveryView[];
+  /** Items this player has already opened (their own history — safe to send). */
+  opened: string[];
+}
+
+export interface BuddyView {
+  screenname: string;
+  alias?: string;
+  group: string;
+  status: 'online' | 'offline' | 'away';
+  awayMessage?: string;
+  conversationId?: string;
+}
+
+export interface SearchResult {
+  title: string;
+  url: string;
+  snippet: string;
+}
+
+export type ActionResult =
+  | { type: 'state'; view: StateView }
+  | { type: 'login'; ok: boolean; lockedOut?: boolean; view?: StateView }
+  | { type: 'desktop'; items: ItemSummary[] }
+  | { type: 'children'; items: ItemSummary[] }
+  | {
+      type: 'open';
+      ok: boolean;
+      item?: ItemContent;
+      lockedHint?: string;
+      newDiscoveries?: DiscoveryView[];
+      ended?: boolean;
+      error?: string;
+    }
+  | {
+      type: 'password';
+      ok: boolean;
+      lockedOut?: boolean;
+      remainingAttempts?: number;
+    }
+  | {
+      type: 'visit';
+      ok: boolean;
+      page?: ItemContent;
+      newDiscoveries?: DiscoveryView[];
+      ended?: boolean;
+    }
+  | { type: 'search'; results: SearchResult[] }
+  | { type: 'buddies'; buddies: BuddyView[] }
+  | { type: 'reset'; view: StateView }
+  | { type: 'error'; error: string };
+
+export interface EngineOutcome {
+  state: PlayerState;
+  changed: boolean;
+  result: ActionResult;
+  /** Analytics-worthy events produced by this action. */
+  events: Array<{ type: string; payload?: Record<string, unknown> }>;
+}

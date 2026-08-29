@@ -1,0 +1,100 @@
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import type { ActionResult, DiscoveryView, GameAction, StateView } from '@gamecore/types.ts';
+import { createGameClient, type GameClient } from './client';
+import { GameContext, type GameContextValue, type Toast } from './gameContext';
+import { playNotify } from '../os/sounds';
+
+let toastId = 0;
+
+export function GameProvider({ children }: { children: ReactNode }) {
+  const clientRef = useRef<GameClient | null>(null);
+  const [ready, setReady] = useState(false);
+  const [view, setView] = useState<StateView | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [contentEpoch, setContentEpoch] = useState(0);
+  const [showEndCard, setShowEndCard] = useState(false);
+
+  const refreshView = useCallback(async () => {
+    const client = clientRef.current;
+    if (!client) return;
+    const res = await client.send({ type: 'getState' });
+    if (res.type === 'state') setView(res.view);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const client = await createGameClient();
+      if (cancelled) return;
+      clientRef.current = client;
+      const res = await client.send({ type: 'getState' });
+      if (cancelled) return;
+      if (res.type === 'state') setView(res.view);
+      setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const noteDiscoveries = useCallback(
+    (discoveries: DiscoveryView[] | undefined, ended: boolean | undefined) => {
+      if (discoveries && discoveries.length > 0) {
+        playNotify();
+        setToasts((prev) => [
+          ...prev,
+          ...discoveries.map((d) => ({ id: ++toastId, title: d.title, description: d.description })),
+        ]);
+        setContentEpoch((e) => e + 1);
+        void refreshView();
+      }
+      if (ended) {
+        // A quiet delay: let the player finish reading before the card appears.
+        window.setTimeout(() => setShowEndCard(true), 4500);
+      }
+    },
+    [refreshView],
+  );
+
+  const send = useCallback(
+    async (action: GameAction): Promise<ActionResult> => {
+      const client = clientRef.current;
+      if (!client) return { type: 'error', error: 'not_ready' };
+      const res = await client.send(action);
+      if (res.type === 'open' || res.type === 'visit') {
+        noteDiscoveries(res.newDiscoveries, res.ended);
+      }
+      if (res.type === 'login' && res.ok && res.view) setView(res.view);
+      if (res.type === 'reset') {
+        setView(res.view);
+        setContentEpoch((e) => e + 1);
+        setShowEndCard(false);
+      }
+      return res;
+    },
+    [noteDiscoveries],
+  );
+
+  const dismissToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const value = useMemo<GameContextValue>(
+    () => ({
+      ready,
+      view,
+      clientMode: clientRef.current?.mode ?? 'dev',
+      send,
+      refreshView,
+      toasts,
+      dismissToast,
+      contentEpoch,
+      showEndCard,
+      setShowEndCard,
+      client: clientRef.current,
+    }),
+    [ready, view, send, refreshView, toasts, dismissToast, contentEpoch, showEndCard],
+  );
+
+  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
+}
