@@ -56,13 +56,25 @@ const RenameInput = styled.input`
 `;
 
 interface DragState {
-  id: string;
+  /** The icon the pointer went down on, plus everything selected with it. */
+  primary: string;
+  ids: string[];
+  origins: Record<string, { x: number; y: number }>;
   startX: number;
   startY: number;
-  origX: number;
-  origY: number;
   moved: boolean;
 }
+
+/** The Win95 rubber-band: a dotted rectangle over the wallpaper. */
+const DeskMarquee = styled.div`
+  position: fixed;
+  border: 1px dotted #fff;
+  pointer-events: none;
+  z-index: 100004;
+`;
+
+const ICON_W = 84;
+const ICON_H = 92;
 
 /** Pick an unused "Name", "Name (2)", ... against current desktop names. */
 function nextName(base: string, ext: string, taken: Set<string>): string {
@@ -77,9 +89,13 @@ export function DesktopIcons() {
   const { send, contentEpoch, ready, view } = useGame();
   const openApp = useWindowStore((s) => s.open);
   const [items, setItems] = useState<ItemSummary[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
+  // Win95 selection model: multiple icons, Ctrl/Shift add, rubber-band on
+  // the wallpaper, Ctrl+A takes everything, Enter opens the lot.
+  const [selected, setSelected] = useState<string[]>([]);
   const [layout, setLayout] = useState<Layout>(loadLayout);
-  const [dragPos, setDragPos] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [dragDelta, setDragDelta] = useState<{ dx: number; dy: number } | null>(null);
+  const [marquee, setMarquee] = useState<{ l: number; t: number; w: number; h: number } | null>(null);
+  const marqueeRef = useRef<{ startX: number; startY: number; keep: string[] } | null>(null);
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const [renaming, setRenaming] = useState<{ id: string; value: string } | null>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -98,16 +114,78 @@ export function DesktopIcons() {
     if (value.trim()) void send({ type: 'renameItem', itemId: id, name: value.trim() });
   };
 
-  // F2 renames the selected player item, the Win95 way.
+  // Desktop keyboard: F2 renames, Ctrl+A selects all, Enter opens the
+  // selection — but only when a window doesn't own the focus.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'F2' || renaming) return;
-      const item = items.find((i) => i.id === selected);
-      if (item?.editable) setRenaming({ id: item.id, value: item.name });
+      if (renaming) return;
+      const owned = (document.activeElement as HTMLElement | null)?.closest('[data-no-deskmenu]');
+      if (owned) return;
+      if (e.key === 'F2') {
+        if (selected.length !== 1) return;
+        const item = items.find((i) => i.id === selected[0]);
+        if (item?.editable) setRenaming({ id: item.id, value: item.name });
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        setSelected(items.map((i) => i.id));
+      } else if (e.key === 'Enter' && selected.length > 0) {
+        e.preventDefault();
+        for (const it of items.filter((i) => selected.includes(i.id))) launchItem(it);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [items, selected, renaming]);
+
+  // Rubber-band selection on the wallpaper itself. Anything tagged
+  // data-no-deskmenu (windows, taskbar) and the icons handle their own
+  // pointer events; what's left is empty desktop.
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      const target = e.target as HTMLElement | null;
+      if (typeof target?.closest === 'function' &&
+          (target.closest('[data-no-deskmenu]') || target.closest('button'))) return;
+      marqueeRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        keep: e.ctrlKey || e.metaKey ? selected : [],
+      };
+      if (!e.ctrlKey && !e.metaKey) setSelected([]);
+    };
+    const onMove = (e: PointerEvent) => {
+      const m = marqueeRef.current;
+      if (!m) return;
+      const l = Math.min(m.startX, e.clientX);
+      const t = Math.min(m.startY, e.clientY);
+      const r = Math.max(m.startX, e.clientX);
+      const b = Math.max(m.startY, e.clientY);
+      setMarquee({ l, t, w: r - l, h: b - t });
+      const hit = items
+        .filter((i) => {
+          const p = layout[i.id] ?? { x: i.meta?.desktop?.x ?? ORIGIN, y: i.meta?.desktop?.y ?? ORIGIN };
+          return p.x < r && p.x + ICON_W > l && p.y < b && p.y + ICON_H > t;
+        })
+        .map((i) => i.id);
+      setSelected([...new Set([...m.keep, ...hit])]);
+    };
+    const onUp = () => {
+      marqueeRef.current = null;
+      setMarquee(null);
+    };
+    window.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    window.addEventListener('blur', onUp);
+    return () => {
+      window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      window.removeEventListener('blur', onUp);
+    };
+  }, [items, layout, selected]);
 
   useEffect(() => {
     if (!ready || !view?.loggedIn) return;
@@ -171,13 +249,28 @@ export function DesktopIcons() {
 
   const onPointerDown = (item: ItemSummary) => (e: React.PointerEvent) => {
     if (e.button !== 0 || renaming?.id === item.id) return;
-    const p = posOf(item);
+    // Win95 selects on mousedown; dragging a member of a multi-selection
+    // moves the whole group.
+    let group = selected;
+    if (!selected.includes(item.id)) {
+      if (e.ctrlKey || e.metaKey) {
+        group = [...selected, item.id];
+      } else {
+        group = [item.id];
+      }
+      setSelected(group);
+    }
+    const origins: Record<string, { x: number; y: number }> = {};
+    for (const id of group) {
+      const it = items.find((i) => i.id === id);
+      if (it) origins[id] = posOf(it);
+    }
     dragRef.current = {
-      id: item.id,
+      primary: item.id,
+      ids: group,
+      origins,
       startX: e.clientX,
       startY: e.clientY,
-      origX: p.x,
-      origY: p.y,
       moved: false,
     };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -190,91 +283,126 @@ export function DesktopIcons() {
     const dy = e.clientY - d.startY;
     if (!d.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
     d.moved = true;
-    setDragPos({ id: d.id, x: d.origX + dx, y: d.origY + dy });
+    setDragDelta({ dx, dy });
   };
 
   const onPointerUp = () => {
     const d = dragRef.current;
     dragRef.current = null;
-    if (!d || !d.moved || !dragPos) {
-      setDragPos(null);
+    if (!d || !d.moved || !dragDelta) {
+      setDragDelta(null);
       return;
     }
 
-    const dragged = items.find((i) => i.id === d.id);
-    const dropCenter = { x: dragPos.x + 42, y: dragPos.y + 44 };
-
-    // Dropping one of YOUR documents onto one of YOUR folders files it away.
-    if (dragged?.editable && dragged.kind === 'document') {
-      const folder = items.find((i) => {
-        if (i.id === d.id || i.kind !== 'folder' || !i.editable) return false;
-        const p = posOf(i);
-        return dropCenter.x >= p.x && dropCenter.x <= p.x + 84 && dropCenter.y >= p.y && dropCenter.y <= p.y + 92;
-      });
-      if (folder) {
-        setDragPos(null);
-        void send({ type: 'moveDocument', docId: dragged.id, folderId: folder.id });
-        return;
+    // Dropping a single one of YOUR documents onto one of YOUR folders
+    // files it away (group drops just move).
+    if (d.ids.length === 1) {
+      const dragged = items.find((i) => i.id === d.primary);
+      const o = d.origins[d.primary];
+      const dropCenter = { x: o.x + dragDelta.dx + 42, y: o.y + dragDelta.dy + 44 };
+      if (dragged?.editable && dragged.kind === 'document') {
+        const folder = items.find((i) => {
+          if (i.id === d.primary || i.kind !== 'folder' || !i.editable) return false;
+          const p = posOf(i);
+          return (
+            dropCenter.x >= p.x && dropCenter.x <= p.x + ICON_W &&
+            dropCenter.y >= p.y && dropCenter.y <= p.y + ICON_H
+          );
+        });
+        if (folder) {
+          setDragDelta(null);
+          void send({ type: 'moveDocument', docId: dragged.id, folderId: folder.id });
+          return;
+        }
       }
     }
 
-    // Snap to the grid, clamp to the desktop, and avoid landing on a
-    // neighbour's cell (walk to the nearest free cell if needed).
+    // Snap every dragged icon to the grid, clamp to the desktop, and walk
+    // each to the nearest free cell so the group never lands on itself.
     const maxX = window.innerWidth - 92;
     const maxY = window.innerHeight - TASKBAR_HEIGHT - 92;
-    let x = Math.max(ORIGIN, Math.min(snap(dragPos.x), snap(maxX)));
-    let y = Math.max(ORIGIN, Math.min(snap(dragPos.y), snap(maxY)));
-
     const occupied = new Set(
-      items.filter((i) => i.id !== d.id).map((i) => {
-        const p = posOf(i);
-        return `${p.x},${p.y}`;
-      }),
+      items
+        .filter((i) => !d.ids.includes(i.id))
+        .map((i) => {
+          const p = posOf(i);
+          return `${p.x},${p.y}`;
+        }),
     );
-    let guard = 0;
-    while (occupied.has(`${x},${y}`) && guard++ < 50) {
-      y += GRID;
-      if (y > maxY) {
-        y = ORIGIN;
-        x = x + GRID > maxX ? ORIGIN : x + GRID;
+    const next = { ...layout };
+    for (const id of d.ids) {
+      const o = d.origins[id];
+      if (!o) continue;
+      let x = Math.max(ORIGIN, Math.min(snap(o.x + dragDelta.dx), snap(maxX)));
+      let y = Math.max(ORIGIN, Math.min(snap(o.y + dragDelta.dy), snap(maxY)));
+      let guard = 0;
+      while (occupied.has(`${x},${y}`) && guard++ < 80) {
+        y += GRID;
+        if (y > maxY) {
+          y = ORIGIN;
+          x = x + GRID > maxX ? ORIGIN : x + GRID;
+        }
       }
+      occupied.add(`${x},${y}`);
+      next[id] = { x, y };
     }
-
-    const next = { ...layout, [d.id]: { x, y } };
     setLayout(next);
     saveLayout(next);
-    setDragPos(null);
+    setDragDelta(null);
   };
 
   return (
     <>
       {items.map((item) => {
-        const dragging = dragPos?.id === item.id;
-        const p = dragging && dragPos ? dragPos : posOf(item);
+        const inDragGroup = !!dragDelta && selected.includes(item.id);
+        const base = posOf(item);
+        const p = inDragGroup && dragDelta
+          ? { x: base.x + dragDelta.dx, y: base.y + dragDelta.dy }
+          : base;
         return (
           <IconButton
             key={item.id}
-            $selected={selected === item.id}
-            $dragging={dragging}
+            $selected={selected.includes(item.id)}
+            $dragging={inDragGroup}
             style={{ left: p.x, top: p.y }}
             onClick={(e) => {
               if (e.detail === 0) return; // keyboard-synthesized click (Enter)
-              // Second click on an already-selected player item starts a
+              if (e.ctrlKey || e.metaKey) {
+                cancelRenameTimer();
+                setSelected((prev) =>
+                  prev.includes(item.id) ? prev.filter((i) => i !== item.id) : [...prev, item.id],
+                );
+                return;
+              }
+              if (e.shiftKey) {
+                cancelRenameTimer();
+                setSelected((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
+                return;
+              }
+              // Second click on the single-selected player item starts a
               // rename — unless a double-click lands first (Win95 timing).
-              if (selected === item.id && item.editable && !renaming) {
+              if (selected.length === 1 && selected[0] === item.id && item.editable && !renaming) {
                 cancelRenameTimer();
                 renameTimer.current = window.setTimeout(
                   () => setRenaming({ id: item.id, value: item.name }),
                   600,
                 );
+              } else if (selected.includes(item.id) && selected.length > 1) {
+                // Keep the group — that's what lets double-click open it all.
+                cancelRenameTimer();
               } else {
                 cancelRenameTimer();
-                setSelected(item.id);
+                setSelected([item.id]);
               }
             }}
             onDoubleClick={() => {
               cancelRenameTimer();
-              if (renaming?.id !== item.id) launchItem(item);
+              if (renaming?.id === item.id) return;
+              if (selected.includes(item.id) && selected.length > 1) {
+                for (const it of items.filter((i) => selected.includes(i.id))) launchItem(it);
+              } else {
+                launchItem(item);
+              }
             }}
             onPointerDown={onPointerDown(item)}
             onPointerMove={onPointerMove}
@@ -305,6 +433,12 @@ export function DesktopIcons() {
           </IconButton>
         );
       })}
+
+      {marquee && (
+        <DeskMarquee
+          style={{ left: marquee.l, top: marquee.t, width: marquee.w, height: marquee.h }}
+        />
+      )}
 
       {menuAt && (
         <div ref={menuRef}>
