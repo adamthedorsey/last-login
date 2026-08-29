@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Window, WindowContent, WindowHeader } from 'react95';
+import { Button, Radio, Window, WindowContent, WindowHeader } from 'react95';
+import { DosMode } from './DosMode';
+import { Bsod } from './Bsod';
+import { Icon } from './icons';
 import { topWindowId, useWindowStore, TASKBAR_HEIGHT } from './windowStore';
 import { getApp } from './appRegistry';
 import { WindowFrame } from './WindowFrame';
@@ -65,10 +68,16 @@ const ShutdownScreen = styled.div`
   cursor: pointer;
 `;
 
+type ShutChoice = 'shutdown' | 'restart' | 'dos' | 'logoff';
+
 export function DesktopShell() {
-  const { windows, pendingLaunch, completeLaunch } = useWindowStore();
-  const { toasts, dismissToast, showEndCard, setShowEndCard, view } = useGame();
+  const { windows, pendingLaunch, completeLaunch, closeAll } = useWindowStore();
+  const { toasts, dismissToast, showEndCard, setShowEndCard, view, send, refreshView } = useGame();
   const [shutDown, setShutDown] = useState(false);
+  const [shutDialog, setShutDialog] = useState(false);
+  const [shutChoice, setShutChoice] = useState<ShutChoice>('shutdown');
+  const [dosMode, setDosMode] = useState(false);
+  const [bsod, setBsod] = useState(false);
   const [saverOn, setSaverOn] = useState(false);
   const focusedId = topWindowId(windows);
   const wallpaper = useSettingsStore((s) => s.wallpaper);
@@ -114,6 +123,46 @@ export function DesktopShell() {
     };
   }, [saverMinutes]);
 
+  // The blue screen: a 1997 machine is mortal. It surfaces after a random
+  // number of clicks (rare enough to shock, never to torment — at most twice
+  // a session), loses nothing, and any key continues.
+  const clickBudget = useRef(90 + Math.floor(Math.random() * 210));
+  const bsodShown = useRef(0);
+  const overlayRef = useRef(false);
+  overlayRef.current = bsod || saverOn || shutDown || shutDialog || dosMode || showEndCard;
+  useEffect(() => {
+    const onDown = () => {
+      if (overlayRef.current || bsodShown.current >= 2) return;
+      clickBudget.current -= 1;
+      if (clickBudget.current <= 0) {
+        bsodShown.current += 1;
+        clickBudget.current = 500 + Math.floor(Math.random() * 400);
+        setBsod(true);
+      }
+    };
+    window.addEventListener('pointerdown', onDown, true);
+    return () => window.removeEventListener('pointerdown', onDown, true);
+  }, []);
+
+  const confirmShutDown = async () => {
+    setShutDialog(false);
+    if (shutChoice === 'shutdown') {
+      setShutDown(true);
+    } else if (shutChoice === 'restart') {
+      // Full warm reboot: replay the POST, then resume the session.
+      sessionStorage.setItem('lastlogin.reboot', '1');
+      window.location.reload();
+    } else if (shutChoice === 'dos') {
+      setDosMode(true);
+    } else {
+      // "Close all programs and log on as a different user"
+      closeAll();
+      sessionStorage.setItem('lastlogin.logoff', '1');
+      await send({ type: 'logout' });
+      await refreshView(); // view.loggedIn flips; App returns to the login screen
+    }
+  };
+
   // An app launch waiting on its startup splash (e.g. NetVoyager).
   const SplashComponent = pendingLaunch ? getApp(pendingLaunch.appId)?.splash : undefined;
 
@@ -132,6 +181,10 @@ export function DesktopShell() {
         this computer.
       </ShutdownScreen>
     );
+  }
+
+  if (dosMode) {
+    return <DosMode onExit={() => setDosMode(false)} />;
   }
 
   return (
@@ -180,10 +233,64 @@ export function DesktopShell() {
         </CenterOverlay>
       )}
 
+      {shutDialog && (
+        <CenterOverlay onPointerDown={(e) => e.stopPropagation()}>
+          <Window style={{ width: 360 }}>
+            <WindowHeader>Shut Down</WindowHeader>
+            <WindowContent style={{ fontSize: 13 }}>
+              <div style={{ display: 'flex', gap: 14 }}>
+                <Icon name="computer" size={36} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: '2px 0 10px' }}>Are you sure you want to:</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <Radio
+                      checked={shutChoice === 'shutdown'}
+                      onChange={() => setShutChoice('shutdown')}
+                      label="Shut down the computer?"
+                      name="shutchoice"
+                    />
+                    <Radio
+                      checked={shutChoice === 'restart'}
+                      onChange={() => setShutChoice('restart')}
+                      label="Restart the computer?"
+                      name="shutchoice"
+                    />
+                    <Radio
+                      checked={shutChoice === 'dos'}
+                      onChange={() => setShutChoice('dos')}
+                      label="Restart the computer in MS-DOS mode?"
+                      name="shutchoice"
+                    />
+                    <Radio
+                      checked={shutChoice === 'logoff'}
+                      onChange={() => setShutChoice('logoff')}
+                      label="Close all programs and log on as a different user?"
+                      name="shutchoice"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 16 }}>
+                <Button onClick={() => void confirmShutDown()} style={{ width: 80 }}>
+                  Yes
+                </Button>
+                <Button onClick={() => setShutDialog(false)} style={{ width: 80 }}>
+                  No
+                </Button>
+                <Button disabled style={{ width: 80 }}>
+                  Help
+                </Button>
+              </div>
+            </WindowContent>
+          </Window>
+        </CenterOverlay>
+      )}
+
       {SplashComponent && <SplashComponent onDone={completeLaunch} />}
       {saverOn && <Screensaver />}
+      {bsod && <Bsod onDismiss={() => setBsod(false)} />}
 
-      <Taskbar onShutDown={() => setShutDown(true)} onScreenSaver={startSaver} />
+      <Taskbar onShutDown={() => setShutDialog(true)} onScreenSaver={startSaver} />
     </Desk>
   );
 }

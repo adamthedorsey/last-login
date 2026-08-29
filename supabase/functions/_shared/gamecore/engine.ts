@@ -130,6 +130,7 @@ export function toStateView(
     saverText: content.computer.saverText,
     imScreenname: content.computer.imScreenname,
     bootWarning: content.computer.bootWarning,
+    dosVolume: content.computer.dosVolume,
     wallpaper: content.wallpaper,
     homeUrl: content.homeUrl,
     loggedIn: state.loggedIn,
@@ -476,6 +477,14 @@ export function handleAction(
           : undefined,
         hint: state.flags[HINT_REVEALED_FLAG] ? content.computer.loginHint : undefined,
       });
+    }
+
+    case 'logout': {
+      if (state.loggedIn) {
+        state.loggedIn = false;
+        events.push({ type: 'logout' });
+      }
+      return done({ type: 'state', view: toStateView(content, state, nowMs) });
     }
   }
 

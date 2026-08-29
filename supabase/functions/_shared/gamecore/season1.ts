@@ -60,6 +60,10 @@ export const SEASON1: SeasonContent = {
       'WARNING: This computer was not shut down properly.',
       'Last session ended:  10/11/97  2:31 AM',
     ],
+    // Shown by `vol` and `dir` in MS-DOS mode. The serial reads as line
+    // noise on day one — and as the finale's timestamp (2:14 AM, Oct 11)
+    // to anyone who thinks to look at it twice.
+    dosVolume: { label: 'CASEY', serial: '2141-1011' },
   },
   passwords: {
     'login.casey': { password: 'sunflower97' },

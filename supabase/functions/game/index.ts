@@ -36,6 +36,7 @@ function json(body: unknown, status = 200): Response {
 const VALID_ACTIONS = new Set([
   'getState',
   'login',
+  'logout',
   'getDesktop',
   'listChildren',
   'open',

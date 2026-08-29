@@ -214,6 +214,8 @@ export interface SeasonContent {
      * warning). Story data — served via StateView, never client-coded.
      */
     bootWarning?: string[];
+    /** DOS volume label/serial (shown by `vol` and `dir`). Sometimes a clue. */
+    dosVolume?: { label: string; serial: string };
   };
   /** Standalone password targets (e.g. the OS login itself). SERVER ONLY values. */
   passwords: Record<string, { password: string; hint?: string }>;
@@ -291,6 +293,7 @@ export function newPlayerState(): PlayerState {
 export type GameAction =
   | { type: 'getState' }
   | { type: 'login'; password: string }
+  | { type: 'logout' }
   | { type: 'getDesktop' }
   | { type: 'listChildren'; parentId: string }
   | { type: 'open'; itemId: string }
@@ -348,6 +351,7 @@ export interface StateView {
   saverText?: string;
   imScreenname?: string;
   bootWarning?: string[];
+  dosVolume?: { label: string; serial: string };
   wallpaper: string;
   homeUrl: string;
   loggedIn: boolean;

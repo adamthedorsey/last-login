@@ -120,9 +120,16 @@ function buildBootFrames(warning?: string[]): BootFrame[] {
   return frames;
 }
 
-export function BootSequence() {
+export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   const { view, send } = useGame();
-  const [phase, setPhase] = useState<'boot' | 'login'>('boot');
+  // "Log on as a different user" skips the POST — the machine never turned
+  // off. (Read without consuming; cleared once on mount for StrictMode.)
+  const [phase, setPhase] = useState<'boot' | 'login'>(() =>
+    sessionStorage.getItem('lastlogin.logoff') === '1' ? 'login' : 'boot',
+  );
+  useEffect(() => {
+    sessionStorage.removeItem('lastlogin.logoff');
+  }, []);
   const [frameIdx, setFrameIdx] = useState(0);
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
@@ -171,12 +178,16 @@ export function BootSequence() {
   useEffect(() => {
     if (phase !== 'boot' || !fontsReady) return;
     if (frameIdx >= frames.length) {
-      const t = window.setTimeout(() => setPhase('login'), 400);
+      const t = window.setTimeout(() => {
+        // A warm reboot with a live session skips the login and resumes.
+        if (view?.loggedIn && onResume) onResume();
+        else setPhase('login');
+      }, 400);
       return () => window.clearTimeout(t);
     }
     const t = window.setTimeout(() => setFrameIdx((i) => i + 1), frames[frameIdx].ms);
     return () => window.clearTimeout(t);
-  }, [phase, frameIdx, fontsReady, frames]);
+  }, [phase, frameIdx, fontsReady, frames, view, onResume]);
 
   const done = frameIdx >= frames.length;
   const bootText = useMemo(

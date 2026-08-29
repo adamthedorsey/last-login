@@ -117,6 +117,22 @@ describe('computer login', () => {
     expect(later.view.loginLockSeconds).toBeUndefined();
   });
 
+  it('logout drops the session and gates actions again', () => {
+    let s = loggedInState();
+    const out = run(s, { type: 'logout' });
+    s = out.state;
+    expect(s.loggedIn).toBe(false);
+    expect(run(s, { type: 'getDesktop' }).result).toMatchObject({
+      type: 'error',
+      error: 'not_logged_in',
+    });
+    // Logging back in works with the same password.
+    expect(run(s, { type: 'login', password: LOGIN_PASSWORD }).result).toMatchObject({
+      type: 'login',
+      ok: true,
+    });
+  });
+
   it('refuses every game action before login', () => {
     const actions: GameAction[] = [
       { type: 'getDesktop' },

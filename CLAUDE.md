@@ -107,6 +107,16 @@ If not, don't build it that way.
 - Buddy presence changes are authored as `overrides` on the roster entry
   (requirement → status), never client-side logic.
 
+### MS-DOS mode & system mortality
+- MS-DOS mode (Shut Down → "Restart in MS-DOS mode") is a real prompt whose
+  every listing and TYPE goes through the ENGINE — content gating carries
+  over automatically and no story text may live in DosMode.tsx. DOS-only
+  clues are authored as content (e.g. `computer.dosVolume`), served via
+  StateView.
+- The blue screen is pure flavor: rare (random click budget, at most twice a
+  session), silent, loses nothing, any key continues. Never let it interrupt
+  an overlay (saver, dialogs, DOS, end card) and never make it a punishment.
+
 ## Security model (non-negotiable, see README for detail)
 - Story content lives ONLY in `supabase/functions/_shared/gamecore/` and the
   private `game` DB schema. It may reach the client exclusively through the

@@ -30,6 +30,7 @@ const FORBIDDEN = [
   'not shut down properly', // boot warning (server-sent story line)
   'Last session ended', // the 2:31 AM stamp that goes with it
   'moms flower', // casey's password hint (earned after failed attempts)
+  '2141-1011', // DOS volume serial (the finale timestamp, hiding in plain sight)
 ];
 
 function* walk(dir) {
