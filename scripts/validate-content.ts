@@ -11,7 +11,6 @@ import { SEASON1 } from '../supabase/functions/_shared/gamecore/season1.ts';
 import { isAccessible, meetsRequirement, resolvePresence } from '../supabase/functions/_shared/gamecore/engine.ts';
 import {
   newPlayerState,
-  type ContentItem,
   type Requirement,
   type SeasonContent,
 } from '../supabase/functions/_shared/gamecore/types.ts';
