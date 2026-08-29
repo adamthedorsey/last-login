@@ -113,3 +113,8 @@ If not, don't build it that way.
 - TypeScript strict; `npm run lint` (oxlint) warnings should not grow.
 - react95 caveat: `Slider` (and anything relying on `findDOMNode`) crashes
   under React 19 — do not use it; prefer Select/NumberInput/buttons.
+- Clue-graph tooling: `npm run validate` checks the content graph (dangling
+  refs, ungrantable/unreachable discoveries and items, finale reachability,
+  two-path warnings) and `npm run graph` regenerates `docs/clue-graph.md`
+  (Mermaid) from the shipping content. Both run automatically inside
+  `gen:seed`; `verify` runs validation first. Never hand-edit the graph doc.

@@ -9,9 +9,11 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "gen:seed": "tsx scripts/generate-seed.ts",
+    "gen:seed": "tsx scripts/validate-content.ts && tsx scripts/generate-seed.ts && tsx scripts/clue-graph.ts",
     "check:bundle": "node scripts/check-bundle.mjs",
-    "verify": "npm run build && npm run test && npm run check:bundle"
+    "verify": "npm run validate && npm run build && npm run test && npm run check:bundle",
+    "validate": "tsx scripts/validate-content.ts",
+    "graph": "tsx scripts/clue-graph.ts"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
