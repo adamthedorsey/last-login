@@ -25,7 +25,9 @@ If not, don't build it that way.
 ### Motion
 - No smooth/eased animations, no fades, no springs, no smooth scrolling.
   Things appear, disappear, and snap. Allowed motion: marquee text, a blinking
-  block cursor, throbber/progress loops, instant window operations.
+  block cursor, throbber/progress loops, instant window operations, and the
+  screen saver (constant-velocity linear drift + stepped sprite frames only —
+  no easing, ever).
 - Deliberate slowness is flavor (dial-up delays, splash screens) — keep each
   under ~2.5s and always click-skippable.
 

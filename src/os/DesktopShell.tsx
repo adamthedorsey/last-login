@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Window, WindowContent, WindowHeader } from 'react95';
 import { topWindowId, useWindowStore, TASKBAR_HEIGHT } from './windowStore';
@@ -8,6 +8,9 @@ import { Taskbar } from './Taskbar';
 import { DesktopIcons } from './DesktopIcons';
 import { useGame } from '../game/gameContext';
 import { PIXEL_MONO } from '../theme';
+import { Screensaver } from './Screensaver';
+
+const SCREENSAVER_IDLE_MS = 3 * 60 * 1000;
 
 // Dev tooling is lazy-loaded strictly behind the DEV flag so neither the
 // panel nor anything it references can reach a production bundle.
@@ -74,7 +77,41 @@ export function DesktopShell() {
   const { windows, pendingLaunch, completeLaunch } = useWindowStore();
   const { toasts, dismissToast, showEndCard, setShowEndCard, view } = useGame();
   const [shutDown, setShutDown] = useState(false);
+  const [saverOn, setSaverOn] = useState(false);
   const focusedId = topWindowId(windows);
+
+  // Screen saver: kicks in after idle, any input wakes it (Win95 behavior).
+  // A short grace period stops the Start-menu click that launches it from
+  // immediately waking it back up.
+  const saverStartedAt = useRef(0);
+  const startSaver = () => {
+    saverStartedAt.current = performance.now();
+    setSaverOn(true);
+  };
+  useEffect(() => {
+    let timer = 0;
+    const arm = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        saverStartedAt.current = performance.now();
+        setSaverOn(true);
+      }, SCREENSAVER_IDLE_MS);
+    };
+    const onActivity = () => {
+      if (performance.now() - saverStartedAt.current > 600) setSaverOn(false);
+      arm();
+    };
+    arm();
+    window.addEventListener('pointermove', onActivity);
+    window.addEventListener('pointerdown', onActivity);
+    window.addEventListener('keydown', onActivity);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('pointermove', onActivity);
+      window.removeEventListener('pointerdown', onActivity);
+      window.removeEventListener('keydown', onActivity);
+    };
+  }, []);
 
   // An app launch waiting on its startup splash (e.g. NetVoyager).
   const SplashComponent = pendingLaunch ? getApp(pendingLaunch.appId)?.splash : undefined;
@@ -146,8 +183,9 @@ export function DesktopShell() {
       )}
 
       {SplashComponent && <SplashComponent onDone={completeLaunch} />}
+      {saverOn && <Screensaver />}
 
-      <Taskbar onShutDown={() => setShutDown(true)} />
+      <Taskbar onShutDown={() => setShutDown(true)} onScreenSaver={startSaver} />
       {DevPanel && (
         <Suspense fallback={null}>
           <DevPanel />

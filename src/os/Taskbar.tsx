@@ -89,7 +89,13 @@ function formatClock(iso: string): string {
   return `${h}:${m} ${ampm}`;
 }
 
-export function Taskbar({ onShutDown }: { onShutDown: () => void }) {
+export function Taskbar({
+  onShutDown,
+  onScreenSaver,
+}: {
+  onShutDown: () => void;
+  onScreenSaver: () => void;
+}) {
   const { windows, focus, minimize, open } = useWindowStore();
   const { view } = useGame();
   const [startOpen, setStartOpen] = useState(false);
@@ -133,6 +139,17 @@ export function Taskbar({ onShutDown }: { onShutDown: () => void }) {
               </MenuListItem>
             ))}
             <Separator />
+            <MenuListItem
+              onClick={() => {
+                setStartOpen(false);
+                onScreenSaver();
+              }}
+            >
+              <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+                <Icon name="photo" size={20} />
+                Screen Saver
+              </span>
+            </MenuListItem>
             <MenuListItem
               onClick={() => {
                 setStartOpen(false);
