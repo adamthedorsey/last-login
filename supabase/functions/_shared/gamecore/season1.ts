@@ -1330,9 +1330,11 @@ Practically Giving It Away (Legal: we are not giving it away.)`,
     },
 
     // =====================================================================
-    // RECYCLE BIN — the machine remembers what people throw away.
+    // TRASH — the machine remembers what people throw away.
     // =====================================================================
-    { id: 'folder.recycle', kind: 'folder', name: 'Recycle Bin', icon: 'trash' },
+    // Horizons ships a Mac-style Trash, not a Windows-style bin — deliberate
+    // brand differentiation. The can bulges while anything is in it.
+    { id: 'folder.recycle', kind: 'folder', name: 'Trash', icon: 'trash', fullWhenHasChildren: 'folder.recycle' },
     {
       id: 'trash.essay-draft',
       kind: 'trash_item',
@@ -1497,8 +1499,9 @@ and things go back to nor
     {
       id: 'shortcut.recycle',
       kind: 'shortcut',
-      name: 'Recycle Bin',
+      name: 'Trash',
       icon: 'trash',
+      fullWhenHasChildren: 'folder.recycle',
       meta: { appId: 'recycle', desktop: { x: 24, y: 408 } },
     },
 

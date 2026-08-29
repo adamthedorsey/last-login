@@ -79,7 +79,7 @@ function isUnlocked(state: PlayerState, item: ContentItem): boolean {
 // Redaction: server shapes -> client DTOs
 // ---------------------------------------------------------------------------
 
-export function toSummary(state: PlayerState, item: ContentItem): ItemSummary {
+export function toSummary(content: SeasonContent, state: PlayerState, item: ContentItem): ItemSummary {
   const s: ItemSummary = {
     id: item.id,
     kind: item.kind,
@@ -89,11 +89,20 @@ export function toSummary(state: PlayerState, item: ContentItem): ItemSummary {
   if (item.parentId) s.parentId = item.parentId;
   if (item.meta) s.meta = { ...item.meta };
   if (item.password && !isUnlocked(state, item)) s.locked = true;
+  // Fullness is presentation, but VISIBLE fullness — only accessible
+  // children count, so a gated file never bulges the can early.
+  if (item.fullWhenHasChildren && s.icon) {
+    const target = item.fullWhenHasChildren;
+    const hasAny = content.items.some(
+      (c) => c.parentId === target && isAccessible(content, state, c),
+    );
+    if (hasAny) s.icon = `${s.icon}-full`;
+  }
   return s;
 }
 
-function toContent(state: PlayerState, item: ContentItem): ItemContent {
-  const c: ItemContent = toSummary(state, item);
+function toContent(content: SeasonContent, state: PlayerState, item: ContentItem): ItemContent {
+  const c: ItemContent = toSummary(content, state, item);
   if (item.body) c.body = item.body;
   return c;
 }
@@ -497,7 +506,7 @@ export function handleAction(
     case 'getDesktop': {
       const items = content.items
         .filter((i) => i.meta?.desktop && isAccessible(content, state, i))
-        .map((i) => toSummary(state, i));
+        .map((i) => toSummary(content, state, i));
       (state.folders ?? []).forEach((f, i) => items.push(folderSummary(f, i)));
       (state.documents ?? [])
         .filter((d) => !d.folderId)
@@ -519,7 +528,7 @@ export function handleAction(
       }
       const items = content.items
         .filter((i) => i.parentId === action.parentId && isAccessible(content, state, i))
-        .map((i) => toSummary(state, i));
+        .map((i) => toSummary(content, state, i));
       return done({ type: 'children', items });
     }
 
@@ -550,7 +559,7 @@ export function handleAction(
       return done({
         type: 'open',
         ok: true,
-        item: toContent(state, item),
+        item: toContent(content, state, item),
         newDiscoveries: newDiscoveries.length ? newDiscoveries : undefined,
         ended: ended || undefined,
       });
@@ -588,7 +597,7 @@ export function handleAction(
       return done({
         type: 'visit',
         ok: true,
-        page: toContent(state, page),
+        page: toContent(content, state, page),
         newDiscoveries: newDiscoveries.length ? newDiscoveries : undefined,
         ended: ended || undefined,
       });

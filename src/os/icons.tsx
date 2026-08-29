@@ -163,6 +163,25 @@ const ICONS: Record<string, Px[]> = {
     [6, 6, 20, 2, GR],
     [13, 3, 6, 3, GR],
   ],
+  // The Mac-style full state: lid knocked ajar, crumpled paper over the rim.
+  'trash-full': [
+    // crumpled paper spilling out
+    [9, 4, 5, 4, W],
+    [15, 2, 6, 5, W],
+    [12, 5, 8, 3, '#e8e8e8'],
+    [21, 4, 3, 3, W],
+    [10, 5, 2, 2, '#b8b8b8'],
+    [17, 3, 2, 2, '#b8b8b8'],
+    // the lid, shoved off to the side and resting on the pile
+    [19, 0, 9, 2, GR],
+    [24, 2, 4, 2, GR],
+    // rim + body
+    [6, 7, 20, 2, GR],
+    [8, 9, 16, 19, '#d4d0c8'],
+    [10, 11, 2, 15, GR],
+    [15, 11, 2, 15, GR],
+    [20, 11, 2, 15, GR],
+  ],
   game: [
     [6, 4, 14, 20, W],
     [6, 4, 14, 1, GR],

@@ -129,6 +129,11 @@ export interface ContentItem {
   onOpen?: { discover?: string[]; setFlags?: Record<string, boolean> };
   /** Extra keywords for the in-game search engine. SERVER ONLY (never sent raw). */
   searchText?: string;
+  /**
+   * When the referenced item has any accessible children, this item's icon
+   * is served with a `-full` suffix (the Mac-style bulging trash can).
+   */
+  fullWhenHasChildren?: string;
 }
 
 export interface Discovery {

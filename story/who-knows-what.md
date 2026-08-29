@@ -88,7 +88,7 @@ The core mechanic: a secret is inert until it appears where it shouldn't.
    question" → gives the player the *motive* spine (pipeline) that the ledger
    copy then proves.
 6. **S12, the machine itself** — file modified-dates after Oct 10, the
-   half-emptied Recycle Bin, the diary's last-modified 2:14 AM Oct 11. The
+   half-emptied Trash, the diary's last-modified 2:14 AM Oct 11. The
    only person with house access, PC access, and everything to lose. →
    *finale discovery: `the-house` — end of season.*
 7. **S7's decoy arc** — Angel's changed statement makes Act 2 look like it's
@@ -107,7 +107,7 @@ app never soft-locks the season.
 | Sadie IM logs (Oct 3) w/ code word | S9 exists | Chat | open from start | — (retro-ignites after the log) |
 | Sadie's email "please write back" | S3 half | Mail | open | `the-meeting` (A) |
 | LIVE chat: Sadie's porch story | S3 half | Chat | talk to her | `the-meeting` (B) |
-| Recycle Bin: deleted GhostBridge log (Oct 10) | S3, S9 used | Recycle Bin | the-meeting | `stolen-intimacy` (A) |
+| Trash: deleted GhostBridge log (Oct 10) | S3, S9 used | Trash | the-meeting | `stolen-intimacy` (A) |
 | "poem drafts 2.txt" — Oct 8 log Casey hid in Writing!! | S3, S11 shape | Explorer | the-meeting | `stolen-intimacy` (B) |
 | Sadie's email "it's not chad" (jealousy logic) | S8 window | Mail | stolen-intimacy | `chads-window` (A) |
 | Register "Timeline of the 10th" (Gene's barstool alibi) | S8 window | NetVoyager | stolen-intimacy | `chads-window` (B) |

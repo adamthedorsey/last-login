@@ -63,6 +63,8 @@ function validate(content: SeasonContent): void {
     checkReq(item.id, item.requires);
     if (item.parentId && !itemIds.has(item.parentId))
       errors.push(`${item.id}: unknown parentId "${item.parentId}"`);
+    if (item.fullWhenHasChildren && !itemIds.has(item.fullWhenHasChildren))
+      errors.push(`${item.id}: fullWhenHasChildren references unknown item "${item.fullWhenHasChildren}"`);
     for (const d of item.onOpen?.discover ?? [])
       if (!discoveryIds.has(d)) errors.push(`${item.id}: grants unknown discovery "${d}"`);
   }
