@@ -16,15 +16,21 @@ export const PIXEL_MONO = "'Fixedsys', 'Courier New', monospace";
 
 /**
  * Long-form document text (Notepad files, recovered logs): Courier New at a
- * comfortable size, aliased like everything else. Monospace is load-bearing
- * — story documents contain column-aligned ASCII (the ledger, file-
- * properties blocks) that a proportional face would shred. Fixedsys stays
- * on the terminal surfaces (boot, DOS, BSOD, shutdown); this is for READING.
+ * comfortable size. Monospace is load-bearing — story documents contain
+ * column-aligned ASCII (the ledger, file-properties blocks) that a
+ * proportional face would shred.
+ *
+ * THE one exception to the aliased-everywhere rule: Courier New is too
+ * spindly to survive without smoothing — aliased, its hairline strokes
+ * break apart and long documents become genuinely hard to read. Documents
+ * opt back into antialiasing; every other surface stays aliased.
  */
 export const DOC_TEXT = `
   font-family: 'Courier New', monospace;
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.55;
+  -webkit-font-smoothing: auto;
+  text-rendering: auto;
 `;
 
 const GlobalStyles = createGlobalStyle`

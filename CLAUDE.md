@@ -49,12 +49,13 @@ If not, don't build it that way.
   Fixedsys or scaled ms_sans_serif back on reading surfaces.
 - In-game web pages: Times New Roman / Arial / Courier New via the `PageBlock`
   style system — that's what the 1997 web actually used.
-- Font smoothing is ONE tier, on purpose (owner call): EVERYTHING renders
-  aliased — body-level `-webkit-font-smoothing: none`, no opt-outs — the way
-  a real 1997 machine drew text. Readability comes from FACE, SIZE, and
-  LINE-HEIGHT, never from smoothing: vector faces (Arial, Courier New,
-  Times) alias cleanly at 14px+; only SCALED BITMAP fonts go ragged, so
-  ms_sans_serif/Fixedsys never appear on long-form reading surfaces.
+- Font smoothing (owner calls): EVERYTHING renders aliased — body-level
+  `-webkit-font-smoothing: none` — with exactly ONE exception: `DOC_TEXT`
+  (Notepad documents / recovered logs) opts back into antialiasing, because
+  aliased Courier New is too spindly to read in long form. Chrome, mail
+  (Arial holds up aliased), web pages, and terminal surfaces all stay
+  aliased. Never add more smoothing exceptions without an owner call, and
+  never put scaled bitmap fonts on long-form reading surfaces.
 - Reading surfaces get comfortable line-height (1.45–1.55) and ≥14px sizes;
   chrome stays compact at 13–14px.
 - No webfonts beyond the three above. No variable fonts, no Inter/Roboto/system

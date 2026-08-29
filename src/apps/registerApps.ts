@@ -30,7 +30,10 @@ export function registerAllApps(): void {
     name: 'Notepad',
     icon: 'notepad',
     component: Notepad,
-    defaultSize: { w: 520, h: 440 },
+    // Wide enough for the documents' longest authored line (70 chars) in
+    // 15px Courier New — otherwise CSS re-wraps mid-sentence and reading
+    // turns into a ragged stutter. Keep authored lines <= 70 chars.
+    defaultSize: { w: 690, h: 460 },
   });
   registerApp({
     id: 'photos',
