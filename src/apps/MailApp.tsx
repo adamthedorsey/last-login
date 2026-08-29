@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Button, Frame, ScrollView, Toolbar } from 'react95';
 import type { ItemContent, ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
+import { READABLE_TEXT } from '../theme';
 import { Icon } from '../os/icons';
 
 const MAILBOXES = [
@@ -91,6 +92,19 @@ const Headers = styled.div`
   padding-bottom: 6px;
   font-size: 13px;
   color: #333;
+`;
+
+/**
+ * Letter bodies read in Arial, antialiased — what Outlook Express actually
+ * used in 1997, and the comfortable long-form face. The bitmap chrome font
+ * stays on lists and headers, where it's short and crisp.
+ */
+const BodyText = styled.div`
+  white-space: pre-wrap;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  ${READABLE_TEXT}
 `;
 
 function fmtDate(iso?: string): string {
@@ -193,11 +207,7 @@ export function MailApp() {
                   <b>Date:</b> {fmtDate(openMsg.meta?.date)}
                 </div>
               </Headers>
-              {/* Proportional ms_sans_serif reads easiest for letters; any
-                  column-aligned evidence lives in Notepad files, not mail. */}
-              <div style={{ whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.55 }}>
-                {openMsg.body?.text}
-              </div>
+              <BodyText>{openMsg.body?.text}</BodyText>
             </>
           ) : (
             <span style={{ color: '#777' }}>Select a message to read it.</span>
