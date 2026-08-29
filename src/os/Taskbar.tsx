@@ -143,13 +143,19 @@ const MenuCol = styled(MenuList)`
   min-width: 190px;
 `;
 
-const SubMenu = styled(MenuList)<{ $left: number }>`
-  position: absolute;
+/**
+ * Cascades align to the ITEM that opened them, the Win95 way: the submenu's
+ * top edge sits at the hovered row (captured on mouseenter). The max-height
+ * clamp is a safety net so a long menu scrolls instead of running under the
+ * taskbar.
+ */
+const SubMenu = styled(MenuList)<{ $left: number; $top: number }>`
+  position: fixed;
   left: ${(p) => p.$left}px;
-  bottom: ${TASKBAR_HEIGHT + 2}px;
+  top: ${(p) => p.$top}px;
   z-index: 100002;
   min-width: 185px;
-  max-height: calc(100vh - ${TASKBAR_HEIGHT + 16}px);
+  max-height: calc(100vh - ${TASKBAR_HEIGHT + 4}px - ${(p) => p.$top}px);
   overflow-y: auto;
 `;
 
@@ -228,6 +234,18 @@ export function Taskbar({
   const [startOpen, setStartOpen] = useState(false);
   const [sub, setSub] = useState<SubName>(null);
   const [sub2, setSub2] = useState<Sub2Name>(null);
+  const [subTop, setSubTop] = useState(0);
+  const [sub2Top, setSub2Top] = useState(0);
+
+  const openSub = (name: Exclude<SubName, null>) => (e: React.MouseEvent<HTMLElement>) => {
+    setSubTop(e.currentTarget.getBoundingClientRect().top - 3);
+    setSub(name);
+    setSub2(null);
+  };
+  const openSub2 = (name: Exclude<Sub2Name, null>) => (e: React.MouseEvent<HTMLElement>) => {
+    setSub2Top(e.currentTarget.getBoundingClientRect().top - 3);
+    setSub2(name);
+  };
   const [recentDocs, setRecentDocs] = useState<ItemSummary[]>([]);
   const [helpOpen, setHelpOpen] = useState(false);
   const [runOpen, setRunOpen] = useState(false);
@@ -338,25 +356,25 @@ export function Taskbar({
                 </SideText>
               </SideBar>
               <MenuCol>
-                <MenuListItem onMouseEnter={() => { setSub('programs'); setSub2(null); }}>
+                <MenuListItem onMouseEnter={openSub('programs')}>
                   <ItemRow icon="folder">
                     <span><u>P</u>rograms</span>
                     <Chevron />
                   </ItemRow>
                 </MenuListItem>
-                <MenuListItem onMouseEnter={() => { setSub('documents'); setSub2(null); }}>
+                <MenuListItem onMouseEnter={openSub('documents')}>
                   <ItemRow icon="folder-docs">
                     <span><u>D</u>ocuments</span>
                     <Chevron />
                   </ItemRow>
                 </MenuListItem>
-                <MenuListItem onMouseEnter={() => { setSub('settings'); setSub2(null); }}>
+                <MenuListItem onMouseEnter={openSub('settings')}>
                   <ItemRow icon="settings">
                     <span><u>S</u>ettings</span>
                     <Chevron />
                   </ItemRow>
                 </MenuListItem>
-                <MenuListItem onMouseEnter={() => { setSub('find'); setSub2(null); }}>
+                <MenuListItem onMouseEnter={openSub('find')}>
                   <ItemRow icon="find">
                     <span><u>F</u>ind</span>
                     <Chevron />
@@ -386,14 +404,14 @@ export function Taskbar({
           )}
 
           {startOpen && sub === 'programs' && (
-            <SubMenu $left={SUB_X}>
-              <MenuListItem size="sm" onMouseEnter={() => setSub2('accessories')}>
+            <SubMenu $left={SUB_X} $top={subTop}>
+              <MenuListItem size="sm" onMouseEnter={openSub2('accessories')}>
                 <ItemRow icon="folder" size={18}>
                   <span>Accessories</span>
                   <Chevron />
                 </ItemRow>
               </MenuListItem>
-              <MenuListItem size="sm" onMouseEnter={() => setSub2('games')}>
+              <MenuListItem size="sm" onMouseEnter={openSub2('games')}>
                 <ItemRow icon="folder" size={18}>
                   <span>Games</span>
                   <Chevron />
@@ -414,7 +432,7 @@ export function Taskbar({
             </SubMenu>
           )}
           {startOpen && sub === 'programs' && sub2 && (
-            <SubMenu $left={SUB2_X}>
+            <SubMenu $left={SUB2_X} $top={sub2Top}>
               {listApps()
                 .filter((a) => (sub2 === 'accessories' ? ACCESSORY_IDS : GAME_IDS).includes(a.id))
                 .map((app) => (
@@ -426,7 +444,7 @@ export function Taskbar({
           )}
 
           {startOpen && sub === 'documents' && (
-            <SubMenu $left={SUB_X}>
+            <SubMenu $left={SUB_X} $top={subTop}>
               {recentDocs.length === 0 && (
                 <MenuListItem size="sm" disabled>
                   <span style={{ color: '#808080' }}>(Empty)</span>
@@ -441,7 +459,7 @@ export function Taskbar({
           )}
 
           {startOpen && sub === 'settings' && (
-            <SubMenu $left={SUB_X}>
+            <SubMenu $left={SUB_X} $top={subTop}>
               <MenuListItem size="sm" onClick={() => { open('display'); closeStart(); }}>
                 <ItemRow icon="display" size={18}><span>Display</span></ItemRow>
               </MenuListItem>
@@ -452,7 +470,7 @@ export function Taskbar({
           )}
 
           {startOpen && sub === 'find' && (
-            <SubMenu $left={SUB_X}>
+            <SubMenu $left={SUB_X} $top={subTop}>
               <MenuListItem size="sm" onClick={() => { open('browser'); closeStart(); }}>
                 <ItemRow icon="find" size={18}><span>On the Internet...</span></ItemRow>
               </MenuListItem>
