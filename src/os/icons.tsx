@@ -1,7 +1,91 @@
 /**
- * Original pixel-style icon set (no reproduced trademark art).
- * Drawn as tiny SVG rect compositions, rendered crisp.
+ * Icon registry.
+ *
+ * DEMO EXCEPTION (owner call, temporary): most icons currently come from
+ * @react95/icons — genuine Win95 art, fine for a demo, to be REPLACED with
+ * original art before any commercial release. No Windows-flag icons are
+ * used. The hand-drawn rect set below remains as the fallback and the
+ * eventual replacement target.
  */
+import {
+  Calculator,
+  Camera,
+  CdMusic,
+  Computer,
+  Desk100,
+  Earth,
+  FileFind,
+  FilePen,
+  FileText,
+  Folder as FolderIcon,
+  FolderFile,
+  FolderOpen,
+  Freecell1,
+  HelpBook,
+  Mail,
+  Mailnews2,
+  Mailnews14,
+  Mspaint,
+  Notepad,
+  RecycleEmpty,
+  RecycleFile,
+  RecycleFull,
+  Progman2,
+  Settings,
+  Vvexe321,
+  Shell329,
+  Sysmon1000,
+  Textchat,
+  Timedate,
+  Timedate200,
+  Winmine1,
+  Winpopup2,
+} from '@react95/icons';
+
+type R95Component = React.ComponentType<{
+  variant?: string;
+  width?: number;
+  height?: number;
+  style?: React.CSSProperties;
+}>;
+
+/** Component + whether it ships a 16x16 frame (not all of them do). Each
+ * icon component types `variant` as its own narrow union, so the map is
+ * cast once here rather than per-entry. */
+const R95 = {
+  browser: { C: Earth, v16: false },
+  calc: { C: Calculator, v16: true },
+  calendar: { C: Timedate200, v16: true },
+  cd: { C: CdMusic, v16: true },
+  clock: { C: Timedate, v16: true },
+  computer: { C: Computer, v16: true },
+  display: { C: Desk100, v16: true },
+  doc: { C: FileText, v16: true },
+  drive: { C: Shell329, v16: true },
+  find: { C: FileFind, v16: true },
+  folder: { C: FolderIcon, v16: true },
+  'folder-docs': { C: FolderFile, v16: true },
+  'folder-pics': { C: FolderOpen, v16: true },
+  game: { C: Freecell1, v16: false },
+  help: { C: HelpBook, v16: true },
+  im: { C: Winpopup2, v16: true },
+  'im-app': { C: Textchat, v16: true },
+  mail: { C: Mail, v16: true },
+  'mail-app': { C: Mailnews14, v16: true },
+  mailbox: { C: Mailnews2, v16: true },
+  'mailbox-trash': { C: RecycleFile, v16: false },
+  mine: { C: Winmine1, v16: true },
+  notepad: { C: Notepad, v16: true },
+  notes: { C: FilePen, v16: true },
+  paint: { C: Mspaint, v16: true },
+  photo: { C: Camera, v16: true },
+  run: { C: Progman2, v16: false },
+  settings: { C: Settings, v16: true },
+  dos: { C: Vvexe321, v16: false },
+  sysmon: { C: Sysmon1000, v16: false },
+  trash: { C: RecycleEmpty, v16: true },
+  'trash-full': { C: RecycleFull, v16: true },
+} as unknown as Record<string, { C: R95Component; v16: boolean }>;
 
 interface IconProps {
   name?: string;
@@ -313,6 +397,20 @@ const ICONS: Record<string, Px[]> = {
 };
 
 export function Icon({ name = 'doc', size = 32 }: IconProps) {
+  const R = R95[name];
+  if (R) {
+    // Serve the 16px frame when rendering small — it's the art Win95 drew
+    // at that size, and it stays crisp instead of a shrunken 32px frame.
+    const variant = size <= 20 && R.v16 ? '16x16_4' : '32x32_4';
+    return (
+      <R.C
+        variant={variant}
+        width={size}
+        height={size}
+        style={{ display: 'block', imageRendering: 'pixelated' }}
+      />
+    );
+  }
   const shape = ICONS[name] ?? ICONS.doc;
   return (
     <svg

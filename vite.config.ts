@@ -15,6 +15,14 @@ export default defineConfig({
   },
   build: {
     sourcemap: false,
+    rollupOptions: {
+      treeshake: {
+        // @react95/icons ships no `sideEffects` flag, so its barrel import
+        // would drag all ~1950 icons into the bundle. Its modules are pure;
+        // declaring that lets tree-shaking keep only the icons we import.
+        moduleSideEffects: (id) => !id.includes('@react95/icons'),
+      },
+    },
   },
   test: {
     include: ['tests/**/*.test.ts'],

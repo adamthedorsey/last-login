@@ -62,9 +62,14 @@ If not, don't build it that way.
   UI stacks.
 
 ### Icons & imagery
-- All icons are original pixel art: SVG `<rect>` compositions with
-  `shape-rendering: crispEdges` (see `src/os/icons.tsx`). No icon libraries,
-  no emoji as primary iconography, no smooth vector illustration in OS chrome.
+- Icons: TEMPORARY DEMO EXCEPTION (owner call) — most icons currently come
+  from `@react95/icons` (genuine Win95 art) via the map in
+  `src/os/icons.tsx`. They MUST be replaced with original art before any
+  commercial release, and no Windows-flag icon may ever be used (several in
+  that package carry the flag — audit any new pick). The hand-drawn SVG
+  `<rect>` set in the same file is the fallback and the eventual
+  replacement target; the long-term rule remains: original pixel art only,
+  no icon libraries, no emoji as primary iconography.
 - Images ship as SVGs styled like period photos/GIF banners (flat shapes,
   caption strips, dithered-dusk palettes). `image-rendering: pixelated` stays on.
 - Never reproduce real logos, trademarks, or brand lookalikes (no Windows flag,
