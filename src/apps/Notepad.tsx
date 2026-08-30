@@ -4,6 +4,8 @@ import { Button, Frame, MenuList, MenuListItem, Separator, TextInput, Window, Wi
 import { useGame } from '../game/gameContext';
 import { DOC_TEXT } from '../theme';
 import { useWindowStore } from '../os/windowStore';
+import { CloseGlyph } from '../os/glyphs';
+import { fmtShortStamp } from '../os/fileTypes';
 import type { AppWindowProps } from '../os/appRegistry';
 
 const Paper = styled.textarea`
@@ -116,7 +118,7 @@ export function Notepad({ windowId, props }: AppWindowProps) {
           setReadOnly(true);
           const m = res.item.meta;
           setStatus(
-            ['Write-protected file', m?.modifiedAt ? `modified ${m.modifiedAt}` : null, m?.deletedAt ? `deleted ${m.deletedAt}` : null]
+            ['Write-protected file', m?.modifiedAt ? `modified ${fmtShortStamp(m.modifiedAt)}` : null, m?.deletedAt ? `deleted ${fmtShortStamp(m.deletedAt)}` : null]
               .filter(Boolean)
               .join(' — '),
           );
@@ -346,8 +348,8 @@ export function Notepad({ windowId, props }: AppWindowProps) {
           <Window style={{ width: 330 }}>
             <WindowHeader style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between' }}>
               <span>Find</span>
-              <Button size="sm" onClick={() => setFindOpen(false)}>
-                ×
+              <Button size="sm" onClick={() => setFindOpen(false)} aria-label="Close">
+                <CloseGlyph />
               </Button>
             </WindowHeader>
             <WindowContent style={{ fontSize: 13 }}>

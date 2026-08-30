@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import styled from 'styled-components';
 import { Button, Checkbox, Radio, Window, WindowContent, WindowHeader } from 'react95';
 import { Icon } from './icons';
+import { CloseGlyph } from './glyphs';
 
 const Overlay = styled.div`
   position: fixed;
@@ -38,8 +39,8 @@ export function RecycleBinProps({ onClose }: { onClose: () => void }) {
       <Window shadow style={{ width: 340 }}>
         <WindowHeader style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between' }}>
           <span>Recycle Bin Properties</span>
-          <Button size="sm" onClick={onClose}>
-            ×
+          <Button size="sm" onClick={onClose} aria-label="Close">
+            <CloseGlyph />
           </Button>
         </WindowHeader>
         <WindowContent style={{ fontSize: 13 }}>

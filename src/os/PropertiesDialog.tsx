@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { Button, Checkbox, Window, WindowContent, WindowHeader } from 'react95';
 import type { ItemSummary } from '@gamecore/types.ts';
 import { Icon } from './icons';
+import { CloseGlyph } from './glyphs';
 import { dosShortName } from './dosname';
 import { TYPE_NAMES } from './fileTypes';
 
@@ -95,8 +96,8 @@ export function PropertiesDialog({
       <Window shadow style={{ width: 360 }}>
         <WindowHeader style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between' }}>
           <span>{item.name} Properties</span>
-          <Button size="sm" onClick={onClose}>
-            ×
+          <Button size="sm" onClick={onClose} aria-label="Close">
+            <CloseGlyph />
           </Button>
         </WindowHeader>
         <WindowContent style={{ fontSize: 13 }}>

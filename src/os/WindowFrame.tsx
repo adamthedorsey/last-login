@@ -4,6 +4,7 @@ import { Button, MenuList, MenuListItem, Separator, Window, WindowContent, Windo
 import { getApp } from './appRegistry';
 import { TASKBAR_HEIGHT, useWindowStore, type OSWindow } from './windowStore';
 import { Icon } from './icons';
+import { CloseGlyph, MaximizeGlyph, MinimizeGlyph, RestoreGlyph } from './glyphs';
 import { animateZoom, taskbarButtonBox } from './zoomRect';
 
 const MIN_W = 300;
@@ -39,12 +40,6 @@ const Content = styled(WindowContent)`
   flex-direction: column;
   padding: 6px;
   overflow: hidden;
-`;
-
-const Glyph = styled.span`
-  font-weight: bold;
-  transform: translateY(-1px);
-  display: inline-block;
 `;
 
 /** Classic ribbed corner grip (visual only — the SE handle does the work). */
@@ -244,14 +239,22 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
           <Icon name={win.icon} size={16} />
         </span>
         <Title>{win.title}</Title>
-        <Button size="sm" onClick={doMinimize} aria-label="Minimize">
-          <Glyph style={{ transform: 'translateY(3px)' }}>_</Glyph>
-        </Button>
-        <Button size="sm" onClick={() => toggleMaximize(win.id)} aria-label="Maximize">
-          <Glyph>□</Glyph>
-        </Button>
-        <Button size="sm" onClick={() => close(win.id)} aria-label="Close">
-          <Glyph>×</Glyph>
+        {/* Win95 grouping: minimize and maximize butt together; close sits
+            a hair apart. The wrapper defeats the header's own gap. */}
+        <span style={{ display: 'inline-flex' }}>
+          <Button size="sm" onClick={doMinimize} aria-label="Minimize">
+            <MinimizeGlyph />
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => toggleMaximize(win.id)}
+            aria-label={win.maximized ? 'Restore' : 'Maximize'}
+          >
+            {win.maximized ? <RestoreGlyph /> : <MaximizeGlyph />}
+          </Button>
+        </span>
+        <Button size="sm" onClick={() => close(win.id)} aria-label="Close" style={{ marginLeft: -4 }}>
+          <CloseGlyph />
         </Button>
       </Header>
       <Content>
