@@ -1135,7 +1135,15 @@ export function Browser({ windowId, props }: AppWindowProps) {
       </Page>
 
       <StatusRow>
-        <span title="This document is not secure. It is 1997.">🔓</span>
+        <span title="This document is not secure." style={{ display: 'inline-flex' }}>
+          <svg width={12} height={12} viewBox="0 0 12 12" shapeRendering="crispEdges" aria-hidden>
+            <rect x={2} y={6} width={8} height={5} fill="#808000" />
+            <rect x={3} y={7} width={6} height={3} fill="#c0c000" />
+            <rect x={6} y={1} width={5} height={1} fill="#404040" />
+            <rect x={6} y={2} width={1} height={3} fill="#404040" />
+            <rect x={10} y={2} width={1} height={2} fill="#404040" />
+          </svg>
+        </span>
         <span style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
           {status}
         </span>

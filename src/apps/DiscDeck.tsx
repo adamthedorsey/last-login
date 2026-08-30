@@ -111,7 +111,7 @@ export function DiscDeck() {
         ))}
       </Frame>
       <Frame variant="well" style={{ marginTop: 4, padding: '2px 8px', fontSize: 12, flexShrink: 0 }}>
-        No audio output device found. (The speakers are in Jesse's car.)
+        No audio output device found.
       </Frame>
     </>
   );

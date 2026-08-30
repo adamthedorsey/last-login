@@ -731,8 +731,31 @@ export function Taskbar({
                 )}
               </TrayButton>
             )}
-            <TrayButton onClick={toggleMute} title={muted ? 'Sound off (click to enable)' : 'Sound on (click to mute)'}>
-              {muted ? '🔇' : '🔊'}
+            <TrayButton
+              onClick={toggleMute}
+              title={muted ? 'Volume (muted)' : 'Volume'}
+              style={{ position: 'relative' }}
+            >
+              <Icon name="sounds" size={16} />
+              {muted && (
+                <svg
+                  width={16}
+                  height={16}
+                  viewBox="0 0 16 16"
+                  shapeRendering="crispEdges"
+                  aria-hidden
+                  style={{ position: 'absolute', left: 4, top: 3 }}
+                >
+                  <rect x={3} y={3} width={2} height={2} fill="#c00000" />
+                  <rect x={5} y={5} width={2} height={2} fill="#c00000" />
+                  <rect x={7} y={7} width={2} height={2} fill="#c00000" />
+                  <rect x={9} y={9} width={2} height={2} fill="#c00000" />
+                  <rect x={9} y={3} width={2} height={2} fill="#c00000" />
+                  <rect x={7} y={5} width={2} height={2} fill="#c00000" />
+                  <rect x={5} y={7} width={2} height={2} fill="#c00000" />
+                  <rect x={3} y={9} width={2} height={2} fill="#c00000" />
+                </svg>
+              )}
             </TrayButton>
             <TrayClock
               onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}

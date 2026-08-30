@@ -10,6 +10,7 @@ import curArrow from './assets/cursors/arrow.png';
 import curWait from './assets/cursors/hourglass.png';
 import curText from './assets/cursors/ibeam.png';
 import curHand from './assets/cursors/hand.png';
+import curAppStart from './assets/cursors/appstarting.png';
 import type { ReactNode } from 'react';
 
 /**
@@ -102,6 +103,7 @@ const GlobalStyles = createGlobalStyle`
     --cursor-wait: url(${curWait}) 6 7, wait;
     --cursor-text: url(${curText}) 2 7, text;
     --cursor-hand: url(${curHand}) 5 0, pointer;
+    --cursor-appstarting: url(${curAppStart}) 0 0, progress;
   }
   body { cursor: var(--cursor-arrow); }
   /* Win95 showed the ARROW over buttons and controls — never a hand. */

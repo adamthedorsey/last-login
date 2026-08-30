@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Button, Frame, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
 import { playError, playStartup } from './sounds';
+import { useBootCursor } from './bootCursor';
 import { ScanDisk } from './ScanDisk';
 import { PIXEL_MONO } from '../theme';
 
@@ -14,7 +15,7 @@ const BootScreen = styled.div`
   font-size: 16px;
   padding: 28px;
   white-space: pre-wrap;
-  cursor: var(--cursor-arrow);
+  
 `;
 
 // The one sanctioned blink: a DOS block cursor, snapping — never fading.
@@ -191,6 +192,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   }, [phase, frameIdx, fontsReady, frames, view, onResume]);
 
   const done = frameIdx >= frames.length;
+  const bootCursor = useBootCursor(phase === 'boot');
   const bootText = useMemo(
     () => frames[Math.min(frameIdx, frames.length - 1)].text,
     [frames, frameIdx],
@@ -228,7 +230,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
 
   if (phase === 'boot') {
     return (
-      <BootScreen onClick={() => setFrameIdx(frames.length)}>
+      <BootScreen style={{ cursor: bootCursor }} onClick={() => setFrameIdx(frames.length)}>
         {bootText}
         {!done && (
           <>

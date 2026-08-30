@@ -90,12 +90,8 @@ export function RecycleBin() {
   return (
     <>
       <Toolbar style={{ gap: 6, flexShrink: 0 }}>
-        <Button disabled title="Nothing here can be restored... yet.">
-          Restore
-        </Button>
-        <Button disabled title="Better not.">
-          Empty Recycle Bin
-        </Button>
+        <Button disabled>Restore</Button>
+        <Button disabled>Empty Recycle Bin</Button>
       </Toolbar>
       <ScrollView style={{ flex: 1, marginTop: 4, background: '#fff' }}>
         <HeadRow>
@@ -125,7 +121,7 @@ export function RecycleBin() {
         {items.length === 0 && <div style={{ padding: 10, color: '#777' }}>(the bin is empty)</div>}
       </ScrollView>
       <Frame variant="well" style={{ marginTop: 4, padding: '2px 8px', fontSize: 12, flexShrink: 0 }}>
-        {notice ?? `${items.length} deleted object(s). Double-click to peek inside.`}
+        {notice ?? `${items.length} object(s)`}
       </Frame>
       {ctxMenu && (
         <div ref={ctxRef}>

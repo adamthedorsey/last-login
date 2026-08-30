@@ -260,8 +260,17 @@ export function Notepad({ windowId, props }: AppWindowProps) {
               Save As...
             </MenuListItem>
             <Separator />
-            <MenuListItem size="sm" onClick={() => setMenuOpen(null)}>
-              (that's the whole menu)
+            <MenuListItem size="sm" disabled>Page Setup...</MenuListItem>
+            <MenuListItem size="sm" disabled>Print...</MenuListItem>
+            <Separator />
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setMenuOpen(null);
+                useWindowStore.getState().close(windowId);
+              }}
+            >
+              Exit
             </MenuListItem>
           </Drop>
         )}
