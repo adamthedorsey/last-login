@@ -6,6 +6,7 @@ import { useGame } from '../game/gameContext';
 import { playError } from '../os/sounds';
 import { OfflineAlert } from '../os/OfflineAlert';
 import { Icon } from '../os/icons';
+import { launchItem } from '../os/launch';
 
 const MAILBOXES = [
   { id: 'mailbox.inbox', name: 'Inbox', icon: 'mailbox' },
@@ -87,6 +88,33 @@ const Reading = styled(Frame).attrs({ variant: 'field' })`
   font-size: 14px;
 `;
 
+/** The attachment shelf, Outlook-Express style: icon chips under the
+ * headers. Double-click opens one in its viewer. */
+const AttachRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+`;
+
+const AttachChip = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #999;
+  background: #ececec;
+  padding: 2px 8px 2px 4px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  color: #222;
+  cursor: var(--cursor-arrow);
+  user-select: none;
+  &:active {
+    border-style: inset;
+  }
+`;
+
 /** Same face as the letter body, all bold — the envelope, set apart. */
 const Headers = styled.div`
   border-bottom: 1px solid #ccc;
@@ -125,6 +153,7 @@ export function MailApp() {
   const [mailbox, setMailbox] = useState('mailbox.inbox');
   const [messages, setMessages] = useState<ItemSummary[]>([]);
   const [openMsg, setOpenMsg] = useState<ItemContent | null>(null);
+  const [attachments, setAttachments] = useState<ItemSummary[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [offlineAlert, setOfflineAlert] = useState(false);
 
@@ -144,7 +173,13 @@ export function MailApp() {
 
   const openMessage = async (id: string) => {
     const res = await send({ type: 'open', itemId: id });
-    if (res.type === 'open' && res.ok && res.item) setOpenMsg(res.item);
+    if (res.type !== 'open' || !res.ok || !res.item) return;
+    setOpenMsg(res.item);
+    // Attachments are the mail's child items — the engine gates them with
+    // the message itself, so this can never show more than the mail did.
+    setAttachments([]);
+    const kids = await send({ type: 'listChildren', parentId: id });
+    if (kids.type === 'children') setAttachments(kids.items);
   };
 
   const online = view?.online === true;
@@ -224,6 +259,22 @@ export function MailApp() {
                 <div>
                   <b>Date:</b> {fmtDate(openMsg.meta?.date)}
                 </div>
+                {attachments.length > 0 && (
+                  <AttachRow>
+                    <b>Attach:</b>
+                    {attachments.map((a) => (
+                      <AttachChip
+                        key={a.id}
+                        title="Double-click to open"
+                        onDoubleClick={() => launchItem(a)}
+                      >
+                        <Icon name={a.icon ?? 'doc'} size={16} />
+                        {a.name}
+                        {a.meta?.sizeKb ? ` (${a.meta.sizeKb}KB)` : ''}
+                      </AttachChip>
+                    ))}
+                  </AttachRow>
+                )}
               </Headers>
               <BodyText>{openMsg.body?.text}</BodyText>
             </>

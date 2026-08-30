@@ -702,6 +702,28 @@ describe('live buddy list', () => {
   });
 });
 
+describe('email attachments', () => {
+  it('serves attachments as children of a readable mail', () => {
+    const s = loggedInState();
+    const res = run(s, { type: 'listChildren', parentId: 'email.angel.chain' }).result;
+    expect(res.type === 'children' && res.items.some((i) => i.id === 'attach.fair-scan')).toBe(true);
+  });
+
+  it('gates an attachment with its mail: unreachable until the mail is delivered', () => {
+    let s = loggedInState();
+    const early = run(s, { type: 'open', itemId: 'attach.board-letter' }).result;
+    expect(early).toMatchObject({ type: 'open', ok: false });
+    // Earn through the-clean-truck; the next sweep delivers Sam's letter.
+    for (const step of CHAIN.slice(0, 4)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    s = run(s, { type: 'checkMail' }).state;
+    expect(s.delivered).toContain('email.sam.plain');
+    const late = run(s, { type: 'open', itemId: 'attach.board-letter' }).result;
+    expect(late).toMatchObject({ type: 'open', ok: true });
+  });
+});
+
 describe('phone dialer', () => {
   it('cannot get a dial tone while the modem holds the line', () => {
     const s = loggedInState(); // online

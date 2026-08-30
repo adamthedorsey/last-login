@@ -1062,9 +1062,27 @@ ok 1) it has my NAME on it so it's basically legally binding and
 taking chances and neither should you.
 
 (also fair pics came back from the developer. you look cute, i look
-like i'm being arrested.)
+like i'm being arrested. PROOF ATTACHED. scanning them at my cousin's
+took an HOUR so appreciate it.)
 
 xoxo angel`,
+      },
+    },
+    {
+      // Attachment on Angel's chain letter — images reach the machine the
+      // way they actually did in 1997: scanned at a cousin's, mailed over
+      // the wire. (Same roll of film as the print in C:\Pictures — the
+      // machine keeps meeting the same day from different directions.)
+      id: 'attach.fair-scan',
+      kind: 'photo',
+      name: 'fair_us_three.jpg',
+      icon: 'photo',
+      parentId: 'email.angel.chain',
+      meta: {
+        createdAt: '1997-10-07',
+        sizeKb: 92,
+        caption: 'us three at the fair!! i am NOT being arrested i am WINNING a churro. — a',
+        photoSrc: '/photos/fair_ferris_aug97.jpg',
       },
     },
     {
@@ -1431,7 +1449,59 @@ safe to hand it to.
 Whoever reads this: she was sixteen, and she was the only one in
 this county doing my job. Look at where the money goes.
 
+I attach the letter itself. Not the quoted scraps — the letter.
+Keep a copy somewhere they can't reach.
+
 - Sam Reed`,
+      },
+    },
+    {
+      // Attachment on Sam's plain-spoken mail: the September letter to the
+      // Board, whole. Evidence-grade — worth copying into your own notes.
+      // Inherits the email's gating through the ancestor chain.
+      id: 'attach.board-letter',
+      kind: 'document',
+      name: 'boardletter_sept.txt',
+      icon: 'doc',
+      parentId: 'email.sam.plain',
+      meta: { createdAt: '1997-09-08', modifiedAt: '1997-09-08', sizeKb: 3 },
+      body: {
+        text: `REED'S DRUG STORE — est. 1939
+S. Reed, R.Ph., proprietor
+
+September 8, 1997
+
+West Virginia Board of Pharmacy
+Charleston, W.Va.
+
+To whom it may concern:
+
+I write regarding a pattern of scheduled-narcotic prescriptions
+originating from a single local practice and filled at a single
+local pharmacy, in volumes that in forty years behind a counter I
+have never seen approached.
+
+Since March of this year I have observed, from my own window:
+
+  - Saturday dispensing hours at a practice that kept none for
+    a decade;
+  - patients paying cash, carrying plates from three counties
+    away;
+  - refill intervals no honest course of treatment could survive.
+
+A pharmacist who fills a script is not required to ask why. A
+doctor who writes one is not required to answer. Between those two
+courtesies a great deal of harm is presently driving in and out of
+this county on Saturday mornings.
+
+I am aware what it costs a man in a small town to put his name to
+a letter like this one. I have signed it anyway, and I will sign
+it again for any inspector you care to send.
+
+Respectfully,
+
+Samuel Reed, R.Ph.
+Reed's Drug Store, Humble`,
       },
     },
     {
