@@ -11,13 +11,15 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame } from 'react95';
+import { Button, Frame, MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
 import type { CaseFileView } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { TASKBAR_HEIGHT, useWindowStore } from '../os/windowStore';
 import { isMuted } from '../os/sounds';
 import { Icon } from '../os/icons';
 import wizardArt from '../assets/images/humble-county-wizard.jpg';
+import sealArt from '../assets/images/sheriff-seal.png';
+import { OfflineAlert } from '../os/OfflineAlert';
 import { DOC_TEXT } from '../theme';
 
 const SEEN_KEY = 'lastlogin.casefile.seen';
@@ -56,6 +58,69 @@ function loadSeen(): string[] {
     return [];
   }
 }
+
+const MenuRow = styled.div`
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  position: relative;
+  padding-bottom: 2px;
+`;
+
+const MenuButton = styled.button<{ $open: boolean }>`
+  border: none;
+  background: ${(p) => (p.$open ? '#000080' : 'transparent')};
+  color: ${(p) => (p.$open ? '#fff' : 'inherit')};
+  padding: 2px 8px;
+  font-size: 13px;
+`;
+
+const Drop = styled(MenuList)<{ $left: number }>`
+  position: absolute;
+  top: 20px;
+  left: ${(p) => p.$left}px;
+  z-index: 5000;
+  min-width: 190px;
+  font-size: 13px;
+`;
+
+/** Outlook-Express-style big toolbar buttons: icon on top, name below. */
+const Ribbon = styled(Frame).attrs({ variant: 'well' })`
+  display: flex;
+  gap: 2px;
+  padding: 3px 4px;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+`;
+
+const RibbonButton = styled(Button)`
+  width: 76px;
+  height: 52px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 12px;
+  padding: 2px;
+`;
+
+const RibbonSep = styled.div`
+  width: 2px;
+  margin: 3px 4px;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #fff;
+`;
+
+const AboutOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 100008;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+`;
 
 const TitleBand = styled(Frame).attrs({ variant: 'well' })`
   padding: 4px 8px;
@@ -213,6 +278,24 @@ export function CaseFile({ windowId }: { windowId: string }) {
   const [syncShown, setSyncShown] = useState(0);
   const [newCount, setNewCount] = useState(0);
 
+  // Workspace chrome: menus, ribbon, dialogs, the status notice.
+  type MenuName = 'file' | 'edit' | 'view' | 'help' | null;
+  const [menuOpen, setMenuOpen] = useState<MenuName>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [offlineWarn, setOfflineWarn] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const readingRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(null);
+    };
+    window.addEventListener('pointerdown', onDown);
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, [menuOpen]);
+
   // Voice playback (chrome only — the recording itself is served content).
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playState, setPlayState] = useState<'idle' | 'playing' | 'broken' | 'muted'>('idle');
@@ -318,6 +401,87 @@ export function CaseFile({ windowId }: { windowId: string }) {
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- seen is read once at completion
   }, [syncStage, syncShown, send]);
+
+  // F5 refreshes — but only while Case Files is the front window.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'F5') return;
+      const st = useWindowStore.getState();
+      const top = st.windows.filter((w) => !w.minimized).sort((a, b) => b.z - a.z)[0];
+      if (top?.id !== windowId) return;
+      e.preventDefault();
+      void send({ type: 'getCaseFile' }).then((res) => {
+        if (res.type === 'casefile') setFile(res.view);
+      });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [send, windowId]);
+
+  const refetch = async () => {
+    const res = await send({ type: 'getCaseFile' });
+    if (res.type === 'casefile') setFile(res.view);
+  };
+
+  /** The ribbon's Check Server: real wire sweep, then a fresh case file. */
+  const checkServer = async () => {
+    setMenuOpen(null);
+    const res = await send({ type: 'checkMail' });
+    if (res.type === 'net' && !res.online) {
+      setOfflineWarn(true);
+      return;
+    }
+    await refetch();
+    setNotice('Case server checked.');
+  };
+
+  const openMessage = () => file?.messages.find((m) => m.id === openId) ?? null;
+
+  /** Save the open message into the player's workspace as a desktop file. */
+  const saveTranscript = async () => {
+    setMenuOpen(null);
+    const m = openMessage();
+    if (!m) return;
+    const header = [
+      m.from ? `FROM: ${m.from}` : null,
+      m.date ? `DATE: ${m.date}` : null,
+      `RE: ${m.subject ?? '(no subject)'}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+    const res = await send({
+      type: 'saveDocument',
+      name: `${(m.subject ?? 'case message').replace(/[^\w -]/g, '').trim() || 'case message'}.txt`,
+      text: `${header}\n\n${m.text}`,
+    });
+    if (res.type === 'document' && res.ok && res.item) {
+      setNotice(`Saved to Desktop as "${res.item.name}"`);
+    } else {
+      setNotice('The transcript could not be saved.');
+    }
+  };
+
+  const copyText = () => {
+    setMenuOpen(null);
+    const m = openMessage();
+    if (!m) return;
+    try {
+      void navigator.clipboard.writeText(m.text);
+      setNotice('Copied to Clipboard.');
+    } catch {
+      setNotice('Copy failed.');
+    }
+  };
+
+  const selectAll = () => {
+    setMenuOpen(null);
+    if (readingRef.current) window.getSelection()?.selectAllChildren(readingRef.current);
+  };
+
+  const newNote = () => {
+    setMenuOpen(null);
+    useWindowStore.getState().open('notepad');
+  };
 
   // Win95 wizards were fixed dialogs — while setup runs, the window locks
   // to a small centered sheet; the workspace that follows is roomy and
@@ -466,6 +630,107 @@ export function CaseFile({ windowId }: { windowId: string }) {
 
   return (
     <>
+      <MenuRow ref={menuRef}>
+        {(['file', 'edit', 'view', 'help'] as const).map((name) => (
+          <MenuButton
+            key={name}
+            $open={menuOpen === name}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => setMenuOpen((v) => (v === name ? null : name))}
+            onMouseEnter={() => setMenuOpen((v) => (v ? name : v))}
+          >
+            {name[0].toUpperCase() + name.slice(1)}
+          </MenuButton>
+        ))}
+        {menuOpen === 'file' && (
+          <Drop $left={0}>
+            <MenuListItem size="sm" disabled={!open} onClick={open ? () => void saveTranscript() : undefined}>
+              Save Transcript to Desktop
+            </MenuListItem>
+            <MenuListItem size="sm" disabled>Print...</MenuListItem>
+            <Separator />
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setMenuOpen(null);
+                useWindowStore.getState().close(windowId);
+              }}
+            >
+              Exit
+            </MenuListItem>
+          </Drop>
+        )}
+        {menuOpen === 'edit' && (
+          <Drop $left={38}>
+            <MenuListItem size="sm" disabled={!open} onClick={open ? copyText : undefined}>
+              Copy
+            </MenuListItem>
+            <MenuListItem size="sm" disabled={!open} onClick={open ? selectAll : undefined}>
+              Select All
+            </MenuListItem>
+          </Drop>
+        )}
+        {menuOpen === 'view' && (
+          <Drop $left={78}>
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setMenuOpen(null);
+                void refetch();
+              }}
+            >
+              <span style={{ display: 'flex', width: '100%', gap: 18 }}>
+                Refresh <span style={{ marginLeft: 'auto' }}>F5</span>
+              </span>
+            </MenuListItem>
+          </Drop>
+        )}
+        {menuOpen === 'help' && (
+          <Drop $left={122}>
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setMenuOpen(null);
+                setAboutOpen(true);
+              }}
+            >
+              About Case Files...
+            </MenuListItem>
+          </Drop>
+        )}
+      </MenuRow>
+
+      <Ribbon>
+        <RibbonButton onClick={() => void checkServer()}>
+          <Icon name="mail-app" size={22} />
+          Check Server
+        </RibbonButton>
+        <RibbonButton
+          disabled={!open?.audioSrc}
+          onClick={
+            open?.audioSrc
+              ? () => (playState === 'playing' ? stopAudio() : playAudio(open.audioSrc!))
+              : undefined
+          }
+        >
+          <Icon name="sounds" size={22} />
+          {playState === 'playing' ? 'Stop' : 'Play'}
+        </RibbonButton>
+        <RibbonButton disabled={!open} onClick={open ? () => void saveTranscript() : undefined}>
+          <Icon name="doc" size={22} />
+          Save Copy
+        </RibbonButton>
+        <RibbonSep />
+        <RibbonButton onClick={newNote}>
+          <Icon name="notepad" size={22} />
+          New Note
+        </RibbonButton>
+        <RibbonButton disabled>
+          <Icon name="printer" size={22} />
+          Print
+        </RibbonButton>
+      </Ribbon>
+
       <TitleBand>{file.title || '...'}</TitleBand>
       <Layout>
         <MemoList>
@@ -490,7 +755,7 @@ export function CaseFile({ windowId }: { windowId: string }) {
             <div style={{ padding: 8, color: '#777', fontSize: 13 }}>(no messages on file)</div>
           )}
         </MemoList>
-        <Reading>
+        <Reading ref={readingRef}>
           {open ? (
             <>
               <MemoHead>
@@ -545,9 +810,37 @@ export function CaseFile({ windowId }: { windowId: string }) {
           position: 'relative',
         }}
       >
-        {`${file.messages.length} message(s) on file`}
+        {notice ?? `${file.messages.length} message(s) on file`}
         <StatusGrip />
       </Frame>
+
+      {aboutOpen && (
+        <AboutOverlay data-no-deskmenu onPointerDown={(e) => e.stopPropagation()}>
+          <Window shadow style={{ width: 360 }}>
+            <WindowHeader style={{ fontSize: 13 }}>About Case Files</WindowHeader>
+            <WindowContent style={{ fontSize: 13, textAlign: 'center' }}>
+              <img src={sealArt} alt="" style={{ width: 120, height: 'auto' }} />
+              <p style={{ margin: '10px 0 2px', fontWeight: 'bold', fontSize: 15 }}>
+                Case Files
+              </p>
+              <p style={{ margin: '0 0 8px' }}>Version 1.2</p>
+              {/* Every story string below arrives from the server. */}
+              <p style={{ margin: '0 0 12px', fontFamily: 'Arial, sans-serif' }}>{file.title}</p>
+              <Button onClick={() => setAboutOpen(false)} style={{ width: 90 }}>
+                OK
+              </Button>
+            </WindowContent>
+          </Window>
+        </AboutOverlay>
+      )}
+
+      {offlineWarn && (
+        <OfflineAlert
+          title="Case Files"
+          message="Case Files could not reach the case server. Connect to the Internet, then try again."
+          onClose={() => setOfflineWarn(false)}
+        />
+      )}
     </>
   );
 }
