@@ -375,10 +375,9 @@ export function CaseFile({ windowId }: { windowId: string }) {
               <>
                 <WizTitle>Setup Complete</WizTitle>
                 <WizText>
-                  {'Case Files is ready.\n\n'}
-                  {newCount > 0
-                    ? `${newCount} new message${newCount === 1 ? '' : 's'} received.`
-                    : 'No new messages.'}
+                  {'Case Files is ready.'}
+                  {newCount > 0 &&
+                    `\n\n${newCount} new message${newCount === 1 ? '' : 's'} received.`}
                 </WizText>
               </>
             ) : onSyncStep ? (
