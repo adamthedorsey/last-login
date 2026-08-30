@@ -5,6 +5,7 @@
 
 import dialupMp3 from '../assets/sounds/dial-up-modem.mp3';
 import mailMp3 from '../assets/sounds/youve_got_mail.mp3';
+import startupMp3 from '../assets/sounds/microtech-startup-sound.mp3';
 
 const MUTE_KEY = 'lastlogin.muted';
 
@@ -57,6 +58,36 @@ function tone(freq: number, startMs: number, durMs: number, type: OscillatorType
 export function playNotify(): void {
   tone(660, 0, 90, 'square', 0.025);
   tone(880, 100, 130, 'square', 0.02);
+}
+
+/** The Horizons 95 startup fanfare (system sound — clean, no degradation).
+ * Starts with the GUI splash; if the browser blocks autoplay (no gesture
+ * yet), the login OK click retries it. Plays once per page load. */
+let startupAudio: HTMLAudioElement | null = null;
+let startupPlayed = false;
+export function playSystemStartup(): void {
+  if (isMuted() || startupPlayed) return;
+  try {
+    const a = new Audio(startupMp3);
+    a.volume = 0.4;
+    startupAudio = a;
+    void a.play().then(
+      () => {
+        startupPlayed = true;
+      },
+      () => {
+        /* autoplay blocked — the next call (post-gesture) will land */
+      },
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+/** A skip click cuts the fanfare cleanly, like the modem. */
+export function stopSystemStartup(): void {
+  startupAudio?.pause();
+  startupAudio = null;
 }
 
 /** Mail arrival: the machine's own greeting sample (owner-approved

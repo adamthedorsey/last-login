@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import styled from 'styled-components';
 import { Button, Frame, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
-import { playError, playStartup } from './sounds';
+import { playError, playSystemStartup, stopSystemStartup } from './sounds';
 import { useBootCursor } from './bootCursor';
 import { Icon } from './icons';
 import { CloseGlyph, TitleBarButton } from './glyphs';
@@ -203,6 +203,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   }, [view, onResume]);
   useEffect(() => {
     if (phase !== 'splash') return;
+    playSystemStartup();
     const t = window.setTimeout(leaveSplash, 3500);
     return () => window.clearTimeout(t);
   }, [phase, leaveSplash]);
@@ -220,7 +221,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
     setBusy(false);
     if (res.type === 'login') {
       if (res.ok) {
-        playStartup();
+        playSystemStartup();
         return; // view.loggedIn flips; App switches to the desktop
       }
       playError();
@@ -257,7 +258,13 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
 
   if (phase === 'splash') {
     return (
-      <SplashScreen style={{ cursor: bootCursor }} onClick={leaveSplash}>
+      <SplashScreen
+        style={{ cursor: bootCursor }}
+        onClick={() => {
+          stopSystemStartup();
+          leaveSplash();
+        }}
+      >
         <img src={splashLogo} alt="" />
       </SplashScreen>
     );

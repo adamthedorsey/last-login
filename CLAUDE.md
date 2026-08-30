@@ -137,6 +137,9 @@ If not, don't build it that way.
   (3) Mail arrival plays the machine's own greeting sample
   (`youve_got_mail.mp3`) QUIET (~0.22 volume) — it is a computer sound,
   so it stays clean, no degradation; the chip chirp is its fallback.
+  (4) The startup fanfare (`microtech-startup-sound.mp3`, clean, ~0.4)
+  plays with the GUI splash — once per boot; a skip click cuts it, and
+  if autoplay was blocked the login OK click retries it.
   No other samples.
 
 ### Language & content
