@@ -5,6 +5,8 @@ import { GameContext, type GameContextValue, type Toast } from './gameContext';
 import { playBuddyOn, playNotify } from '../os/sounds';
 
 let toastId = 0;
+/** In-flight engine calls — the wait cursor clears when the last one lands. */
+let pendingSends = 0;
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const clientRef = useRef<GameClient | null>(null);
@@ -86,7 +88,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
     async (action: GameAction): Promise<ActionResult> => {
       const client = clientRef.current;
       if (!client) return { type: 'error', error: 'not_ready' };
-      const res = await client.send(action);
+      // The hourglass: a slow call (the real server, not the dev adapter)
+      // turns the pointer to `wait` after a beat, exactly like 1997 did.
+      pendingSends += 1;
+      const hourglass = window.setTimeout(() => {
+        document.body.style.cursor = 'wait';
+      }, 150);
+      let res: ActionResult;
+      try {
+        res = await client.send(action);
+      } finally {
+        pendingSends -= 1;
+        window.clearTimeout(hourglass);
+        if (pendingSends === 0) document.body.style.cursor = '';
+      }
       if (viewRef.current?.online) setNetActivity((n) => n + 1);
       if (res.linePickup) {
         // The house picked up the phone. Refresh so every app sees the line

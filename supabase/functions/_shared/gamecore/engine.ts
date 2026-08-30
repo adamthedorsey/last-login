@@ -18,6 +18,7 @@ import type {
   Discovery,
   DiscoveryView,
   EngineOutcome,
+  FindHit,
   GameAction,
   ImMessage,
   ItemContent,
@@ -685,6 +686,72 @@ export function handleAction(
       }
       events.push({ type: 'search', payload: { query: action.query.slice(0, 200) } });
       return done({ type: 'search', results: searchPages(content, state, action.query) });
+    }
+
+    case 'findFiles': {
+      // Find: Files or Folders. Walks only what the player can already list —
+      // it descends solely through accessible, unlocked folders, so hidden or
+      // locked content can never be discovered by name-guessing here.
+      const query = action.query.trim().toLowerCase();
+      const text = (action.text ?? '').trim().toLowerCase().slice(0, 200);
+      if (!query && !text) return done({ type: 'find', items: [] });
+      events.push({
+        type: 'find_files',
+        payload: { query: query.slice(0, 100), text: text.slice(0, 100) },
+      });
+      const MAX_HITS = 50;
+      const hits: FindHit[] = [];
+      const matches = (item: ContentItem): boolean => {
+        if (query && !item.name.toLowerCase().includes(query)) return false;
+        if (!text) return true;
+        // Containing-text only reads bodies the player could open right now.
+        if (item.kind === 'folder' || !isUnlocked(state, item)) return false;
+        const hay = [
+          item.body?.text ?? '',
+          ...(item.body?.messages?.map((m) => m.text) ?? []),
+        ]
+          .join('\n')
+          .toLowerCase();
+        return hay.includes(text);
+      };
+      const walk = (folderId: string, path: string) => {
+        for (const it of content.items) {
+          if (hits.length >= MAX_HITS) return;
+          if (it.parentId !== folderId || !isAccessible(content, state, it)) continue;
+          if (matches(it)) hits.push({ ...toSummary(content, state, it), path });
+          if (it.kind === 'folder' && isUnlocked(state, it)) {
+            walk(it.id, `${path}\\${it.name}`);
+          }
+        }
+      };
+      walk('folder.c', 'C:');
+      // Loose desktop files (not the My Computer / Recycle Bin containers).
+      for (const it of content.items) {
+        if (hits.length >= MAX_HITS) break;
+        if (!it.meta?.desktop || it.kind === 'folder' || it.parentId) continue;
+        if (isAccessible(content, state, it) && matches(it)) {
+          hits.push({ ...toSummary(content, state, it), path: 'C:\\Desktop' });
+        }
+      }
+      // The player's own folders and notes are findable too.
+      (state.folders ?? []).forEach((f, i) => {
+        if (hits.length >= MAX_HITS || !query || text) return;
+        if (f.name.toLowerCase().includes(query)) {
+          hits.push({ ...folderSummary(f, i), path: 'C:\\Desktop' });
+        }
+      });
+      (state.documents ?? []).forEach((d, i) => {
+        if (hits.length >= MAX_HITS) return;
+        const nameHit = !query || d.name.toLowerCase().includes(query);
+        const textHit = !text || d.text.toLowerCase().includes(text);
+        if (!nameHit || !textHit) return;
+        const folder = (state.folders ?? []).find((f) => f.id === d.folderId);
+        hits.push({
+          ...docSummary(d, i),
+          path: folder ? `C:\\Desktop\\${folder.name}` : 'C:\\Desktop',
+        });
+      });
+      return done({ type: 'find', items: hits });
     }
 
     case 'saveDocument': {

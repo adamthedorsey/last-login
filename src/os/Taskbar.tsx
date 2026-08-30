@@ -159,6 +159,14 @@ const SubMenu = styled(MenuList)<{ $left: number; $top: number }>`
   overflow-y: auto;
 `;
 
+/** The taskbar's own right-click menu, opening upward. */
+const BarMenu = styled(MenuList)`
+  position: fixed;
+  z-index: 100003;
+  min-width: 180px;
+  font-size: 13px;
+`;
+
 /** Small dialogs the Start menu spawns (Run..., Help), bottom-left. */
 const StartDialog = styled.div`
   position: absolute;
@@ -187,7 +195,7 @@ type Sub2Name = 'accessories' | 'games' | null;
 const ACCESSORY_IDS = ['calculator', 'calendar', 'clock', 'dialup', 'notepad', 'paintbox', 'photos', 'sysmon'];
 const GAME_IDS = ['solitaire', 'minefield'];
 const SETTINGS_IDS = ['display'];
-const NON_PROGRAM_IDS = new Set([...ACCESSORY_IDS, ...GAME_IDS, ...SETTINGS_IDS, 'recycle']);
+const NON_PROGRAM_IDS = new Set([...ACCESSORY_IDS, ...GAME_IDS, ...SETTINGS_IDS, 'recycle', 'findfiles']);
 
 function formatClock(iso: string): string {
   const d = new Date(iso);
@@ -229,7 +237,7 @@ export function Taskbar({
   onScreenSaver: () => void;
   onDosMode: () => void;
 }) {
-  const { windows, focus, minimize, open } = useWindowStore();
+  const { windows, focus, minimize, open, cascade, tile, minimizeAll } = useWindowStore();
   const { view, send, netActivity } = useGame();
   // The TX light: blinks on the tray phone whenever the machine talks to
   // the outside world. Stepped, never faded.
@@ -267,8 +275,19 @@ export function Taskbar({
   const [muted, setMutedState] = useState(isMuted());
   const [dateOpen, setDateOpen] = useState(false);
   const [dateRefused, setDateRefused] = useState(false);
+  const [barMenu, setBarMenu] = useState<{ x: number } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const dateRef = useRef<HTMLDivElement>(null);
+  const barMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!barMenu) return;
+    const onDown = (e: PointerEvent) => {
+      if (!barMenuRef.current?.contains(e.target as Node)) setBarMenu(null);
+    };
+    window.addEventListener('pointerdown', onDown);
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, [barMenu]);
 
   const focusedId = topWindowId(windows);
 
@@ -484,6 +503,9 @@ export function Taskbar({
 
           {startOpen && sub === 'find' && (
             <SubMenu $left={SUB_X} $top={subTop}>
+              <MenuListItem size="sm" onClick={() => { open('findfiles'); closeStart(); }}>
+                <ItemRow icon="find" size={18}><span>Files or Folders...</span></ItemRow>
+              </MenuListItem>
               <MenuListItem size="sm" onClick={() => { open('browser'); closeStart(); }}>
                 <ItemRow icon="find" size={18}><span>On the Internet...</span></ItemRow>
               </MenuListItem>
@@ -590,7 +612,36 @@ export function Taskbar({
           </DatePopup>
         </div>
       )}
-      <Bar data-no-deskmenu>
+      {barMenu && (
+        <div ref={barMenuRef} data-no-deskmenu>
+          <BarMenu style={{ left: barMenu.x, bottom: TASKBAR_HEIGHT + 2 }}>
+            <MenuListItem size="sm" onClick={() => { setBarMenu(null); cascade(); }}>
+              Cascade
+            </MenuListItem>
+            <MenuListItem size="sm" onClick={() => { setBarMenu(null); tile('horizontal'); }}>
+              Tile Horizontally
+            </MenuListItem>
+            <MenuListItem size="sm" onClick={() => { setBarMenu(null); tile('vertical'); }}>
+              Tile Vertically
+            </MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" onClick={() => { setBarMenu(null); minimizeAll(); }}>
+              Minimize All Windows
+            </MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" disabled>Properties</MenuListItem>
+          </BarMenu>
+        </div>
+      )}
+      <Bar
+        data-no-deskmenu
+        onContextMenu={(e) => {
+          // The Win95 taskbar menu — but window buttons and the tray keep
+          // the browser default suppressed without opening it.
+          e.preventDefault();
+          setBarMenu({ x: Math.min(e.clientX, window.innerWidth - 190) });
+        }}
+      >
         <BarToolbar>
           <Button
             active={startOpen}

@@ -327,6 +327,9 @@ export type GameAction =
   | { type: 'attemptPassword'; targetId: string; password: string }
   | { type: 'visit'; url: string }
   | { type: 'search'; query: string }
+  /** Find: Files or Folders — name and/or containing-text search over the
+   * disk the player can already reach. Never out-runs content gating. */
+  | { type: 'findFiles'; query: string; text?: string }
   | { type: 'getBuddies' }
   | { type: 'getConversation'; screenname: string }
   | { type: 'say'; screenname: string; promptId: string }
@@ -428,6 +431,11 @@ export interface SearchResult {
   snippet: string;
 }
 
+/** One Find: Files or Folders hit — a summary plus its "In Folder" path. */
+export interface FindHit extends ItemSummary {
+  path: string;
+}
+
 export type ActionResult = (
   | { type: 'state'; view: StateView }
   | {
@@ -467,6 +475,7 @@ export type ActionResult = (
       ended?: boolean;
     }
   | { type: 'search'; results: SearchResult[]; offline?: boolean }
+  | { type: 'find'; items: FindHit[] }
   | { type: 'buddies'; buddies: BuddyView[] }
   | {
       type: 'chat';

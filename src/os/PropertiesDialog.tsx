@@ -8,6 +8,7 @@ import { Button, Checkbox, Window, WindowContent, WindowHeader } from 'react95';
 import type { ItemSummary } from '@gamecore/types.ts';
 import { Icon } from './icons';
 import { dosShortName } from './dosname';
+import { TYPE_NAMES } from './fileTypes';
 
 const Overlay = styled.div`
   position: fixed;
@@ -41,19 +42,6 @@ const Rule = styled.div`
   border-bottom: 1px solid #fff;
   margin: 9px 0;
 `;
-
-const TYPE_NAMES: Record<string, string> = {
-  folder: 'File Folder',
-  document: 'Text Document',
-  photo: 'GIF Image',
-  shortcut: 'Shortcut',
-  bookmark: 'Internet Shortcut',
-  mailbox: 'Mail Folder',
-  email: 'E-mail Message',
-  im_conversation: 'Saved Conversation',
-  trash_item: 'Deleted File',
-  webpage: 'Internet Document',
-};
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS = [

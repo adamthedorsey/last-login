@@ -8,7 +8,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame, TextInput } from 'react95';
+import { Button, Frame, Hourglass, TextInput } from 'react95';
 import { useGame } from '../game/gameContext';
 import { useWindowStore } from '../os/windowStore';
 import { playBusy, playError, startDialupSound, stopDialupSound } from '../os/sounds';
@@ -193,6 +193,11 @@ export function DialUp({ windowId }: AppWindowProps) {
           {lines.map((l, i) => (
             <div key={i}>{l}</div>
           ))}
+          {phase === 'dialing' && (
+            <div style={{ marginTop: 6 }}>
+              <Hourglass size={22} />
+            </div>
+          )}
         </StatusWell>
       ) : null}
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>

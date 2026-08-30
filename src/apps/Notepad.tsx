@@ -65,8 +65,19 @@ const DialogOverlay = styled.div`
   z-index: 10;
 `;
 
+/** Win95 Notepad's Time/Date stamp: "2:31 AM 10/11/1997", straight from the
+ * frozen in-world clock string (never the player's real clock). */
+function timeDateStamp(iso: string): string {
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+  const hh = Number(iso.slice(11, 13));
+  const mm = iso.slice(14, 16);
+  return `${hh % 12 || 12}:${mm} ${hh >= 12 ? 'PM' : 'AM'} ${m}/${d}/${y}`;
+}
+
+type MenuName = 'file' | 'edit' | 'search' | null;
+
 export function Notepad({ windowId, props }: AppWindowProps) {
-  const { send } = useGame();
+  const { send, view } = useGame();
   const setTitle = useWindowStore((s) => s.setTitle);
   const itemId = props.itemId as string | undefined;
 
@@ -76,10 +87,15 @@ export function Notepad({ windowId, props }: AppWindowProps) {
   const [readOnly, setReadOnly] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [status, setStatus] = useState('New file');
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState<MenuName>(null);
   const [saveAsOpen, setSaveAsOpen] = useState(false);
   const [saveAsName, setSaveAsName] = useState('untitled.txt');
   const [error, setError] = useState<string | null>(null);
+  const [wordWrap, setWordWrap] = useState(true);
+  const [findOpen, setFindOpen] = useState(false);
+  const [findText, setFindText] = useState('');
+  const [findMiss, setFindMiss] = useState<string | null>(null);
+  const paperRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -117,11 +133,44 @@ export function Notepad({ windowId, props }: AppWindowProps) {
   useEffect(() => {
     if (!menuOpen) return;
     const onDown = (e: PointerEvent) => {
-      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
+      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(null);
     };
     window.addEventListener('pointerdown', onDown);
     return () => window.removeEventListener('pointerdown', onDown);
   }, [menuOpen]);
+
+  /** Search from the caret, wrap to the top — plain Win95 Find Next. */
+  const findNext = (needle: string) => {
+    const q = needle.toLowerCase();
+    if (!q) return;
+    const ta = paperRef.current;
+    const from = ta ? ta.selectionEnd : 0;
+    const hay = text.toLowerCase();
+    let at = hay.indexOf(q, from);
+    if (at < 0) at = hay.indexOf(q);
+    if (at < 0) {
+      setFindMiss(`Cannot find "${needle}"`);
+      return;
+    }
+    setFindMiss(null);
+    ta?.focus();
+    ta?.setSelectionRange(at, at + needle.length);
+  };
+
+  const insertTimeDate = () => {
+    setMenuOpen(null);
+    if (readOnly || !view) return;
+    const stamp = timeDateStamp(view.clockNow);
+    const ta = paperRef.current;
+    const at = ta ? ta.selectionStart : text.length;
+    const end = ta ? ta.selectionEnd : text.length;
+    setText(text.slice(0, at) + stamp + text.slice(end));
+    setDirty(true);
+    requestAnimationFrame(() => {
+      ta?.focus();
+      ta?.setSelectionRange(at + stamp.length, at + stamp.length);
+    });
+  };
 
   const doSave = async (name: string, id: string | null) => {
     const res = await send({ type: 'saveDocument', docId: id ?? undefined, name, text });
@@ -141,7 +190,7 @@ export function Notepad({ windowId, props }: AppWindowProps) {
   };
 
   const onSave = () => {
-    setMenuOpen(false);
+    setMenuOpen(null);
     if (docId) void doSave(docName, docId);
     else {
       setSaveAsName(docName);
@@ -150,13 +199,13 @@ export function Notepad({ windowId, props }: AppWindowProps) {
   };
 
   const onSaveAs = () => {
-    setMenuOpen(false);
+    setMenuOpen(null);
     setSaveAsName(docName);
     setSaveAsOpen(true);
   };
 
   const onNew = () => {
-    setMenuOpen(false);
+    setMenuOpen(null);
     setText('');
     setDocId(null);
     setDocName('untitled.txt');
@@ -172,13 +221,30 @@ export function Notepad({ windowId, props }: AppWindowProps) {
     <>
       <MenuRow ref={menuRef}>
         <MenuButton
-          $open={menuOpen}
+          $open={menuOpen === 'file'}
           onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => setMenuOpen((v) => !v)}
+          onClick={() => setMenuOpen((v) => (v === 'file' ? null : 'file'))}
+          onMouseEnter={() => setMenuOpen((v) => (v ? 'file' : v))}
         >
           File
         </MenuButton>
-        {menuOpen && (
+        <MenuButton
+          $open={menuOpen === 'edit'}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => setMenuOpen((v) => (v === 'edit' ? null : 'edit'))}
+          onMouseEnter={() => setMenuOpen((v) => (v ? 'edit' : v))}
+        >
+          Edit
+        </MenuButton>
+        <MenuButton
+          $open={menuOpen === 'search'}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => setMenuOpen((v) => (v === 'search' ? null : 'search'))}
+          onMouseEnter={() => setMenuOpen((v) => (v ? 'search' : v))}
+        >
+          Search
+        </MenuButton>
+        {menuOpen === 'file' && (
           <Drop>
             <MenuListItem size="sm" onClick={onNew}>
               New
@@ -190,25 +256,131 @@ export function Notepad({ windowId, props }: AppWindowProps) {
               Save As...
             </MenuListItem>
             <Separator />
-            <MenuListItem size="sm" onClick={() => setMenuOpen(false)}>
+            <MenuListItem size="sm" onClick={() => setMenuOpen(null)}>
               (that's the whole menu)
+            </MenuListItem>
+          </Drop>
+        )}
+        {menuOpen === 'edit' && (
+          <Drop style={{ left: 42 }}>
+            <MenuListItem
+              size="sm"
+              disabled={readOnly}
+              onClick={readOnly ? undefined : insertTimeDate}
+            >
+              <span style={{ display: 'flex', width: '100%', gap: 18 }}>
+                Time/Date <span style={{ marginLeft: 'auto' }}>F5</span>
+              </span>
+            </MenuListItem>
+            <Separator />
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setMenuOpen(null);
+                setWordWrap((w) => !w);
+              }}
+            >
+              <span>{wordWrap ? '✓ ' : '   '}Word Wrap</span>
+            </MenuListItem>
+          </Drop>
+        )}
+        {menuOpen === 'search' && (
+          <Drop style={{ left: 84 }}>
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setMenuOpen(null);
+                setFindMiss(null);
+                setFindOpen(true);
+              }}
+            >
+              Find...
+            </MenuListItem>
+            <MenuListItem
+              size="sm"
+              disabled={!findText}
+              onClick={
+                findText
+                  ? () => {
+                      setMenuOpen(null);
+                      findNext(findText);
+                    }
+                  : undefined
+              }
+            >
+              <span style={{ display: 'flex', width: '100%', gap: 18 }}>
+                Find Next <span style={{ marginLeft: 'auto' }}>F3</span>
+              </span>
             </MenuListItem>
           </Drop>
         )}
       </MenuRow>
       <Paper
+        ref={paperRef}
         value={text}
         readOnly={readOnly}
         spellCheck={false}
+        wrap={wordWrap ? 'soft' : 'off'}
+        style={wordWrap ? undefined : { whiteSpace: 'pre', overflowX: 'auto' }}
         onChange={(e) => {
           setText(e.target.value);
           setDirty(true);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'F3') {
+            e.preventDefault();
+            if (findText) findNext(findText);
+          } else if (e.key === 'F5') {
+            e.preventDefault();
+            insertTimeDate();
+          }
         }}
       />
       <StatusBar>
         {status}
         {dirty && !readOnly ? ' *' : ''}
       </StatusBar>
+
+      {findOpen && (
+        <DialogOverlay>
+          <Window style={{ width: 330 }}>
+            <WindowHeader style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between' }}>
+              <span>Find</span>
+              <Button size="sm" onClick={() => setFindOpen(false)}>
+                ×
+              </Button>
+            </WindowHeader>
+            <WindowContent style={{ fontSize: 13 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <label htmlFor="np-find">Find what:</label>
+                <TextInput
+                  id="np-find"
+                  value={findText}
+                  autoFocus
+                  onChange={(e) => {
+                    setFindText(e.target.value);
+                    setFindMiss(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && findText) findNext(findText);
+                    if (e.key === 'Escape') setFindOpen(false);
+                  }}
+                  style={{ flex: 1 }}
+                />
+              </div>
+              {findMiss && <div style={{ marginTop: 8, color: '#802020' }}>{findMiss}</div>}
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12 }}>
+                <Button disabled={!findText} onClick={() => findNext(findText)} style={{ width: 90 }}>
+                  Find Next
+                </Button>
+                <Button onClick={() => setFindOpen(false)} style={{ width: 80 }}>
+                  Cancel
+                </Button>
+              </div>
+            </WindowContent>
+          </Window>
+        </DialogOverlay>
+      )}
 
       {saveAsOpen && (
         <DialogOverlay>

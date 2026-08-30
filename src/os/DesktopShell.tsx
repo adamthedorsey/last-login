@@ -10,6 +10,8 @@ import { getApp } from './appRegistry';
 import { WindowFrame } from './WindowFrame';
 import { Taskbar } from './Taskbar';
 import { DesktopIcons } from './DesktopIcons';
+import { AltTabSwitcher } from './AltTabSwitcher';
+import { Welcome } from './Welcome';
 import { useGame } from '../game/gameContext';
 import { PIXEL_MONO } from '../theme';
 import { Screensaver } from './Screensaver';
@@ -322,6 +324,8 @@ export function DesktopShell() {
       )}
 
       {SplashComponent && <SplashComponent onDone={completeLaunch} />}
+      <AltTabSwitcher />
+      <Welcome />
       {saverOn && <Screensaver />}
       {bsod && <Bsod onDismiss={() => setBsod(false)} />}
 

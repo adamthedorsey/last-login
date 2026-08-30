@@ -113,6 +113,13 @@ If not, don't build it that way.
 - The one sanctioned fourth-wall surface is quiet system feedback: the small
   discovery toast and the end-of-demo dialog. Player note-taking is diegetic:
   Notepad edits and saves real player documents to the desktop (saveDocument).
+- The Welcome tips box (`src/os/Welcome.tsx`) is OS chrome: its tips teach
+  how the MACHINE works (Properties, Recycle Bin, Find, the phone line) in
+  generic 1990s manual voice. Never put story text or clue content in a tip —
+  it's client code, so any story string there is a bundle leak.
+- Find: Files or Folders is engine-backed (`findFiles`): it walks only
+  accessible, unlocked folders server-side, so it can never out-run gating.
+  Keep it that way — no client-side file indexes, ever.
 
 ### Web pages (in-game)
 - Author pages ONLY as `PageBlock` data in season content — never raw HTML

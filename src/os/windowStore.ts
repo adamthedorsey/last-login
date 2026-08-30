@@ -36,6 +36,10 @@ interface WindowStore {
   move(id: string, x: number, y: number): void;
   setRect(id: string, rect: { x: number; y: number; w: number; h: number }): void;
   setTitle(id: string, title: string): void;
+  /** Taskbar-menu window arrangement, straight out of Win95. */
+  cascade(): void;
+  tile(direction: 'horizontal' | 'vertical'): void;
+  minimizeAll(): void;
 }
 
 let idCounter = 0;
@@ -171,6 +175,48 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
     set((s) => ({
       windows: s.windows.map((w) => (w.id === id ? { ...w, title } : w)),
     }));
+  },
+
+  cascade() {
+    set((s) => {
+      const order = s.windows
+        .filter((w) => !w.minimized)
+        .sort((a, b) => a.z - b.z)
+        .map((w) => w.id);
+      return {
+        windows: s.windows.map((w) => {
+          const i = order.indexOf(w.id);
+          if (i < 0) return w;
+          const offset = (i % 8) * 26;
+          return { ...w, maximized: false, x: 8 + offset, y: 8 + offset };
+        }),
+      };
+    });
+  },
+
+  tile(direction) {
+    set((s) => {
+      const open = s.windows.filter((w) => !w.minimized).sort((a, b) => a.z - b.z);
+      if (open.length === 0) return {};
+      const vw = window.innerWidth;
+      const vh = window.innerHeight - TASKBAR_HEIGHT;
+      const n = open.length;
+      const rects = open.map((w, i) =>
+        direction === 'horizontal'
+          ? { id: w.id, x: 0, y: Math.round((vh / n) * i), w: vw, h: Math.floor(vh / n) }
+          : { id: w.id, x: Math.round((vw / n) * i), y: 0, w: Math.floor(vw / n), h: vh },
+      );
+      return {
+        windows: s.windows.map((w) => {
+          const r = rects.find((t) => t.id === w.id);
+          return r ? { ...w, maximized: false, x: r.x, y: r.y, w: r.w, h: r.h } : w;
+        }),
+      };
+    });
+  },
+
+  minimizeAll() {
+    set((s) => ({ windows: s.windows.map((w) => ({ ...w, minimized: true })) }));
   },
 }));
 

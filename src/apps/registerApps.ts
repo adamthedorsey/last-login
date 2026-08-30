@@ -16,6 +16,7 @@ import { Paintbox } from './Paintbox';
 import { DiscDeck } from './DiscDeck';
 import { ClockApp } from './ClockApp';
 import { Display } from './Display';
+import { FindFiles } from './FindFiles';
 import { SystemMonitor } from './SystemMonitor';
 
 export function registerAllApps(): void {
@@ -131,6 +132,14 @@ export function registerAllApps(): void {
     icon: 'cd',
     component: DiscDeck,
     defaultSize: { w: 380, h: 420 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'findfiles',
+    name: 'Find: Files or Folders',
+    icon: 'find',
+    component: FindFiles,
+    defaultSize: { w: 480, h: 430 },
     singleton: true,
   });
   registerApp({

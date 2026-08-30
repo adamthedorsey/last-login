@@ -6,6 +6,7 @@ import { useGame } from '../game/gameContext';
 import { launchItem } from './launch';
 import { Icon } from './icons';
 import { PropertiesDialog } from './PropertiesDialog';
+import { RecycleBinProps } from './RecycleBinProps';
 import { TASKBAR_HEIGHT, useWindowStore } from './windowStore';
 
 import { GRID, ORIGIN, loadLayout, saveLayout, snapToGrid as snap, type Layout } from './desktopLayout';
@@ -98,8 +99,10 @@ export function DesktopIcons() {
   const [marquee, setMarquee] = useState<{ l: number; t: number; w: number; h: number } | null>(null);
   const marqueeRef = useRef<{ startX: number; startY: number; keep: string[] } | null>(null);
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
+  const [deskSub, setDeskSub] = useState(false);
   const [itemMenu, setItemMenu] = useState<{ x: number; y: number; item: ItemSummary } | null>(null);
   const [propsItem, setPropsItem] = useState<ItemSummary | null>(null);
+  const [binProps, setBinProps] = useState(false);
   const itemMenuRef = useRef<HTMLDivElement>(null);
   const [renaming, setRenaming] = useState<{ id: string; value: string } | null>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -221,6 +224,7 @@ export function DesktopIcons() {
       if (target.closest('[data-no-deskmenu]')) return;
       if (target.closest('[data-desk-icon]')) return;
       e.preventDefault();
+      setDeskSub(false);
       setMenuAt({ x: Math.min(e.clientX, window.innerWidth - 190), y: Math.min(e.clientY, window.innerHeight - TASKBAR_HEIGHT - 180) });
     };
     window.addEventListener('contextmenu', onCtx);
@@ -230,7 +234,10 @@ export function DesktopIcons() {
   useEffect(() => {
     if (!menuAt) return;
     const onDown = (e: PointerEvent) => {
-      if (!menuRef.current?.contains(e.target as Node)) setMenuAt(null);
+      if (!menuRef.current?.contains(e.target as Node)) {
+        setMenuAt(null);
+        setDeskSub(false);
+      }
     };
     window.addEventListener('pointerdown', onDown);
     return () => window.removeEventListener('pointerdown', onDown);
@@ -255,6 +262,24 @@ export function DesktopIcons() {
     setMenuAt(null);
     setLayout({});
     saveLayout({});
+  };
+
+  /** Win95 Arrange Icons: columns top-to-bottom, left-to-right. */
+  const arrangeIcons = (mode: 'name' | 'type') => {
+    setMenuAt(null);
+    setDeskSub(false);
+    const rows = Math.max(1, Math.floor((window.innerHeight - TASKBAR_HEIGHT - ORIGIN) / GRID));
+    const sorted = [...items].sort((a, b) =>
+      mode === 'name'
+        ? a.name.localeCompare(b.name)
+        : a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name),
+    );
+    const next: Layout = {};
+    sorted.forEach((it, i) => {
+      next[it.id] = { x: ORIGIN + Math.floor(i / rows) * GRID, y: ORIGIN + (i % rows) * GRID };
+    });
+    setLayout(next);
+    saveLayout(next);
   };
 
   const openDisplayProps = () => {
@@ -469,7 +494,35 @@ export function DesktopIcons() {
         />
       )}
 
-      {itemMenu && (
+      {itemMenu && itemMenu.item.meta?.appId === 'recycle' && (
+        <div ref={itemMenuRef} data-no-deskmenu>
+          <ContextMenu style={{ left: itemMenu.x, top: itemMenu.y }}>
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setItemMenu(null);
+                launchItem(itemMenu.item);
+              }}
+            >
+              <b>Open</b>
+            </MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" disabled>Empty Recycle Bin</MenuListItem>
+            <Separator />
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setItemMenu(null);
+                setBinProps(true);
+              }}
+            >
+              Properties
+            </MenuListItem>
+          </ContextMenu>
+        </div>
+      )}
+
+      {itemMenu && itemMenu.item.meta?.appId !== 'recycle' && (
         <div ref={itemMenuRef} data-no-deskmenu>
           <ContextMenu style={{ left: itemMenu.x, top: itemMenu.y }}>
             <MenuListItem
@@ -516,24 +569,48 @@ export function DesktopIcons() {
         <PropertiesDialog item={propsItem} location="Desktop" onClose={() => setPropsItem(null)} />
       )}
 
+      {binProps && <RecycleBinProps onClose={() => setBinProps(false)} />}
+
       {menuAt && (
         <div ref={menuRef}>
           <ContextMenu style={{ left: menuAt.x, top: menuAt.y }}>
-            <MenuListItem size="sm" onClick={() => void createFolder()}>
+            <MenuListItem size="sm" onMouseEnter={() => setDeskSub(true)}>
+              <span style={{ display: 'flex', width: '100%' }}>
+                Arrange Icons <span style={{ marginLeft: 'auto', paddingLeft: 16 }}>▸</span>
+              </span>
+            </MenuListItem>
+            <MenuListItem size="sm" onMouseEnter={() => setDeskSub(false)} onClick={lineUpIcons}>
+              Line Up Icons
+            </MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" disabled onMouseEnter={() => setDeskSub(false)}>
+              Paste
+            </MenuListItem>
+            <MenuListItem size="sm" disabled>Paste Shortcut</MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" onMouseEnter={() => setDeskSub(false)} onClick={() => void createFolder()}>
               New Folder
             </MenuListItem>
             <MenuListItem size="sm" onClick={() => void createDocument()}>
               New Text Document
             </MenuListItem>
             <Separator />
-            <MenuListItem size="sm" onClick={lineUpIcons}>
-              Line Up Icons
-            </MenuListItem>
-            <Separator />
-            <MenuListItem size="sm" onClick={openDisplayProps}>
+            <MenuListItem size="sm" onMouseEnter={() => setDeskSub(false)} onClick={openDisplayProps}>
               Properties
             </MenuListItem>
           </ContextMenu>
+          {deskSub && (
+            <ContextMenu style={{ left: menuAt.x + 176, top: menuAt.y, minWidth: 140 }}>
+              <MenuListItem size="sm" onClick={() => arrangeIcons('name')}>
+                by Name
+              </MenuListItem>
+              <MenuListItem size="sm" onClick={() => arrangeIcons('type')}>
+                by Type
+              </MenuListItem>
+              <Separator />
+              <MenuListItem size="sm" disabled>Auto Arrange</MenuListItem>
+            </ContextMenu>
+          )}
         </div>
       )}
     </>

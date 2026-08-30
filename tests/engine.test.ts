@@ -534,3 +534,47 @@ describe('renaming', () => {
     expect(denied.result).toMatchObject({ type: 'document', ok: false });
   });
 });
+
+describe('find files', () => {
+  const findIds = (s: PlayerState, query: string, text?: string): string[] => {
+    const { result } = run(s, { type: 'findFiles', query, text });
+    return result.type === 'find' ? result.items.map((i) => i.id) : [];
+  };
+
+  it('finds accessible files by name with their In Folder path', () => {
+    const s = offlineState(); // the disk search must not require dial-up
+    const { result } = run(s, { type: 'findFiles', query: 'lists' });
+    expect(result.type).toBe('find');
+    if (result.type !== 'find') return;
+    const hit = result.items.find((i) => i.id === 'file.lists');
+    expect(hit?.path).toBe('C:\\My Documents\\personal stuff');
+  });
+
+  it('searches file contents, but only bodies the player could open', () => {
+    const s = offlineState();
+    expect(findIds(s, '', 'maxell')).toContain('file.lists');
+  });
+
+  it('never surfaces gated files before their requirement is met', () => {
+    const s = offlineState();
+    expect(findIds(s, 'modem')).not.toContain('file.modem-log');
+    // Nor by content: the smoking-gun session must not be text-searchable early.
+    expect(findIds(s, '', '00:09:12')).toHaveLength(0);
+  });
+
+  it('surfaces gated files once they are earned', () => {
+    let s = loggedInState();
+    for (const step of CHAIN.slice(0, 6)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    expect(s.discoveries).toContain('who-shaped');
+    expect(findIds(s, 'modem')).toContain('file.modem-log');
+  });
+
+  it('finds the player own saved notes on the desktop', () => {
+    let s = offlineState();
+    s = run(s, { type: 'saveDocument', name: 'case notes.txt', text: 'junebug?' }).state;
+    const { result } = run(s, { type: 'findFiles', query: 'case notes' });
+    expect(result.type === 'find' && result.items.some((i) => i.path === 'C:\\Desktop')).toBe(true);
+  });
+});
