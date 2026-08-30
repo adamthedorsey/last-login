@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Button, Frame, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
 import { playError, playSystemStartup, stopSystemStartup } from './sounds';
-import { useBootCursor } from './bootCursor';
 import { Icon } from './icons';
 import { CloseGlyph, TitleBarButton } from './glyphs';
 import splashBg from '../assets/images/splash-bg.jpg';
@@ -23,13 +22,15 @@ const BootScreen = styled.div`
   cursor: none;
 `;
 
-/** The Horizons 95 GUI splash: hills to the horizon, logo dead center. */
+/** The Horizons 95 GUI splash: hills to the horizon, logo dead center,
+ * the pointer a steady hourglass while the system "loads". */
 const SplashScreen = styled.div`
   height: 100vh;
   background: url(${splashBg}) center / cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: var(--cursor-wait);
   img {
     width: min(56vw, 640px);
     height: auto;
@@ -193,8 +194,6 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   }, [phase, frameIdx, fontsReady, frames, view, onResume]);
 
   const done = frameIdx >= frames.length;
-  const bootCursor = useBootCursor(phase === 'splash');
-
   // The GUI splash: logo over the horizons, pointer flickering busy — the
   // machine is "loading Horizons 95". Click skips, like everything staged.
   const leaveSplash = useCallback(() => {
@@ -268,7 +267,6 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   if (phase === 'splash') {
     return (
       <SplashScreen
-        style={{ cursor: bootCursor }}
         onClick={() => {
           stopSystemStartup();
           leaveSplash();

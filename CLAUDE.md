@@ -55,8 +55,9 @@ If not, don't build it that way.
   IDE pause), the GUI splash holds ~3.5s (logo over the horizons,
   click-skippable), and the post-login desktop "load" holds ~2.2s of bare
   wallpaper. DOS-era surfaces (POST, ScanDisk) show NO mouse cursor — the
-  driver hasn't loaded; the GUI splash and desktop load flicker the busy
-  cursors instead (src/os/bootCursor.ts).
+  driver hasn't loaded; the GUI splash shows a steady visible
+  hourglass, and the post-login desktop load flickers the busy cursors
+  (src/os/bootCursor.ts).
 
 ### Typography
 - OS chrome: W95F (`src/assets/fonts`), registered under the family name
