@@ -3,6 +3,21 @@
  * classic generic shapes (underscore, window outline, overlapped windows,
  * bold X). Text glyphs (_ □ ×) never sat right in the button; these do.
  */
+import styled from 'styled-components';
+import { Button } from 'react95';
+
+/** The title-bar button proper: smaller than the bar, so the blue shows
+ * around it on every side — exactly how the real thing sat. */
+export const TitleBarButton = styled(Button)`
+  width: 24px;
+  height: 22px;
+  min-width: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
 
 function G({ children }: { children: React.ReactNode }) {
   return (

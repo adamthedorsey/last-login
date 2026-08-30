@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
+import { MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
 import { getApp } from './appRegistry';
 import { TASKBAR_HEIGHT, useWindowStore, type OSWindow } from './windowStore';
 import { Icon } from './icons';
-import { CloseGlyph, MaximizeGlyph, MinimizeGlyph, RestoreGlyph } from './glyphs';
+import { CloseGlyph, MaximizeGlyph, MinimizeGlyph, RestoreGlyph, TitleBarButton } from './glyphs';
 import { animateZoom, taskbarButtonBox } from './zoomRect';
 
 const MIN_W = 300;
@@ -242,20 +242,19 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
         {/* Win95 grouping: minimize and maximize butt together; close sits
             a hair apart. The wrapper defeats the header's own gap. */}
         <span style={{ display: 'inline-flex' }}>
-          <Button size="sm" onClick={doMinimize} aria-label="Minimize">
+          <TitleBarButton onClick={doMinimize} aria-label="Minimize">
             <MinimizeGlyph />
-          </Button>
-          <Button
-            size="sm"
+          </TitleBarButton>
+          <TitleBarButton
             onClick={() => toggleMaximize(win.id)}
             aria-label={win.maximized ? 'Restore' : 'Maximize'}
           >
             {win.maximized ? <RestoreGlyph /> : <MaximizeGlyph />}
-          </Button>
+          </TitleBarButton>
         </span>
-        <Button size="sm" onClick={() => close(win.id)} aria-label="Close" style={{ marginLeft: -4 }}>
+        <TitleBarButton onClick={() => close(win.id)} aria-label="Close" style={{ marginLeft: -4 }}>
           <CloseGlyph />
-        </Button>
+        </TitleBarButton>
       </Header>
       <Content>
         <AppComponent windowId={win.id} props={win.props} />
