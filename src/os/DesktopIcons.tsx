@@ -261,7 +261,7 @@ export function DesktopIcons() {
   const lineUpIcons = () => {
     setMenuAt(null);
     setLayout({});
-    saveLayout({});
+    saveLayout({}, { allowEmpty: true });
   };
 
   /** Win95 Arrange Icons: columns top-to-bottom, left-to-right. */
@@ -369,7 +369,9 @@ export function DesktopIcons() {
           return `${p.x},${p.y}`;
         }),
     );
-    const next = { ...layout };
+    // Merge over what's ON DISK, not just component state — if state is ever
+    // stale (remounts, reloads), a drag must never erase other icons' saves.
+    const next = { ...loadLayout(), ...layout };
     for (const id of d.ids) {
       const o = d.origins[id];
       if (!o) continue;

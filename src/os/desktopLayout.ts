@@ -14,7 +14,17 @@ export function loadLayout(): Layout {
   }
 }
 
-export function saveLayout(layout: Layout): void {
+export function saveLayout(layout: Layout, opts?: { allowEmpty?: boolean }): void {
+  // A full wipe is only ever legitimate from "Line Up Icons" (which passes
+  // allowEmpty). Any other caller asking to save an empty layout over a
+  // non-empty one is a bug — keep what's on disk and shout in dev.
+  if (Object.keys(layout).length === 0 && !opts?.allowEmpty) {
+    if (Object.keys(loadLayout()).length === 0) return; // nothing to lose
+    if (import.meta.env.DEV) {
+      console.warn('saveLayout: refused empty layout write', new Error().stack);
+    }
+    return;
+  }
   try {
     localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout));
   } catch {
