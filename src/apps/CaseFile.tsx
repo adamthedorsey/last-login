@@ -17,6 +17,7 @@ import { useGame } from '../game/gameContext';
 import { useWindowStore } from '../os/windowStore';
 import { isMuted } from '../os/sounds';
 import { Icon } from '../os/icons';
+import wizardArt from '../assets/images/humble-county-wizard.png';
 import { DOC_TEXT } from '../theme';
 
 const SEEN_KEY = 'lastlogin.casefile.seen';
@@ -103,15 +104,11 @@ const WizardBody = styled.div`
   margin-top: 4px;
 `;
 
-/** The wizard's left art panel: flat teal, a cascade of machine icons. */
+/** The wizard's left art panel: the office's own banner. */
 const ArtPanel = styled.div`
-  background: #00807f;
   border: 1px solid #000;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 18px 0 0 18px;
+  background: #00807f url(${wizardArt}) center top / cover no-repeat;
+  image-rendering: pixelated;
 `;
 
 const WizTitle = styled.div`
@@ -301,12 +298,7 @@ export function CaseFile() {
       <>
         <TitleBand>Case Files Setup</TitleBand>
         <WizardBody>
-          <ArtPanel>
-            <Icon name="computer" size={44} />
-            <Icon name="notes" size={30} />
-            <Icon name="doc" size={24} />
-            <Icon name="dialup" size={30} />
-          </ArtPanel>
+          <ArtPanel />
           <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
             {finished ? (
               <>
