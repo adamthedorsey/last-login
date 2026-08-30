@@ -10,6 +10,7 @@
 import type {
   ActionResult,
   Buddy,
+  WireNotice,
   BuddyStatus,
   BuddyView,
   ChatConversation,
@@ -94,6 +95,35 @@ function deliverPending(content: SeasonContent, state: PlayerState): number {
 
 function isUnlocked(state: PlayerState, item: ContentItem): boolean {
   return !item.password || state.unlocked.includes(item.id);
+}
+
+/**
+ * The ambient clock: while the line is up, any scheduled event whose delay
+ * has elapsed in the CURRENT connection and whose requirements are met fires
+ * exactly once per season. Effects are flags (everything downstream gates on
+ * them); each fired event may add a wire notice for the client. Events are
+ * evaluated in authored order, so an earlier event's flags can satisfy a
+ * later one in the same sweep.
+ */
+function sweepSchedule(
+  content: SeasonContent,
+  state: PlayerState,
+  nowMs: number,
+  wire: WireNotice[],
+  events: EngineOutcome['events'],
+): void {
+  if (!state.online || !state.onlineSince) return;
+  const fired = (state.firedEvents ??= []);
+  const elapsed = (nowMs - state.onlineSince) / 1000;
+  for (const ev of content.schedule ?? []) {
+    if (fired.includes(ev.id)) continue;
+    if (elapsed < ev.afterOnlineSeconds) continue;
+    if (!meetsRequirement(state, ev.requires)) continue;
+    fired.push(ev.id);
+    if (ev.setFlags) Object.assign(state.flags, ev.setFlags);
+    if (ev.notice) wire.push(ev.notice);
+    events.push({ type: 'scheduled_event', payload: { eventId: ev.id } });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -466,11 +496,16 @@ export function handleAction(
   const state = clone(prevState);
   const events: EngineOutcome['events'] = [];
   let pickupNotice = false;
+  const wire: WireNotice[] = [];
 
   const done = (result: ActionResult): EngineOutcome => ({
     state,
     changed: JSON.stringify(state) !== JSON.stringify(prevState),
-    result: pickupNotice ? { ...result, linePickup: true } : result,
+    result: {
+      ...result,
+      ...(pickupNotice ? { linePickup: true as const } : {}),
+      ...(wire.length ? { wire } : {}),
+    },
     events,
   });
 
@@ -548,8 +583,11 @@ export function handleAction(
     events.push({ type: 'net_line_pickup' });
   }
 
-  // While the line is up, the outside world can reach the machine: any
-  // newly-eligible wire content arrives before the action is handled.
+  // While the line is up, the machine lives a little: scheduled events whose
+  // time has come fire first (their flags may make more content eligible),
+  // then any newly-eligible wire content arrives — all before the action is
+  // handled.
+  sweepSchedule(content, state, nowMs, wire, events);
   const arrived = state.online ? deliverPending(content, state) : 0;
 
   switch (action.type) {
@@ -559,6 +597,8 @@ export function handleAction(
         state.onlineSince = nowMs;
         events.push({ type: 'net_connect' });
       }
+      // Zero-delay events may fire the moment the line comes up.
+      sweepSchedule(content, state, nowMs, wire, events);
       const newMail = deliverPending(content, state);
       return done({ type: 'net', online: true, newMail });
     }

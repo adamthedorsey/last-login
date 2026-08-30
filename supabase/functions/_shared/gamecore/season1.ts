@@ -189,6 +189,25 @@ export const SEASON1: SeasonContent = {
   linePickup: { requires: { discovery: 'who-shaped' } },
 
   // =========================================================================
+  // SCHEDULED EVENTS — the machine lives a little while the line is up.
+  // Effects are flags only; mail/presence/chat hang off them through the
+  // normal gating machinery. Each fires once per season, N seconds into a
+  // connection. Mundane beats suspicious: not everything here is story.
+  // =========================================================================
+  schedule: [
+    {
+      // Seven minutes into any session, Angel — who has been watching that
+      // buddy list all week — sends the machine another chain letter. Grief
+      // does what grief does. (And read again after the finale: she wasn't
+      // the only one who noticed this machine signing on at night.)
+      id: 'evt.angel-forward',
+      afterOnlineSeconds: 420,
+      setFlags: { 'angel-sent-luck': true },
+      notice: { kind: 'mail' },
+    },
+  ],
+
+  // =========================================================================
   // LIVE CONVERSATIONS — Oct 18, 9:47 PM. The player is signed on as Casey.
   // Sadie has spent the week investigating on her own (see story docs); her
   // branches are path B for three discoveries. Every prompt is one-shot.
@@ -1143,6 +1162,37 @@ won't hardly talk to me.
 
 wherever you are i'm sorry. i'd take it back. the wine coolers were
 warm anyway.
+
+- a`,
+      },
+    },
+    {
+      // Ambient, not story: delivered by evt.angel-forward a few minutes into
+      // a session. Mundane on arrival — and quietly awful after the finale,
+      // because Angel wasn't wrong that somebody kept signing on as Casey.
+      id: 'email.angel.chain2',
+      kind: 'email',
+      arrivesOnline: true,
+      name: 'FW: FW: FW: FW: THE GOOD LUCK ANGEL!!!',
+      icon: 'mail',
+      parentId: 'mailbox.inbox',
+      requires: { flag: 'angel-sent-luck' },
+      meta: {
+        from: 'angel jackson <angeljx@westwind.net>',
+        to: 'casey_t@westwind.net',
+        date: '1997-10-18T21:55:00',
+      },
+      body: {
+        text: `>>> SEND TO 10 FRIENDS IN 24 HOURS OR ELSE <<<
+
+ok so i know you're not her. somebody keeps signing on as her late
+at night and sadie says it's probably police stuff. so. hi.
+
+send it anyway. ten people. i told her when she comes back i'm
+sending her ten more and i'm starting now. that's how sure i am
+that she's coming back.
+
+do NOT break the chain. not this one. please.
 
 - a`,
       },

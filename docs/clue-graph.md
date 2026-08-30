@@ -2,8 +2,8 @@
 
 > GENERATED — do not edit. Source of truth: `season1.ts`. Regenerate: `npm run graph`
 >
-> In-world date: 1997-10-18 · 113 items
-> (11 gated · 11 granting · ~91 mundane camouflage) ·
+> In-world date: 1997-10-18 · 114 items
+> (12 gated · 11 granting · ~91 mundane camouflage) ·
 > 7 discoveries
 
 ```mermaid
@@ -33,6 +33,8 @@ flowchart TD
   d_who_shaped -->|requires| i_file_modem_log
   i_email_sadie_please["please write back<br/><i>email</i>"]:::item
   i_email_sadie_please ==>|grants| d_the_meeting
+  i_email_angel_chain2["FW: FW: FW: FW: THE GOOD LUCK ANGEL!!!<br/><i>email</i>"]:::item
+  flag_angel-sent-luck -->|requires: flag| i_email_angel_chain2
   i_email_sadie_notchad["it’s not chad<br/><i>email</i>"]:::item
   i_email_sadie_notchad ==>|grants| d_chads_window
   d_stolen_intimacy -->|requires| i_email_sadie_notchad

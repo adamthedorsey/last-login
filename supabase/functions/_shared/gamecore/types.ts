@@ -201,6 +201,42 @@ export interface ChatConversation {
   prompts: ChatPrompt[];
 }
 
+// ---------------------------------------------------------------------------
+// Scheduled events (server-authored ambient life)
+// ---------------------------------------------------------------------------
+
+/**
+ * A notice the engine stamps onto the result of the action during which
+ * something happened on the wire. It is the ONLY way ambient events reach
+ * the client — client code never knows what an event means, only how to
+ * chirp and toast about it. All text here is server-authored.
+ */
+export interface WireNotice {
+  kind: 'mail' | 'im' | 'buddy-on' | 'buddy-off' | 'roster' | 'system' | 'remote';
+  /** Toast title/body. Optional — the client has generic per-kind fallbacks. */
+  title?: string;
+  text?: string;
+  /** For 'im': the buddy whose window should open (server data, not client copy). */
+  screenname?: string;
+}
+
+/**
+ * A content-authored ambient event: N seconds into the current dial-up
+ * session, if `requires` are met, it fires exactly once per season. Effects
+ * are FLAGS ONLY — everything downstream (mail arriving, buddy presence,
+ * chat interjections) hangs off those flags through the existing gating
+ * machinery. SERVER ONLY.
+ */
+export interface ScheduledEvent {
+  id: string;
+  /** Seconds into the current connection before this may fire. */
+  afterOnlineSeconds: number;
+  requires?: Requirement;
+  setFlags?: Record<string, boolean>;
+  /** What the client shows/plays when it fires (omit for a silent change). */
+  notice?: WireNotice;
+}
+
 export interface SeasonContent {
   slug: string;
   title: string;
@@ -246,6 +282,8 @@ export interface SeasonContent {
   linePickup?: { requires: Requirement };
   /** Numbers the Phone Dialer can voice-dial (see PhoneNumber). SERVER ONLY. */
   phones?: PhoneNumber[];
+  /** Timed ambient events, swept while the player is online. SERVER ONLY. */
+  schedule?: ScheduledEvent[];
   maxPasswordAttempts: number;
   lockoutSeconds: number;
 }
@@ -312,6 +350,8 @@ export interface PlayerState {
   onlineSince?: number;
   /** Ids of arrivesOnline items that have been delivered to the machine. */
   delivered?: string[];
+  /** Ids of scheduled events that have fired (each fires once per season). */
+  firedEvents?: string[];
 }
 
 export function newPlayerState(): PlayerState {
@@ -525,6 +565,11 @@ export type ActionResult = (
    * the action was — the client's cue to refresh and show the scare.
    */
   linePickup?: true;
+  /**
+   * Wire notices from scheduled events that fired during this action (the
+   * machine did something on its own — see WireNotice).
+   */
+  wire?: WireNotice[];
 };
 
 export interface EngineOutcome {

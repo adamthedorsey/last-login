@@ -579,6 +579,66 @@ describe('find files', () => {
   });
 });
 
+describe('scheduled events', () => {
+  const EVENT = 'evt.angel-forward'; // 420s into a connection, no other gate
+  const EVENT_MAIL = 'email.angel.chain2';
+
+  const inboxIds = (s: PlayerState, now: number): string[] => {
+    const res = run(s, { type: 'listChildren', parentId: 'mailbox.inbox' }, now).result;
+    return res.type === 'children' ? res.items.map((i) => i.id) : [];
+  };
+
+  it('does not fire before its delay has elapsed', () => {
+    const s = loggedInState(); // connected at NOW
+    const { state, result } = run(s, { type: 'checkMail' }, NOW + 60_000);
+    expect(state.firedEvents ?? []).not.toContain(EVENT);
+    expect(result.wire).toBeUndefined();
+    expect(inboxIds(state, NOW + 60_000)).not.toContain(EVENT_MAIL);
+  });
+
+  it('fires once due: sets flags, delivers the gated mail, stamps a wire notice', () => {
+    const s = loggedInState();
+    const later = NOW + 421_000;
+    const { state, result } = run(s, { type: 'checkMail' }, later);
+    expect(state.firedEvents).toContain(EVENT);
+    expect(state.flags['angel-sent-luck']).toBe(true);
+    expect(state.delivered).toContain(EVENT_MAIL);
+    expect(result.wire?.some((w) => w.kind === 'mail')).toBe(true);
+    expect(result).toMatchObject({ type: 'net', online: true, newMail: 1 });
+    expect(inboxIds(state, later)).toContain(EVENT_MAIL);
+  });
+
+  it('fires exactly once per season', () => {
+    const s = loggedInState();
+    const first = run(s, { type: 'checkMail' }, NOW + 421_000);
+    const second = run(first.state, { type: 'checkMail' }, NOW + 900_000);
+    expect(second.result.wire).toBeUndefined();
+    expect(second.state.firedEvents?.filter((id) => id === EVENT)).toHaveLength(1);
+  });
+
+  it('never ticks while offline', () => {
+    const s = offlineState();
+    const { state } = run(s, { type: 'getDesktop' }, NOW + 10_000_000);
+    expect(state.firedEvents ?? []).not.toContain(EVENT);
+  });
+
+  it('measures its delay against the CURRENT connection, not wall time', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'disconnect' }, NOW + 300_000).state;
+    s = run(s, { type: 'connect' }, NOW + 400_000).state;
+    // 500s of wall time have passed, but only 100s of this connection.
+    const { state } = run(s, { type: 'checkMail' }, NOW + 500_000);
+    expect(state.firedEvents ?? []).not.toContain(EVENT);
+  });
+
+  it('the delivered mail persists offline like anything else on the disk', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'checkMail' }, NOW + 421_000).state;
+    s = run(s, { type: 'disconnect' }, NOW + 422_000).state;
+    expect(inboxIds(s, NOW + 423_000)).toContain(EVENT_MAIL);
+  });
+});
+
 describe('phone dialer', () => {
   it('cannot get a dial tone while the modem holds the line', () => {
     const s = loggedInState(); // online

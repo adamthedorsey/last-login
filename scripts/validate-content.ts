@@ -99,6 +99,18 @@ function validate(content: SeasonContent): void {
   for (const convo of content.conversations ?? [])
     for (const p of convo.prompts)
       for (const f of Object.keys(p.setFlags ?? {})) settableFlags.add(f);
+  for (const ev of content.schedule ?? [])
+    for (const f of Object.keys(ev.setFlags ?? {})) settableFlags.add(f);
+
+  // --- Scheduled events: unique ids, valid gates ---
+  const eventIds = new Set<string>();
+  for (const ev of content.schedule ?? []) {
+    const who = `event ${ev.id}`;
+    if (eventIds.has(ev.id)) errors.push(`${who}: duplicate event id`);
+    eventIds.add(ev.id);
+    checkReq(who, ev.requires);
+    if (ev.afterOnlineSeconds < 0) errors.push(`${who}: negative afterOnlineSeconds`);
+  }
 
   for (const convo of content.conversations ?? []) {
     const who = `conversation ${convo.screenname}`;
@@ -129,6 +141,7 @@ function validate(content: SeasonContent): void {
     checkFlags(`conversation ${convo.screenname}`, convo.requires);
     for (const p of convo.prompts) checkFlags(`conversation ${convo.screenname}#${p.id}`, p.requires);
   }
+  for (const ev of content.schedule ?? []) checkFlags(`event ${ev.id}`, ev.requires);
 
   // --- Every discovery must be grantable, finale must exist ---
   // Granters are items AND chat prompts (a live-conversation reveal counts
@@ -158,10 +171,19 @@ function validate(content: SeasonContent): void {
   state.online = true; // the omniscient player dials in immediately
   state.unlocked = [...Object.keys(content.passwords)]; // authored passwords are solvable
   const said = new Set<string>();
+  const firedSim = new Set<string>();
   let changed = true;
   let rounds = 0;
   while (changed && rounds++ < 1000) {
     changed = false;
+    // Scheduled events: the omniscient player has all the time in the world,
+    // so timing is ignored — only the requirement gates matter here.
+    for (const ev of content.schedule ?? []) {
+      if (firedSim.has(ev.id) || !meetsRequirement(state, ev.requires)) continue;
+      firedSim.add(ev.id);
+      if (ev.setFlags) Object.assign(state.flags, ev.setFlags);
+      changed = true;
+    }
     for (const item of content.items) {
       if (state.opened.includes(item.id)) continue;
       // Wire content gets delivered the moment its requirements are met.
