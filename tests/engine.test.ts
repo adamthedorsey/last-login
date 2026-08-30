@@ -858,11 +858,22 @@ describe('workspace copies', () => {
       ok: false,
       error: 'not_found',
     });
-    expect(run(s, { type: 'copyItem', itemId: 'photo.fair' }).result).toMatchObject({
+    // Folders have nothing to flatten.
+    expect(run(s, { type: 'copyItem', itemId: 'folder.pictures' }).result).toMatchObject({
       type: 'document',
       ok: false,
       error: 'not_supported',
     });
+  });
+
+  it('copies a photo as a reference card (the image itself stays put)', () => {
+    const s = offlineState();
+    const { state, result } = run(s, { type: 'copyItem', itemId: 'photo.fair' });
+    expect(result).toMatchObject({ type: 'document', ok: true });
+    if (result.type !== 'document' || !result.item) throw new Error('bad result');
+    const opened = run(state, { type: 'open', itemId: result.item.id }).result;
+    if (opened.type !== 'open' || !opened.item) throw new Error('bad result');
+    expect(opened.item.body?.text).toContain('[Photograph');
   });
 
   it('duplicates a player document beside the original', () => {
