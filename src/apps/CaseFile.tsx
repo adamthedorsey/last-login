@@ -824,8 +824,9 @@ export function CaseFile({ windowId }: { windowId: string }) {
                 Case Files
               </p>
               <p style={{ margin: '0 0 8px' }}>Version 1.2</p>
-              {/* Every story string below arrives from the server. */}
-              <p style={{ margin: '0 0 12px', fontFamily: 'Arial, sans-serif' }}>{file.title}</p>
+              <p style={{ margin: '0 0 12px', fontSize: 12, color: '#444' }}>
+                © 1996 Meridian Digital Systems
+              </p>
               <Button onClick={() => setAboutOpen(false)} style={{ width: 90 }}>
                 OK
               </Button>
