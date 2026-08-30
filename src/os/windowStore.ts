@@ -14,6 +14,8 @@ export interface OSWindow {
   z: number;
   minimized: boolean;
   maximized: boolean;
+  /** false = fixed-size Win95 dialog (no handles, no maximize). */
+  resizable: boolean;
 }
 
 interface LaunchOpts {
@@ -109,13 +111,19 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       title: opts?.title ?? def.name,
       icon: def.icon,
       props: opts?.props ?? {},
-      x: Math.max(8, Math.min(80 + cascade, vw - w - 8)),
-      y: Math.max(8, Math.min(48 + cascade, vh - h - 8)),
+      // Wizards and fixed dialogs open dead center; everything else cascades.
+      x: def.center
+        ? Math.max(8, Math.round((vw - w) / 2))
+        : Math.max(8, Math.min(80 + cascade, vw - w - 8)),
+      y: def.center
+        ? Math.max(8, Math.round((vh - h) / 2))
+        : Math.max(8, Math.min(48 + cascade, vh - h - 8)),
       w,
       h,
       z: nextZ + 1,
       minimized: false,
       maximized: false,
+      resizable: def.resizable !== false,
     };
     set({ windows: [...get().windows, win], nextZ: get().nextZ + 1 });
   },

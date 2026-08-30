@@ -204,7 +204,7 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
         onPointerDown={onHeaderPointerDown}
         onPointerMove={onHeaderPointerMove}
         onPointerUp={onHeaderPointerUp}
-        onDoubleClick={() => toggleMaximize(win.id)}
+        onDoubleClick={() => win.resizable && toggleMaximize(win.id)}
       >
         {/* The control box: click for the system menu, double-click closes. */}
         <span
@@ -229,12 +229,14 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
           <TitleBarButton onClick={doMinimize} aria-label="Minimize">
             <MinimizeGlyph />
           </TitleBarButton>
-          <TitleBarButton
-            onClick={() => toggleMaximize(win.id)}
-            aria-label={win.maximized ? 'Restore' : 'Maximize'}
-          >
-            {win.maximized ? <RestoreGlyph /> : <MaximizeGlyph />}
-          </TitleBarButton>
+          {win.resizable && (
+            <TitleBarButton
+              onClick={() => toggleMaximize(win.id)}
+              aria-label={win.maximized ? 'Restore' : 'Maximize'}
+            >
+              {win.maximized ? <RestoreGlyph /> : <MaximizeGlyph />}
+            </TitleBarButton>
+          )}
         </span>
         <TitleBarButton onClick={() => close(win.id)} aria-label="Close" style={{ marginLeft: -4 }}>
           <CloseGlyph />
@@ -273,9 +275,9 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
             </MenuListItem>
             <MenuListItem
               size="sm"
-              disabled={win.maximized}
+              disabled={win.maximized || !win.resizable}
               onClick={
-                win.maximized
+                win.maximized || !win.resizable
                   ? undefined
                   : () => {
                       setSysMenu(null);
@@ -300,7 +302,7 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
           </SysMenu>
         </div>
       )}
-      {!win.maximized && (
+      {!win.maximized && win.resizable && (
         <>
           {HANDLES.map((h) => (
             <div

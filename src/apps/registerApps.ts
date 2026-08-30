@@ -110,9 +110,12 @@ export function registerAllApps(): void {
     icon: 'notes',
     component: CaseFile,
     // Wide enough that the handler's authored lines (<= 56 chars) never
-    // re-wrap in the 15px Courier reading pane.
+    // re-wrap in the 15px Courier reading pane. Fixed-size and centered,
+    // like the 1997 setup wizards it imitates.
     defaultSize: { w: 740, h: 500 },
     singleton: true,
+    center: true,
+    resizable: false,
   });
   // --- Accessories (the Win95-style default apps) ---
   registerApp({
@@ -198,6 +201,7 @@ export function registerAllApps(): void {
   // --- Control Panel applets ---
   registerApp({
     id: 'sysprops',
+    resizable: false,
     name: 'System Properties',
     icon: 'computer',
     component: SystemApplet,
@@ -206,6 +210,7 @@ export function registerAllApps(): void {
   });
   registerApp({
     id: 'datetime',
+    resizable: false,
     name: 'Date/Time Properties',
     icon: 'clock',
     component: DateTimeApplet,
@@ -214,6 +219,7 @@ export function registerAllApps(): void {
   });
   registerApp({
     id: 'sounds',
+    resizable: false,
     name: 'Sounds Properties',
     icon: 'sounds',
     component: SoundsApplet,
@@ -222,6 +228,7 @@ export function registerAllApps(): void {
   });
   registerApp({
     id: 'mouse',
+    resizable: false,
     name: 'Mouse Properties',
     icon: 'mouse',
     component: MouseApplet,
@@ -230,6 +237,7 @@ export function registerAllApps(): void {
   });
   registerApp({
     id: 'addremove',
+    resizable: false,
     name: 'Add/Remove Programs',
     icon: 'addremove',
     component: AddRemoveApplet,

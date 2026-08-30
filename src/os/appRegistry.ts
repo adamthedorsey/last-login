@@ -14,6 +14,11 @@ export interface AppDefinition {
   singleton?: boolean;
   /** Hide from the Start menu (utility windows). */
   hidden?: boolean;
+  /** Open centered on the screen (wizards, fixed dialogs). */
+  center?: boolean;
+  /** false = fixed-size, Win95-dialog style: no resize handles, no
+   * maximize. Defaults to true. */
+  resizable?: boolean;
   /**
    * Startup splash shown BEFORE the window opens (a fresh launch only —
    * refocusing an existing singleton window skips it). Call onDone to
