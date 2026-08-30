@@ -337,12 +337,26 @@ export const SEASON1: SeasonContent = {
       meta: { appId: 'dialup' },
     },
     {
-      id: 'cpl.display',
-      kind: 'shortcut',
+      // A real Control Panel folder of applets — all machine chrome.
+      id: 'folder.cpanel',
+      kind: 'folder',
       name: 'Control Panel',
       icon: 'settings',
       parentId: 'folder.computer',
-      meta: { appId: 'display' },
+    },
+    { id: 'cpl2.addremove', kind: 'shortcut', name: 'Add/Remove Programs', icon: 'addremove', parentId: 'folder.cpanel', meta: { appId: 'addremove' } },
+    { id: 'cpl2.datetime', kind: 'shortcut', name: 'Date/Time', icon: 'clock', parentId: 'folder.cpanel', meta: { appId: 'datetime' } },
+    { id: 'cpl2.display', kind: 'shortcut', name: 'Display', icon: 'display', parentId: 'folder.cpanel', meta: { appId: 'display' } },
+    { id: 'cpl2.mouse', kind: 'shortcut', name: 'Mouse', icon: 'mouse', parentId: 'folder.cpanel', meta: { appId: 'mouse' } },
+    { id: 'cpl2.sounds', kind: 'shortcut', name: 'Sounds', icon: 'sounds', parentId: 'folder.cpanel', meta: { appId: 'sounds' } },
+    { id: 'cpl2.system', kind: 'shortcut', name: 'System', icon: 'computer', parentId: 'folder.cpanel', meta: { appId: 'sysprops' } },
+    {
+      // No printer was ever installed — itself period-true for this house.
+      id: 'folder.printers',
+      kind: 'folder',
+      name: 'Printers',
+      icon: 'printer',
+      parentId: 'folder.computer',
     },
     {
       id: 'folder.my-documents',

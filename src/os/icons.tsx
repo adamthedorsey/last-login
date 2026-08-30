@@ -8,12 +8,16 @@
  * eventual replacement target.
  */
 import {
+  Appwiz1500,
   Calculator,
   CdMusic,
   Computer5,
   Computer,
   Desk100,
   Earth,
+  KeyboardMouse,
+  Mmsys110,
+  Printer,
   FileFind,
   FilePen,
   FileText,
@@ -93,6 +97,10 @@ const R95 = {
   sysmon: { C: Sysmon1000, v16: false },
   trash: { C: RecycleEmpty, v16: true },
   'trash-full': { C: RecycleFull, v16: true },
+  printer: { C: Printer, v16: true },
+  mouse: { C: KeyboardMouse, v16: true },
+  sounds: { C: Mmsys110, v16: true },
+  addremove: { C: Appwiz1500, v16: true },
 } as unknown as Record<string, { C: R95Component; v16: boolean }>;
 
 interface IconProps {

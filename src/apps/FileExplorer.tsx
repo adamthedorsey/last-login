@@ -730,15 +730,18 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
         </div>
       )}
       <StatusBar>
-        {selected.length > 1
-          ? `${selected.length} object(s) selected`
-          : selected.length === 1
-            ? `${items.length} object(s) — ${
-                items.find((i) => i.id === selected[0])?.meta?.sizeKb ?? '?'
-              } KB, modified ${
-                fmtShortStamp(itemStamp(items.find((i) => i.id === selected[0])!)) || 'unknown'
-              }`
-            : `${items.length} object(s)`}
+        {(() => {
+          if (selected.length > 1) return `${selected.length} object(s) selected`;
+          const base = `${items.length} object(s)`;
+          const it = items.find((i) => i.id === selected[0]);
+          if (!it) return base;
+          const size = it.meta?.sizeKb;
+          const stamp = fmtShortStamp(itemStamp(it));
+          const extra = [size ? `${size} KB` : null, stamp ? `modified ${stamp}` : null]
+            .filter(Boolean)
+            .join(', ');
+          return extra ? `${base} — ${extra}` : base;
+        })()}
       </StatusBar>
     </>
   );

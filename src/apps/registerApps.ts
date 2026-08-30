@@ -17,6 +17,13 @@ import { DiscDeck } from './DiscDeck';
 import { ClockApp } from './ClockApp';
 import { Display } from './Display';
 import { FindFiles } from './FindFiles';
+import {
+  AddRemoveApplet,
+  DateTimeApplet,
+  MouseApplet,
+  SoundsApplet,
+  SystemApplet,
+} from './ControlPanel';
 import { SystemMonitor } from './SystemMonitor';
 
 export function registerAllApps(): void {
@@ -164,6 +171,47 @@ export function registerAllApps(): void {
     icon: 'clock',
     component: ClockApp,
     defaultSize: { w: 300, h: 300 },
+    singleton: true,
+  });
+  // --- Control Panel applets ---
+  registerApp({
+    id: 'sysprops',
+    name: 'System Properties',
+    icon: 'computer',
+    component: SystemApplet,
+    defaultSize: { w: 380, h: 330 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'datetime',
+    name: 'Date/Time Properties',
+    icon: 'clock',
+    component: DateTimeApplet,
+    defaultSize: { w: 400, h: 300 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'sounds',
+    name: 'Sounds Properties',
+    icon: 'sounds',
+    component: SoundsApplet,
+    defaultSize: { w: 380, h: 380 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'mouse',
+    name: 'Mouse Properties',
+    icon: 'mouse',
+    component: MouseApplet,
+    defaultSize: { w: 380, h: 330 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'addremove',
+    name: 'Add/Remove Programs',
+    icon: 'addremove',
+    component: AddRemoveApplet,
+    defaultSize: { w: 420, h: 380 },
     singleton: true,
   });
 }

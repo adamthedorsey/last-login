@@ -522,7 +522,33 @@ export function DesktopIcons() {
         </div>
       )}
 
-      {itemMenu && itemMenu.item.meta?.appId !== 'recycle' && (
+      {itemMenu && itemMenu.item.id === 'folder.computer' && (
+        <div ref={itemMenuRef} data-no-deskmenu>
+          <ContextMenu style={{ left: itemMenu.x, top: itemMenu.y }}>
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setItemMenu(null);
+                launchItem(itemMenu.item);
+              }}
+            >
+              <b>Open</b>
+            </MenuListItem>
+            <Separator />
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setItemMenu(null);
+                openApp('sysprops');
+              }}
+            >
+              Properties
+            </MenuListItem>
+          </ContextMenu>
+        </div>
+      )}
+
+      {itemMenu && itemMenu.item.meta?.appId !== 'recycle' && itemMenu.item.id !== 'folder.computer' && (
         <div ref={itemMenuRef} data-no-deskmenu>
           <ContextMenu style={{ left: itemMenu.x, top: itemMenu.y }}>
             <MenuListItem

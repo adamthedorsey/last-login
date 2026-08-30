@@ -195,7 +195,8 @@ type Sub2Name = 'accessories' | 'games' | null;
 const ACCESSORY_IDS = ['calculator', 'calendar', 'clock', 'dialup', 'notepad', 'paintbox', 'photos', 'sysmon'];
 const GAME_IDS = ['solitaire', 'minefield'];
 const SETTINGS_IDS = ['display'];
-const NON_PROGRAM_IDS = new Set([...ACCESSORY_IDS, ...GAME_IDS, ...SETTINGS_IDS, 'recycle', 'findfiles']);
+const CPL_IDS = ['sysprops', 'datetime', 'sounds', 'mouse', 'addremove'];
+const NON_PROGRAM_IDS = new Set([...ACCESSORY_IDS, ...GAME_IDS, ...SETTINGS_IDS, ...CPL_IDS, 'recycle', 'findfiles']);
 
 function formatClock(iso: string): string {
   const d = new Date(iso);
@@ -492,6 +493,19 @@ export function Taskbar({
 
           {startOpen && sub === 'settings' && (
             <SubMenu $left={SUB_X} $top={subTop}>
+              <MenuListItem
+                size="sm"
+                onClick={() => { open('explorer', { props: { folderId: 'folder.cpanel' }, title: 'Control Panel' }); closeStart(); }}
+              >
+                <ItemRow icon="settings" size={18}><span>Control Panel</span></ItemRow>
+              </MenuListItem>
+              <MenuListItem
+                size="sm"
+                onClick={() => { open('explorer', { props: { folderId: 'folder.printers' }, title: 'Printers' }); closeStart(); }}
+              >
+                <ItemRow icon="printer" size={18}><span>Printers</span></ItemRow>
+              </MenuListItem>
+              <Separator />
               <MenuListItem size="sm" onClick={() => { open('display'); closeStart(); }}>
                 <ItemRow icon="display" size={18}><span>Display</span></ItemRow>
               </MenuListItem>
