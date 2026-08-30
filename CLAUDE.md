@@ -13,6 +13,14 @@ Start menu structure, tray behavior, shutdown flow); names, logos, and
 branding are always Horizons/fictional, never Microsoft's. When unsure how
 something should behave, the answer is "whatever Windows 95 actually did."
 
+**Priority order (owner call): player experience FIRST, 1997 plausibility
+as the boundary, Win95 exactness as the reference — not the law.** When a
+playability, legibility, or fun improvement conflicts with Win95 fidelity,
+take the improvement if a consumer PC of 1997 could plausibly have shipped
+it (precedents: the discovery toasts, Arial reading surfaces, the earned
+login hint). What never bends: nothing post-1997 in concept, aesthetic, or
+interaction idiom.
+
 The bar for any UI change: "could this have shipped on a consumer PC in 1997?"
 If not, don't build it that way.
 
