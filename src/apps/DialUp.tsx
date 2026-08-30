@@ -31,6 +31,9 @@ const StatusWell = styled(Frame).attrs({ variant: 'well' })`
   padding: 6px 8px;
   font-size: 13px;
   min-height: 44px;
+  /* Whatever the staging prints, the buttons below never get pushed out. */
+  flex: 0 1 auto;
+  overflow-y: auto;
 `;
 
 // The staging is paced to the FULL handshake recording (~26s) — the whole
@@ -171,7 +174,10 @@ export function DialUp({ windowId }: AppWindowProps) {
   }
 
   return (
-    <div style={{ fontSize: 13 }} onClick={skip}>
+    <div
+      style={{ fontSize: 13, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
+      onClick={skip}
+    >
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 2 }}>
         <Icon name="dialup" size={32} />
         <b>Connect To: WestWind Online</b>
@@ -200,7 +206,7 @@ export function DialUp({ windowId }: AppWindowProps) {
           )}
         </StatusWell>
       ) : null}
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 'auto', paddingTop: 14, flexShrink: 0 }}>
         <Button onClick={startDialing} disabled={phase !== 'idle'} style={{ width: 100 }}>
           Connect
         </Button>

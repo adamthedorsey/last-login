@@ -83,7 +83,9 @@ export function registerAllApps(): void {
     name: 'Dial-Up Networking',
     icon: 'dialup',
     component: DialUp,
-    defaultSize: { w: 380, h: 330 },
+    // Tall enough for the full dialing view: fields + the staged status
+    // well (up to ~6 lines plus the hourglass) + the button row.
+    defaultSize: { w: 400, h: 470 },
     singleton: true,
   });
   registerApp({
@@ -234,4 +236,14 @@ export function registerAllApps(): void {
     defaultSize: { w: 420, h: 380 },
     singleton: true,
   });
+
+  // Dev-only hook for automated window-size audits (dead-code-eliminated
+  // from production builds).
+  if (import.meta.env.DEV) {
+    void import('../os/windowStore').then(({ useWindowStore }) => {
+      void import('../os/appRegistry').then(({ listApps }) => {
+        (window as unknown as Record<string, unknown>).__os = { useWindowStore, listApps };
+      });
+    });
+  }
 }
