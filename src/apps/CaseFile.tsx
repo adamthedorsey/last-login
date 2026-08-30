@@ -118,15 +118,20 @@ const WizTitle = styled.div`
   margin: 4px 0 12px;
 `;
 
+/** Reading-surface exception (same owner call as mail bodies): Arial
+ * holds up aliased where the bitmap chrome font turns ragged in
+ * paragraphs. The Times serif title above it is authentic Win95 Setup. */
 const WizText = styled.div`
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.55;
   white-space: pre-wrap;
 `;
 
 const SyncWell = styled(Frame).attrs({ variant: 'well' })`
   margin-top: 12px;
   padding: 8px 10px;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 15px;
   min-height: 84px;
   background: #fff;

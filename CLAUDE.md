@@ -60,7 +60,9 @@ If not, don't build it that way.
   load-bearing: story documents contain column-aligned ASCII like the
   ledger). Email bodies read in Arial 14px/1.6 — what Outlook Express
   actually rendered mail in; the bitmap chrome font scales badly in long
-  paragraphs (never put column-aligned evidence in mail bodies). Do not put
+  paragraphs (never put column-aligned evidence in mail bodies). The Case
+  Files wizard body is Arial too (same call; its Times serif titles are
+  authentic Win95 Setup style). Do not put
   Fixedsys or scaled ms_sans_serif back on reading surfaces.
 - In-game web pages: Times New Roman / Arial / Courier New via the `PageBlock`
   style system — that's what the 1997 web actually used.
