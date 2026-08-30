@@ -138,8 +138,10 @@ If not, don't build it that way.
   (`youve_got_mail.mp3`) QUIET (~0.22 volume) — it is a computer sound,
   so it stays clean, no degradation; the chip chirp is its fallback.
   (4) The startup fanfare (`microtech-startup-sound.mp3`, clean, ~0.4)
-  plays with the GUI splash — once per boot; a skip click cuts it, and
-  if autoplay was blocked the login OK click retries it.
+  plays with the GUI splash, and the splash HOLDS until it finishes
+  (~8s; muted/blocked boots hold ~3.5s instead) — once per boot; a skip
+  click cuts both, and if autoplay was blocked the login OK click
+  retries the sound.
   No other samples.
 
 ### Language & content

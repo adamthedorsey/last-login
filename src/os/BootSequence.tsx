@@ -203,8 +203,17 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   }, [view, onResume]);
   useEffect(() => {
     if (phase !== 'splash') return;
-    playSystemStartup();
-    const t = window.setTimeout(leaveSplash, 3500);
+    // The splash holds while the fanfare plays and moves on a beat after
+    // it ends; with no sound (muted/blocked) it holds ~3.5s instead.
+    let t = 0;
+    playSystemStartup({
+      onEnded: () => {
+        t = window.setTimeout(leaveSplash, 500);
+      },
+      onSilent: () => {
+        t = window.setTimeout(leaveSplash, 3500);
+      },
+    });
     return () => window.clearTimeout(t);
   }, [phase, leaveSplash]);
   const bootText = useMemo(

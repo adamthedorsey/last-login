@@ -64,23 +64,41 @@ export function playNotify(): void {
  * Starts with the GUI splash; if the browser blocks autoplay (no gesture
  * yet), the login OK click retries it. Plays once per page load. */
 let startupAudio: HTMLAudioElement | null = null;
+let startupStarted = false;
 let startupPlayed = false;
-export function playSystemStartup(): void {
-  if (isMuted() || startupPlayed) return;
+export function playSystemStartup(cb?: {
+  /** The fanfare finished naturally (the splash waits for this). */
+  onEnded?: () => void;
+  /** No sound will play (muted, blocked, already played) — use a timer. */
+  onSilent?: () => void;
+}): void {
+  if (startupStarted && startupAudio) {
+    // Re-entry (StrictMode remount): re-attach to the running fanfare.
+    startupAudio.onended = () => cb?.onEnded?.();
+    return;
+  }
+  if (isMuted() || startupPlayed) {
+    cb?.onSilent?.();
+    return;
+  }
   try {
+    startupStarted = true;
     const a = new Audio(startupMp3);
     a.volume = 0.4;
+    a.onended = () => cb?.onEnded?.();
     startupAudio = a;
     void a.play().then(
       () => {
         startupPlayed = true;
       },
       () => {
-        /* autoplay blocked — the next call (post-gesture) will land */
+        startupStarted = false;
+        startupAudio = null;
+        cb?.onSilent?.(); // autoplay blocked — a later gesture call retries
       },
     );
   } catch {
-    /* ignore */
+    cb?.onSilent?.();
   }
 }
 
