@@ -307,6 +307,7 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
           {HANDLES.map((h) => (
             <div
               key={h.dir}
+              data-resize
               style={{ position: 'absolute', zIndex: 5, ...h.style }}
               onPointerDown={onResizeDown(h.dir)}
               onPointerMove={onResizeMove}

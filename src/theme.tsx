@@ -106,13 +106,26 @@ const GlobalStyles = createGlobalStyle`
     --cursor-appstarting: url(${curAppStart}) 0 0, progress;
   }
   body { cursor: var(--cursor-arrow); }
-  /* Win95 showed the ARROW over buttons and controls — never a hand. */
-  button, select, label, summary { cursor: var(--cursor-arrow); }
+  /* Win95 showed the ARROW over buttons and controls — never a hand, and
+     never the host OS pointer. react95 paints modern 'default'/'pointer'
+     cursors on buttons and inside menus, selects, tables, tabs and
+     pickers — the !important out-guns those component styles everywhere;
+     the busy rule below still wins on specificity. */
+  button, select, label, summary,
+  ul, li, td, th, tr { cursor: var(--cursor-arrow) !important; }
+  /* ...and react95's div/span-built widgets (Select, pickers) inside any
+     window shell. Resize handles opt out via data-resize. */
+  [data-win-shell] div:not([data-resize]),
+  [data-win-shell] span { cursor: var(--cursor-arrow) !important; }
   input, textarea { cursor: var(--cursor-text); }
   /* The 1997 web DID show the hand — but only on links. */
   a { cursor: var(--cursor-hand); }
-  /* The busy hourglass, everywhere at once, exactly like the real thing. */
+  /* The busy hourglass, everywhere at once, exactly like the real thing.
+     (The shell seal above is more specific, so it is mirrored here.) */
   html.busy, html.busy * { cursor: var(--cursor-wait) !important; }
+  html.busy [data-win-shell] div:not([data-resize]),
+  html.busy [data-win-shell] span,
+  html.busy button, html.busy li { cursor: var(--cursor-wait) !important; }
 `;
 
 // react95 v4 was written for styled-components v5 prop forwarding; with v6 we
