@@ -3,6 +3,7 @@
  * from the item's server-sent summary — which makes this dialog an
  * EVIDENCE SURFACE: timestamps are the machine's testimony.
  */
+import { useEffect } from 'react';
 import styled from 'styled-components';
 import { Button, Checkbox, Window, WindowContent, WindowHeader } from 'react95';
 import type { ItemSummary } from '@gamecore/types.ts';
@@ -76,6 +77,13 @@ export function PropertiesDialog({
   location?: string;
   onClose: () => void;
 }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
   const kb = item.meta?.sizeKb;
   const isDir = item.kind === 'folder' || item.kind === 'mailbox';
   const created = fmtStamp(item.meta?.createdAt);

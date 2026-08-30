@@ -20,6 +20,7 @@ import { TASKBAR_HEIGHT, topWindowId, useWindowStore } from './windowStore';
 import { Icon } from './icons';
 import { isMuted, setMuted } from './sounds';
 import { launchItem } from './launch';
+import { animateZoom, taskbarButtonBox } from './zoomRect';
 import { useGame } from '../game/gameContext';
 
 const Bar = styled(AppBar)`
@@ -677,10 +678,30 @@ export function Taskbar({
             {windows.map((w) => (
               <WinButton
                 key={w.id}
+                data-taskbar-btn={w.id}
                 active={w.id === focusedId && !w.minimized}
                 onClick={() => {
-                  if (w.id === focusedId && !w.minimized) minimize(w.id);
-                  else focus(w.id);
+                  if (w.id === focusedId && !w.minimized) {
+                    const from = document
+                      .querySelector(`[data-win-shell="${w.id}"]`)
+                      ?.getBoundingClientRect();
+                    if (from) {
+                      animateZoom(
+                        { x: from.left, y: from.top, w: from.width, h: from.height },
+                        taskbarButtonBox(w.id),
+                      );
+                    }
+                    minimize(w.id);
+                  } else {
+                    // Restoring a minimized window zooms back out of the button.
+                    if (w.minimized) {
+                      const to = w.maximized
+                        ? { x: 0, y: 0, w: window.innerWidth, h: window.innerHeight - TASKBAR_HEIGHT }
+                        : { x: w.x, y: w.y, w: w.w, h: w.h };
+                      animateZoom(taskbarButtonBox(w.id), to);
+                    }
+                    focus(w.id);
+                  }
                 }}
               >
                 <Icon name={w.icon} size={16} />

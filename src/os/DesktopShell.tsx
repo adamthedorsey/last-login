@@ -138,6 +138,21 @@ export function DesktopShell() {
     return () => window.clearTimeout(t);
   }, [lineDropSignal]);
 
+  // Alt+F4 closes the focused window; Esc backs out of the Shut Down dialog.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey && e.key === 'F4') {
+        e.preventDefault();
+        const top = topWindowId(useWindowStore.getState().windows);
+        if (top) useWindowStore.getState().close(top);
+        return;
+      }
+      if (e.key === 'Escape') setShutDialog(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   // The blue screen: a 1997 machine is mortal. It surfaces after a random
   // number of clicks (rare enough to shock, never to torment — at most twice
   // a session), loses nothing, and any key continues.

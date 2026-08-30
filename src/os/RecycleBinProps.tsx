@@ -3,6 +3,7 @@
  * chrome — every control is period-correct and locked, because this
  * machine's bin is evidence and stays exactly as it was found.
  */
+import { useEffect } from 'react';
 import styled from 'styled-components';
 import { Button, Checkbox, Radio, Window, WindowContent, WindowHeader } from 'react95';
 import { Icon } from './icons';
@@ -25,6 +26,13 @@ const Rule = styled.div`
 `;
 
 export function RecycleBinProps({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
   return (
     <Overlay data-no-deskmenu onPointerDown={(e) => e.stopPropagation()}>
       <Window shadow style={{ width: 340 }}>

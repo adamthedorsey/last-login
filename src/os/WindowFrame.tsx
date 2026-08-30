@@ -1,9 +1,10 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Window, WindowContent, WindowHeader } from 'react95';
+import { Button, MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
 import { getApp } from './appRegistry';
 import { TASKBAR_HEIGHT, useWindowStore, type OSWindow } from './windowStore';
 import { Icon } from './icons';
+import { animateZoom, taskbarButtonBox } from './zoomRect';
 
 const MIN_W = 300;
 const MIN_H = 180;
@@ -62,6 +63,14 @@ const CornerGrip = styled.div`
   pointer-events: none;
 `;
 
+/** The control-box (system) menu behind the title-bar icon. */
+const SysMenu = styled(MenuList)`
+  position: fixed;
+  z-index: 100007;
+  min-width: 150px;
+  font-size: 13px;
+`;
+
 type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 const HANDLES: Array<{ dir: ResizeDir; style: React.CSSProperties }> = [
@@ -92,8 +101,29 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
   const { focus, close, minimize, toggleMaximize, move, setRect } = useWindowStore();
   const dragRef = useRef<DragState | null>(null);
   const resizeRef = useRef<ResizeState | null>(null);
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  const [sysMenu, setSysMenu] = useState<{ x: number; y: number } | null>(null);
+  const sysRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!sysMenu) return;
+    const onDown = (e: PointerEvent) => {
+      if (!sysRef.current?.contains(e.target as Node)) setSysMenu(null);
+    };
+    window.addEventListener('pointerdown', onDown);
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, [sysMenu]);
 
   const def = getApp(win.appId);
+
+  /** Minimize with the Win95 zoom-to-taskbar wireframe. */
+  const doMinimize = useCallback(() => {
+    const r = shellRef.current?.getBoundingClientRect();
+    if (r) {
+      animateZoom({ x: r.left, y: r.top, w: r.width, h: r.height }, taskbarButtonBox(win.id));
+    }
+    minimize(win.id);
+  }, [minimize, win.id]);
 
   const onHeaderPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -183,8 +213,10 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
 
   return (
     <Shell
+      ref={shellRef}
       $maximized={win.maximized}
       data-no-deskmenu
+      data-win-shell={win.id}
       style={{ ...rect, zIndex: win.z, display: win.minimized ? 'none' : 'flex' }}
       onPointerDown={() => focus(win.id)}
     >
@@ -195,9 +227,24 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
         onPointerUp={onHeaderPointerUp}
         onDoubleClick={() => toggleMaximize(win.id)}
       >
-        <Icon name={win.icon} size={16} />
+        {/* The control box: click for the system menu, double-click closes. */}
+        <span
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+            setSysMenu((m) => (m ? null : { x: r.left, y: r.bottom + 2 }));
+          }}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            close(win.id);
+          }}
+          style={{ display: 'inline-flex', cursor: 'default' }}
+        >
+          <Icon name={win.icon} size={16} />
+        </span>
         <Title>{win.title}</Title>
-        <Button size="sm" onClick={() => minimize(win.id)} aria-label="Minimize">
+        <Button size="sm" onClick={doMinimize} aria-label="Minimize">
           <Glyph style={{ transform: 'translateY(3px)' }}>_</Glyph>
         </Button>
         <Button size="sm" onClick={() => toggleMaximize(win.id)} aria-label="Maximize">
@@ -210,6 +257,63 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
       <Content>
         <AppComponent windowId={win.id} props={win.props} />
       </Content>
+      {sysMenu && (
+        <div ref={sysRef}>
+          <SysMenu style={{ left: sysMenu.x, top: sysMenu.y }}>
+            <MenuListItem
+              size="sm"
+              disabled={!win.maximized}
+              onClick={
+                win.maximized
+                  ? () => {
+                      setSysMenu(null);
+                      toggleMaximize(win.id);
+                    }
+                  : undefined
+              }
+            >
+              Restore
+            </MenuListItem>
+            <MenuListItem size="sm" disabled>Move</MenuListItem>
+            <MenuListItem size="sm" disabled>Size</MenuListItem>
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setSysMenu(null);
+                doMinimize();
+              }}
+            >
+              Minimize
+            </MenuListItem>
+            <MenuListItem
+              size="sm"
+              disabled={win.maximized}
+              onClick={
+                win.maximized
+                  ? undefined
+                  : () => {
+                      setSysMenu(null);
+                      toggleMaximize(win.id);
+                    }
+              }
+            >
+              Maximize
+            </MenuListItem>
+            <Separator />
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setSysMenu(null);
+                close(win.id);
+              }}
+            >
+              <span style={{ display: 'flex', width: '100%', gap: 18 }}>
+                <b>Close</b> <span style={{ marginLeft: 'auto' }}>Alt+F4</span>
+              </span>
+            </MenuListItem>
+          </SysMenu>
+        </div>
+      )}
       {!win.maximized && (
         <>
           <CornerGrip />
