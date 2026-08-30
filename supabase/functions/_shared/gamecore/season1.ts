@@ -1455,7 +1455,9 @@ The Mine Wars were a series of wars that happened in the mines
       requires: { discovery: 'the-meeting' },
       onOpen: { discover: ['stolen-intimacy'] },
       meta: {
-        deletedAt: '1997-10-10',
+        // She deleted it herself, minutes after the 9:31 PM session — like
+        // he told her to. Half-obeyed: it went to the bin, not away.
+        deletedAt: '1997-10-10T21:44:00',
         originalPath: 'C:\\Program Files\\Chat\\logs',
         sizeKb: 2,
       },
@@ -1499,8 +1501,10 @@ SunflwrC81: hello??`,
       requires: { discovery: 'who-shaped' },
       onOpen: { discover: ['the-house'] },
       meta: {
-        deletedAt: '1997-10-11',
-        modifiedAt: '1997-10-11',
+        // The exact stamps ARE the finale — Properties shows them plainly.
+        createdAt: '1996-06-02',
+        deletedAt: '1997-10-11T02:14:00',
+        modifiedAt: '1997-10-11T02:14:00',
         originalPath: 'C:\\My Documents\\personal stuff',
         sizeKb: 1,
       },

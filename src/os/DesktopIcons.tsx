@@ -5,6 +5,7 @@ import type { ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { launchItem } from './launch';
 import { Icon } from './icons';
+import { PropertiesDialog } from './PropertiesDialog';
 import { TASKBAR_HEIGHT, useWindowStore } from './windowStore';
 
 import { GRID, ORIGIN, loadLayout, saveLayout, snapToGrid as snap, type Layout } from './desktopLayout';
@@ -97,6 +98,9 @@ export function DesktopIcons() {
   const [marquee, setMarquee] = useState<{ l: number; t: number; w: number; h: number } | null>(null);
   const marqueeRef = useRef<{ startX: number; startY: number; keep: string[] } | null>(null);
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
+  const [itemMenu, setItemMenu] = useState<{ x: number; y: number; item: ItemSummary } | null>(null);
+  const [propsItem, setPropsItem] = useState<ItemSummary | null>(null);
+  const itemMenuRef = useRef<HTMLDivElement>(null);
   const [renaming, setRenaming] = useState<{ id: string; value: string } | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -200,11 +204,22 @@ export function DesktopIcons() {
     };
   }, [send, contentEpoch, ready, view?.loggedIn]);
 
-  // Desktop right-click menu (windows and the taskbar keep the default).
+  useEffect(() => {
+    if (!itemMenu) return;
+    const onDown = (e: PointerEvent) => {
+      if (!itemMenuRef.current?.contains(e.target as Node)) setItemMenu(null);
+    };
+    window.addEventListener('pointerdown', onDown);
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, [itemMenu]);
+
+  // Desktop right-click menu (windows and the taskbar keep the default;
+  // icons open their OWN menu via their handler below).
   useEffect(() => {
     const onCtx = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.closest('[data-no-deskmenu]')) return;
+      if (target.closest('[data-desk-icon]')) return;
       e.preventDefault();
       setMenuAt({ x: Math.min(e.clientX, window.innerWidth - 190), y: Math.min(e.clientY, window.innerHeight - TASKBAR_HEIGHT - 180) });
     };
@@ -362,9 +377,19 @@ export function DesktopIcons() {
         return (
           <IconButton
             key={item.id}
+            data-desk-icon
             $selected={selected.includes(item.id)}
             $dragging={inDragGroup}
             style={{ left: p.x, top: p.y }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              if (!selected.includes(item.id)) setSelected([item.id]);
+              setItemMenu({
+                x: Math.min(e.clientX, window.innerWidth - 160),
+                y: Math.min(e.clientY, window.innerHeight - TASKBAR_HEIGHT - 200),
+                item,
+              });
+            }}
             onClick={(e) => {
               if (e.detail === 0) return; // keyboard-synthesized click (Enter)
               if (e.ctrlKey || e.metaKey) {
@@ -442,6 +467,53 @@ export function DesktopIcons() {
         <DeskMarquee
           style={{ left: marquee.l, top: marquee.t, width: marquee.w, height: marquee.h }}
         />
+      )}
+
+      {itemMenu && (
+        <div ref={itemMenuRef} data-no-deskmenu>
+          <ContextMenu style={{ left: itemMenu.x, top: itemMenu.y }}>
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setItemMenu(null);
+                launchItem(itemMenu.item);
+              }}
+            >
+              <b>Open</b>
+            </MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" disabled>Cut</MenuListItem>
+            <MenuListItem size="sm" disabled>Copy</MenuListItem>
+            <MenuListItem size="sm" disabled>Delete</MenuListItem>
+            <Separator />
+            <MenuListItem
+              size="sm"
+              disabled={!itemMenu.item.editable}
+              onClick={() => {
+                if (!itemMenu.item.editable) return;
+                const it = itemMenu.item;
+                setItemMenu(null);
+                setRenaming({ id: it.id, value: it.name });
+              }}
+            >
+              Rename
+            </MenuListItem>
+            <Separator />
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setItemMenu(null);
+                setPropsItem(itemMenu.item);
+              }}
+            >
+              Properties
+            </MenuListItem>
+          </ContextMenu>
+        </div>
+      )}
+
+      {propsItem && (
+        <PropertiesDialog item={propsItem} location="Desktop" onClose={() => setPropsItem(null)} />
       )}
 
       {menuAt && (

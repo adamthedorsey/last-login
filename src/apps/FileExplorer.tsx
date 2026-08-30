@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame, ScrollView, Toolbar, Window, WindowContent, WindowHeader } from 'react95';
+import { Button, Frame, MenuList, MenuListItem, ScrollView, Separator, Toolbar, Window, WindowContent, WindowHeader } from 'react95';
 import type { ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { launchItem } from '../os/launch';
 import { Icon } from '../os/icons';
+import { PropertiesDialog } from '../os/PropertiesDialog';
 import { useWindowStore } from '../os/windowStore';
 import { placeIcon, snapToGrid, ORIGIN } from '../os/desktopLayout';
 import { TASKBAR_HEIGHT } from '../os/windowStore';
@@ -46,6 +47,13 @@ const StatusBar = styled(Frame).attrs({ variant: 'well' })`
   padding: 2px 8px;
   font-size: 12px;
   margin-top: 4px;
+`;
+
+const ItemMenu = styled(MenuList)`
+  position: fixed;
+  z-index: 100007;
+  min-width: 150px;
+  font-size: 13px;
 `;
 
 /** The Win95 rubber-band: a dotted rectangle, nothing fancier. */
@@ -94,6 +102,18 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [ghost, setGhost] = useState<{ item: ItemSummary; x: number; y: number } | null>(null);
   const [floppyError, setFloppyError] = useState(false);
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; item: ItemSummary } | null>(null);
+  const [propsItem, setPropsItem] = useState<ItemSummary | null>(null);
+  const ctxRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!ctxMenu) return;
+    const onDown = (e: PointerEvent) => {
+      if (!ctxRef.current?.contains(e.target as Node)) setCtxMenu(null);
+    };
+    window.addEventListener('pointerdown', onDown);
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, [ctxMenu]);
   const dragOutRef = useRef<{ item: ItemSummary; startX: number; startY: number; moved: boolean } | null>(null);
 
   const clickSelect = (item: ItemSummary, e: React.MouseEvent) => {
@@ -286,6 +306,15 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
                 onPointerDown={onItemPointerDown(item)}
                 onPointerMove={onItemPointerMove}
                 onPointerUp={onItemPointerUp}
+                onContextMenu={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!selected.includes(item.id)) {
+                    setSelected([item.id]);
+                    anchorRef.current = item.id;
+                  }
+                  setCtxMenu({ x: e.clientX, y: e.clientY, item });
+                }}
                 style={canDragOut(item) ? { touchAction: 'none' } : undefined}
               >
                 <Icon
@@ -304,6 +333,42 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
       </ScrollView>
       {marquee && (
         <Marquee style={{ left: marquee.l, top: marquee.t, width: marquee.w, height: marquee.h }} />
+      )}
+      {ctxMenu && (
+        <div ref={ctxRef} data-no-deskmenu>
+          <ItemMenu style={{ left: Math.min(ctxMenu.x, window.innerWidth - 160), top: Math.min(ctxMenu.y, window.innerHeight - 200) }}>
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setCtxMenu(null);
+                enter(ctxMenu.item);
+              }}
+            >
+              <b>Open</b>
+            </MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" disabled>Cut</MenuListItem>
+            <MenuListItem size="sm" disabled>Copy</MenuListItem>
+            <MenuListItem size="sm" disabled>Delete</MenuListItem>
+            <Separator />
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setCtxMenu(null);
+                setPropsItem(ctxMenu.item);
+              }}
+            >
+              Properties
+            </MenuListItem>
+          </ItemMenu>
+        </div>
+      )}
+      {propsItem && (
+        <PropertiesDialog
+          item={propsItem}
+          location={current.path ?? current.name}
+          onClose={() => setPropsItem(null)}
+        />
       )}
       {floppyError && (
         <div

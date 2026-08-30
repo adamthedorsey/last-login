@@ -1,10 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame, ScrollView, Toolbar } from 'react95';
+import { Button, Frame, MenuList, MenuListItem, ScrollView, Separator, Toolbar } from 'react95';
 import type { ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { launchItem } from '../os/launch';
 import { Icon } from '../os/icons';
+import { PropertiesDialog } from '../os/PropertiesDialog';
+
+/** Win95 "Date Deleted" column: 10/11/97 2:14 AM. Formatted straight from
+ * the ISO string — these stamps are evidence, no Date() timezone drift. */
+function fmtDeleted(iso?: string): string {
+  if (!iso || iso.length < 10) return '';
+  const [y, m, d] = iso.slice(0, 10).split('-');
+  let out = `${Number(m)}/${Number(d)}/${y.slice(2)}`;
+  if (iso.length >= 16) {
+    const hh = Number(iso.slice(11, 13));
+    out += ` ${hh % 12 || 12}:${iso.slice(14, 16)} ${hh >= 12 ? 'PM' : 'AM'}`;
+  }
+  return out;
+}
 
 const Row = styled.button<{ $selected: boolean }>`
   display: grid;
@@ -28,7 +42,7 @@ const Row = styled.button<{ $selected: boolean }>`
 
 const HeadRow = styled.div`
   display: grid;
-  grid-template-columns: 26px 1.2fr 1.4fr 90px;
+  grid-template-columns: 26px 1.2fr 1.4fr 110px;
   gap: 6px;
   padding: 3px 6px;
   background: #d4d0c8;
@@ -37,10 +51,29 @@ const HeadRow = styled.div`
   font-size: 12px;
 `;
 
+const ItemMenu = styled(MenuList)`
+  position: fixed;
+  z-index: 100007;
+  min-width: 150px;
+  font-size: 13px;
+`;
+
 export function RecycleBin() {
   const { send, contentEpoch } = useGame();
   const [items, setItems] = useState<ItemSummary[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; item: ItemSummary } | null>(null);
+  const [propsItem, setPropsItem] = useState<ItemSummary | null>(null);
+  const ctxRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!ctxMenu) return;
+    const onDown = (e: PointerEvent) => {
+      if (!ctxRef.current?.contains(e.target as Node)) setCtxMenu(null);
+    };
+    window.addEventListener('pointerdown', onDown);
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, [ctxMenu]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,11 +108,16 @@ export function RecycleBin() {
             $selected={selected === item.id}
             onClick={() => setSelected(item.id)}
             onDoubleClick={() => launchItem(item)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setSelected(item.id);
+              setCtxMenu({ x: e.clientX, y: e.clientY, item });
+            }}
           >
             <Icon name={item.icon ?? 'doc'} size={18} />
             <span>{item.name}</span>
             <span>{item.meta?.originalPath}</span>
-            <span>{item.meta?.deletedAt}</span>
+            <span>{fmtDeleted(item.meta?.deletedAt)}</span>
           </Row>
         ))}
         {items.length === 0 && <div style={{ padding: 10, color: '#777' }}>(the bin is empty)</div>}
@@ -87,6 +125,38 @@ export function RecycleBin() {
       <Frame variant="well" style={{ marginTop: 4, padding: '2px 8px', fontSize: 12, flexShrink: 0 }}>
         {items.length} deleted object(s). Double-click to peek inside.
       </Frame>
+      {ctxMenu && (
+        <div ref={ctxRef}>
+          <ItemMenu style={{ left: Math.min(ctxMenu.x, window.innerWidth - 160), top: Math.min(ctxMenu.y, window.innerHeight - 180) }}>
+            <MenuListItem
+              size="sm"
+              style={{ fontWeight: 'bold' }}
+              onClick={() => {
+                setCtxMenu(null);
+                launchItem(ctxMenu.item);
+              }}
+            >
+              Open
+            </MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" disabled>Restore</MenuListItem>
+            <MenuListItem size="sm" disabled>Delete</MenuListItem>
+            <Separator />
+            <MenuListItem
+              size="sm"
+              onClick={() => {
+                setCtxMenu(null);
+                setPropsItem(ctxMenu.item);
+              }}
+            >
+              Properties
+            </MenuListItem>
+          </ItemMenu>
+        </div>
+      )}
+      {propsItem && (
+        <PropertiesDialog item={propsItem} location="Recycle Bin" onClose={() => setPropsItem(null)} />
+      )}
     </>
   );
 }
