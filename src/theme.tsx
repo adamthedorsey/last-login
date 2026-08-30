@@ -2,8 +2,9 @@ import { createGlobalStyle, StyleSheetManager, ThemeProvider } from 'styled-comp
 import isPropValid from '@emotion/is-prop-valid';
 import { styleReset } from 'react95';
 import original from 'react95/dist/themes/original';
-import msSans from 'react95/dist/fonts/ms_sans_serif.woff2';
 import msSansBold from 'react95/dist/fonts/ms_sans_serif_bold.woff2';
+import w95f2 from './assets/fonts/w95f.woff2';
+import w95f from './assets/fonts/w95f.woff';
 import fsex from '@south-paw/typeface-fixed-system-excelsior/files/fsex300.woff';
 import curArrow from './assets/cursors/arrow.png';
 import curWait from './assets/cursors/hourglass.png';
@@ -39,9 +40,13 @@ export const DOC_TEXT = `
 
 const GlobalStyles = createGlobalStyle`
   ${styleReset}
+  /* The chrome face is W95F (src/assets/fonts), registered UNDER react95's
+     family name so every component picks it up without restyling. Bold
+     stays on react95's bold face — both recreate the same original UI
+     font, so the weights pair cleanly. */
   @font-face {
     font-family: 'ms_sans_serif';
-    src: url(${msSans}) format('woff2');
+    src: url(${w95f2}) format('woff2'), url(${w95f}) format('woff');
     font-weight: 400;
     font-style: normal;
   }

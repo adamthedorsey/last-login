@@ -43,8 +43,10 @@ If not, don't build it that way.
   it too must stay click-skippable.
 
 ### Typography
-- OS chrome: `ms_sans_serif` bitmap font (from react95). Don't introduce other
-  UI fonts.
+- OS chrome: W95F (`src/assets/fonts`), registered under the family name
+  `ms_sans_serif` so react95 components pick it up; bold weight still comes
+  from react95's bold face (the two recreate the same original UI font and
+  pair cleanly). Don't introduce other UI fonts.
 - TERMINAL surfaces (boot/POST, MS-DOS mode, blue screen, shutdown): Fixedsys
   — use `PIXEL_MONO` from `src/theme.tsx`, at 16px (its crisp native size;
   multiples of 16 only). Short, large, atmospheric text only.
