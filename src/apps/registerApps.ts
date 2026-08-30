@@ -17,6 +17,7 @@ import { DiscDeck } from './DiscDeck';
 import { ClockApp } from './ClockApp';
 import { Display } from './Display';
 import { FindFiles } from './FindFiles';
+import { PhoneDialer } from './PhoneDialer';
 import {
   AddRemoveApplet,
   DateTimeApplet,
@@ -171,6 +172,14 @@ export function registerAllApps(): void {
     icon: 'clock',
     component: ClockApp,
     defaultSize: { w: 300, h: 300 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'phonedialer',
+    name: 'Phone Dialer',
+    icon: 'phone',
+    component: PhoneDialer,
+    defaultSize: { w: 420, h: 430 },
     singleton: true,
   });
   // --- Control Panel applets ---

@@ -10,6 +10,7 @@
 import {
   Appwiz1500,
   Calculator,
+  Dialer1,
   CdMusic,
   Computer5,
   Computer,
@@ -97,6 +98,7 @@ const R95 = {
   sysmon: { C: Sysmon1000, v16: false },
   trash: { C: RecycleEmpty, v16: true },
   'trash-full': { C: RecycleFull, v16: true },
+  phone: { C: Dialer1, v16: true },
   printer: { C: Printer, v16: true },
   mouse: { C: KeyboardMouse, v16: true },
   sounds: { C: Mmsys110, v16: true },

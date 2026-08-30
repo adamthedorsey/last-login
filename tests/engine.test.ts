@@ -578,3 +578,38 @@ describe('find files', () => {
     expect(result.type === 'find' && result.items.some((i) => i.path === 'C:\\Desktop')).toBe(true);
   });
 });
+
+describe('phone dialer', () => {
+  it('cannot get a dial tone while the modem holds the line', () => {
+    const s = loggedInState(); // online
+    const { result } = run(s, { type: 'dial', number: '555-0101' });
+    expect(result).toMatchObject({ type: 'dial', lineBusy: true });
+  });
+
+  it('reads the frozen clock back on the time line', () => {
+    const s = offlineState();
+    const { result } = run(s, { type: 'dial', number: '555-0101' });
+    expect(result.type).toBe('dial');
+    if (result.type !== 'dial') return;
+    expect(result.outcome).toBe('message');
+    expect(result.message?.join(' ')).toContain('9:47 PM');
+  });
+
+  it('unlisted numbers just ring', () => {
+    const s = offlineState();
+    const { result } = run(s, { type: 'dial', number: '555-9999' });
+    expect(result).toMatchObject({ type: 'dial', outcome: 'no-answer' });
+  });
+
+  it('dialing the access number by voice reaches a modem', () => {
+    const s = offlineState();
+    const { result } = run(s, { type: 'dial', number: '5550134' });
+    expect(result).toMatchObject({ type: 'dial', outcome: 'message', carrier: true });
+  });
+
+  it('serves the owner speed-dial entries', () => {
+    const s = offlineState();
+    const { result } = run(s, { type: 'getSpeedDial' });
+    expect(result.type === 'speedDial' && result.entries.length >= 3).toBe(true);
+  });
+});

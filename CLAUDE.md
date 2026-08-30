@@ -159,6 +159,10 @@ If not, don't build it that way.
   connect and continuously while online. Going online CAN trigger story
   (that's the habit loop) but must not always — mundane connects are good.
 - The modem handshake is synthesized chip tones (~3s), click-skippable.
+- The Phone Dialer shares the ONE phone line: dialing while online is
+  refused by the ENGINE (`state.online`), and every number's outcome is
+  season content (`phones`) — never client data. DTMF/ring sounds are
+  chip-synth like everything else.
 
 ### MS-DOS mode & system mortality
 - MS-DOS mode (Shut Down → "Restart in MS-DOS mode") is a real prompt whose

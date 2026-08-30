@@ -62,6 +62,27 @@ export function playError(): void {
   tone(196, 0, 160, 'sawtooth', 0.03);
 }
 
+/** Real DTMF pairs — a touch-tone keypad is two sine waves, not a beep. */
+const DTMF: Record<string, [number, number]> = {
+  '1': [697, 1209], '2': [697, 1336], '3': [697, 1477],
+  '4': [770, 1209], '5': [770, 1336], '6': [770, 1477],
+  '7': [852, 1209], '8': [852, 1336], '9': [852, 1477],
+  '*': [941, 1209], '0': [941, 1336], '#': [941, 1477],
+};
+
+export function playDtmf(key: string, startMs = 0): void {
+  const pair = DTMF[key];
+  if (!pair) return;
+  tone(pair[0], startMs, 90, 'sine', 0.03);
+  tone(pair[1], startMs, 90, 'sine', 0.03);
+}
+
+/** One US ring cadence burst (440+480 Hz). */
+export function playRing(startMs = 0): void {
+  tone(440, startMs, 1400, 'sine', 0.025);
+  tone(480, startMs, 1400, 'sine', 0.025);
+}
+
 /**
  * The real thing: a sampled dial-up handshake (owner-approved exception to
  * the synth-only rule — nostalgia is the point). Stopped cleanly when the

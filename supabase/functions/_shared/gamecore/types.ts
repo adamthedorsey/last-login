@@ -244,8 +244,27 @@ export interface SeasonContent {
    * extension. Fires exactly once per season. SERVER ONLY.
    */
   linePickup?: { requires: Requirement };
+  /** Numbers the Phone Dialer can voice-dial (see PhoneNumber). SERVER ONLY. */
+  phones?: PhoneNumber[];
   maxPasswordAttempts: number;
   lockoutSeconds: number;
+}
+
+/**
+ * A phone number the machine can voice-dial through the Phone Dialer.
+ * Flavor, not clues — what a phone in this house reaches in 1997.
+ */
+export interface PhoneNumber {
+  /** Digits only (the engine normalizes what the player dials). */
+  number: string;
+  /** Speed-dial label the owner programmed (absent = not on speed dial). */
+  label?: string;
+  requires?: Requirement;
+  outcome: 'busy' | 'no-answer' | 'message';
+  /** What the caller hears, line by line (outcome 'message'). */
+  message?: string[];
+  /** A modem answers: the client plays a carrier squeal with the message. */
+  carrier?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -330,6 +349,8 @@ export type GameAction =
   /** Find: Files or Folders — name and/or containing-text search over the
    * disk the player can already reach. Never out-runs content gating. */
   | { type: 'findFiles'; query: string; text?: string }
+  | { type: 'dial'; number: string }
+  | { type: 'getSpeedDial' }
   | { type: 'getBuddies' }
   | { type: 'getConversation'; screenname: string }
   | { type: 'say'; screenname: string; promptId: string }
@@ -476,6 +497,15 @@ export type ActionResult = (
     }
   | { type: 'search'; results: SearchResult[]; offline?: boolean }
   | { type: 'find'; items: FindHit[] }
+  | {
+      type: 'dial';
+      /** The modem holds the one phone line — no voice call while online. */
+      lineBusy?: boolean;
+      outcome?: 'busy' | 'no-answer' | 'message';
+      message?: string[];
+      carrier?: boolean;
+    }
+  | { type: 'speedDial'; entries: Array<{ label: string; number: string }> }
   | { type: 'buddies'; buddies: BuddyView[] }
   | {
       type: 'chat';

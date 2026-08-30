@@ -71,6 +71,31 @@ export const SEASON1: SeasonContent = {
   wallpaper: 'teal',
   homeUrl: 'www.searchhound.net',
   // Six strikes and the machine freezes you out for a minute and a half.
+  // What the phone line reaches when the modem ISN'T holding it. Flavor,
+  // not clues — but the time line reads the frozen clock back to you, and
+  // dialing the WestWind access number by voice gets you screamed at by a
+  // modem. The speed-dial labels are Casey's own programming.
+  phones: [
+    {
+      number: '5550101',
+      label: 'time + temp',
+      outcome: 'message',
+      message: [
+        'Thank you for calling the First Bank of Humble time and temperature line.',
+        'The time is... 9:47 PM.',
+        'The temperature is... 52 degrees.',
+        'First Bank of Humble. Your neighbors since 1924.',
+      ],
+    },
+    { number: '5550119', label: 'sadie', outcome: 'no-answer' },
+    { number: '5550177', label: 'moms work', outcome: 'busy' },
+    {
+      number: '5550134',
+      outcome: 'message',
+      carrier: true,
+      message: ['A shriek of carrier tone answers. On the other end, a modem is listening.'],
+    },
+  ],
   maxPasswordAttempts: 6,
   lockoutSeconds: 90,
 

@@ -754,6 +754,33 @@ export function handleAction(
       return done({ type: 'find', items: hits });
     }
 
+    case 'getSpeedDial': {
+      // Only the entries the owner programmed, and only once earned.
+      const entries = (content.phones ?? [])
+        .filter((p) => p.label && meetsRequirement(state, p.requires))
+        .map((p) => ({ label: p.label as string, number: p.number }));
+      return done({ type: 'speedDial', entries });
+    }
+
+    case 'dial': {
+      // One phone line in the house: while the modem is online, the Phone
+      // Dialer cannot get a dial tone. That coherence IS the mechanic.
+      if (state.online) return done({ type: 'dial', lineBusy: true });
+      const digits = action.number.replace(/\D/g, '').slice(0, 20);
+      if (!digits) return done({ type: 'dial', outcome: 'no-answer' });
+      events.push({ type: 'dial', payload: { digits } });
+      const hit = (content.phones ?? []).find(
+        (p) => p.number === digits && meetsRequirement(state, p.requires),
+      );
+      if (!hit) return done({ type: 'dial', outcome: 'no-answer' });
+      return done({
+        type: 'dial',
+        outcome: hit.outcome,
+        message: hit.outcome === 'message' ? hit.message : undefined,
+        carrier: hit.carrier || undefined,
+      });
+    }
+
     case 'saveDocument': {
       const docs = (state.documents ??= []);
       const name = sanitizeDocName(action.name);

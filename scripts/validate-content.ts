@@ -78,6 +78,19 @@ function validate(content: SeasonContent): void {
     errors.push(`computer.loginTargetId "${content.computer.loginTargetId}" has no password`);
   if (content.linePickup) checkReq('linePickup', content.linePickup.requires);
 
+  // Phone Dialer numbers: digits only, unique, message outcomes carry lines.
+  const seenPhones = new Set<string>();
+  for (const p of content.phones ?? []) {
+    const who = `phone ${p.number}`;
+    checkReq(who, p.requires);
+    if (!/^\d{3,20}$/.test(p.number)) errors.push(`${who}: number must be 3-20 digits`);
+    if (seenPhones.has(p.number)) errors.push(`${who}: duplicate number`);
+    seenPhones.add(p.number);
+    if (p.outcome === 'message' && !(p.message && p.message.length > 0)) {
+      errors.push(`${who}: outcome 'message' needs message lines`);
+    }
+  }
+
   // --- Conversations: references, prompt uniqueness, flag integrity ---
   const buddyNames = new Set(content.buddies.map((b) => b.screenname));
   const settableFlags = new Set<string>();

@@ -193,7 +193,7 @@ type SubName = 'programs' | 'documents' | 'settings' | 'find' | null;
 type Sub2Name = 'accessories' | 'games' | null;
 
 // Which registered apps live where (everything else lands under Programs).
-const ACCESSORY_IDS = ['calculator', 'calendar', 'clock', 'dialup', 'notepad', 'paintbox', 'photos', 'sysmon'];
+const ACCESSORY_IDS = ['calculator', 'calendar', 'clock', 'dialup', 'notepad', 'paintbox', 'phonedialer', 'photos', 'sysmon'];
 const GAME_IDS = ['solitaire', 'minefield'];
 const SETTINGS_IDS = ['display'];
 const CPL_IDS = ['sysprops', 'datetime', 'sounds', 'mouse', 'addremove'];
