@@ -38,6 +38,8 @@ interface WindowStore {
   move(id: string, x: number, y: number): void;
   setRect(id: string, rect: { x: number; y: number; w: number; h: number }): void;
   setTitle(id: string, title: string): void;
+  /** Flip fixed-dialog mode at runtime (e.g. a first-run wizard phase). */
+  setResizable(id: string, resizable: boolean): void;
   /** Taskbar-menu window arrangement, straight out of Win95. */
   cascade(): void;
   tile(direction: 'horizontal' | 'vertical'): void;
@@ -182,6 +184,14 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
   setTitle(id, title) {
     set((s) => ({
       windows: s.windows.map((w) => (w.id === id ? { ...w, title } : w)),
+    }));
+  },
+
+  setResizable(id, resizable) {
+    set((s) => ({
+      windows: s.windows.map((w) =>
+        w.id === id ? { ...w, resizable, maximized: resizable ? w.maximized : false } : w,
+      ),
     }));
   },
 

@@ -14,7 +14,7 @@ import styled from 'styled-components';
 import { Button, Frame } from 'react95';
 import type { CaseFileView } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
-import { useWindowStore } from '../os/windowStore';
+import { TASKBAR_HEIGHT, useWindowStore } from '../os/windowStore';
 import { isMuted } from '../os/sounds';
 import { Icon } from '../os/icons';
 import wizardArt from '../assets/images/humble-county-wizard.jpg';
@@ -199,7 +199,7 @@ const SYNC_LINES = [
 ];
 const SYNC_STEP_MS = 700;
 
-export function CaseFile() {
+export function CaseFile({ windowId }: { windowId: string }) {
   const { send, view: gameView, contentEpoch } = useGame();
   const openApp = useWindowStore((s) => s.open);
   const [file, setFile] = useState<CaseFileView | null>(null);
@@ -319,6 +319,26 @@ export function CaseFile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- seen is read once at completion
   }, [syncStage, syncShown, send]);
 
+  // Win95 wizards were fixed dialogs — while setup runs, the window locks
+  // to a small centered sheet; the workspace that follows is roomy and
+  // resizable again.
+  const wizardActive = (file?.setup?.length ?? 0) > 0 || syncStage === 'done';
+  useEffect(() => {
+    if (!file) return;
+    const st = useWindowStore.getState();
+    st.setResizable(windowId, !wizardActive);
+    const vw = window.innerWidth;
+    const vh = window.innerHeight - TASKBAR_HEIGHT;
+    const [w, h] = wizardActive ? [700, 530] : [880, 640];
+    st.setRect(windowId, {
+      x: Math.max(8, Math.round((vw - w) / 2)),
+      y: Math.max(8, Math.round((vh - h) / 2)),
+      w: Math.min(w, vw - 16),
+      h: Math.min(h, vh - 16),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- file presence only gates first run
+  }, [windowId, wizardActive, file === null]);
+
   const finishWizard = () => {
     // Land in the inbox with the newest message open (the briefing).
     const id = file?.messages[file.messages.length - 1]?.id ?? null;
@@ -339,7 +359,7 @@ export function CaseFile() {
 
   // The wizard runs while the engine says setup is pending (and until the
   // player clicks Finish on the completed sync).
-  if ((file.setup && file.setup.length > 0) || syncStage === 'done') {
+  if (wizardActive) {
     const pages = file.setup ?? [];
     const onSyncStep = page >= pages.length;
     const current = onSyncStep ? null : pages[page];
