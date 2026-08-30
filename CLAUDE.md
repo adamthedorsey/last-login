@@ -183,6 +183,30 @@ If not, don't build it that way.
   session), silent, loses nothing, any key continues. Never let it interrupt
   an overlay (saver, dialogs, DOS, end card) and never make it a punishment.
 
+## Gameplay design pillars (see docs/gameplay-mechanics.md for the full list)
+- The computer IS the world: the player learns things only from what is on
+  (or reaches) this machine. Digital archaeology over puzzle boxes — the
+  player is reconstructing a life, not opening arbitrary locks.
+- Evidence is READ-ONLY; the player workspace is editable. Mutation actions
+  (`saveDocument`, `moveDocument`, `renameItem`, `createFolder`) operate only
+  on player-created documents in the engine — never let a change make story
+  items alterable or deletable.
+- Clue authoring: major discoveries should have MULTIPLE PATHS (treat
+  `npm run validate` two-path warnings as a prompt, not noise); clues connect
+  ACROSS apps (mail ↔ IM ↔ files ↔ photos ↔ web ↔ timestamps/filenames/DOS);
+  CONTRADICTIONS are gameplay — author them deliberately and never resolve
+  them for the player in the text; plant mundane artifacts early that later
+  discoveries RECONTEXTUALIZE.
+- The machine should feel alive: ambient events (new mail, IM sounds, buddy
+  presence, occasional unexplained behavior) interrupt exploration. Anything
+  timed or "live" is SERVER-authored and server-scheduled — never client
+  timers that know story content. Images reach the player naturally (slow web
+  pages, mail attachments), not via galleries or reward screens.
+- Feature roadmap for these pillars (scheduled events, live buddy list, slow
+  web loading, attachments, remote-access DOS sequence, case-handler app,
+  workspace file duplication) is tracked in GitHub issues #2–#8 and indexed
+  in docs/gameplay-mechanics.md.
+
 ## Security model (non-negotiable, see README for detail)
 - Story content lives ONLY in `supabase/functions/_shared/gamecore/` and the
   private `game` DB schema. It may reach the client exclusively through the

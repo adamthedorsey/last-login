@@ -245,6 +245,8 @@ supabase test db      # pgTAP RLS tests (needs local stack)
 
 Full design docs (heavy spoilers): `story/truth-timeline.md`,
 `story/who-knows-what.md`, and the generated `docs/clue-graph.md`.
+Gameplay mechanics and design pillars (with the feature roadmap):
+`docs/gameplay-mechanics.md`.
 
 ## Known limitations
 
@@ -273,6 +275,8 @@ Full design docs (heavy spoilers): `story/truth-timeline.md`,
    dev adapter, plus `npm run verify` and `supabase test db` in CI.
 4. **Scheduled/triggered events** — a GameClock event table ("an email arrives
    after discovery X", "a buddy signs on"), which the engine already has room for
-   (`events`, `contentEpoch` refetching, toasts).
+   (`events`, `contentEpoch` refetching, toasts). Tracked as issue #2; the
+   mechanics it unlocks (live buddy list, remote-access sequence, and more)
+   are indexed in `docs/gameplay-mechanics.md`.
 5. **Authoring ergonomics** — content validation (zod schema + referential checks
    for ids/requirements at `gen:seed` time) so writers can't ship a broken chain.
