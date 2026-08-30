@@ -323,6 +323,27 @@ export const SEASON1: SeasonContent = {
   // =========================================================================
   handler: {
     title: 'CASE 97-0244 — TAYLOR, CASEY A. — MISSING',
+    // The Case Summary page: official background ONLY — facts the file
+    // already gives the player. Never conclusions, never clue-tracking.
+    summary: [
+      'CASE 97-0244',
+      '',
+      'SUBJECT:   TAYLOR, CASEY ANN',
+      'AGE:       16',
+      'STATUS:    MISSING',
+      '',
+      'Last confirmed contact: Friday, October 10, 1997,',
+      'evening, at the Taylor residence.',
+      '',
+      'Residence: Humble, West Virginia.',
+      '',
+      'Subject\'s personal computer was recovered from the',
+      'residence and is preserved as evidence. The county',
+      'has authorized a review of its contents.',
+      '',
+      'Reporting contact: T. Mercer, Sheriff\'s Office.',
+      'All findings stay inside this software.',
+    ],
     // First-launch setup wizard (see Case Files app). Institutional 1997
     // setup-speak; the ground rules that used to live in a READ FIRST memo.
     setup: [

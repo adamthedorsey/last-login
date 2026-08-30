@@ -319,6 +319,9 @@ export interface HandlerSetupPage {
 export interface CaseHandler {
   /** The header the Case Files app shows (e.g. the case number). */
   title: string;
+  /** The Case Summary page: official background only — facts the case
+   * has already given the player, never conclusions. Story data. */
+  summary?: string[];
   /**
    * First-launch setup wizard pages, shown once (engine gates on the
    * case-setup-done flag). The client renders them verbatim between its
@@ -505,6 +508,9 @@ export type GameAction =
   | { type: 'createFolder'; name: string }
   | { type: 'moveDocument'; docId: string; folderId?: string }
   | { type: 'renameItem'; itemId: string; name: string }
+  /** Delete one of the player's OWN documents (notes/copies). Story items
+   * are evidence and can never be deleted. */
+  | { type: 'deleteDocument'; docId: string }
   | { type: 'resetSeason' };
 
 // ---------------------------------------------------------------------------
@@ -620,6 +626,10 @@ export interface CaseFileView {
   }>;
   /** Present (with the wizard pages) until first-run setup completes. */
   setup?: HandlerSetupPage[];
+  /** The same pages, always served — the Help menu's Getting Started. */
+  guide?: HandlerSetupPage[];
+  /** The Case Summary lines (official background, server-authored). */
+  summary?: string[];
 }
 
 export type ActionResult = (

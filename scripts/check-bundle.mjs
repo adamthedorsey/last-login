@@ -36,6 +36,7 @@ const FORBIDDEN = [
   'out of eyes and out of weeks', // briefing transcript
   'Field Evidence Software', // setup wizard page (handler content)
   'START HERE', // the desktop README's opening line
+  'TAYLOR, CASEY ANN', // the Case Summary page (handler content)
   'First Bank of Humble', // phone-line content (server-authored, canary)
   'HZLINK', // the remote-access takeover script (served only once triggered)
   'the-watcher', // its discovery id

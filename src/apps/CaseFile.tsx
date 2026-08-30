@@ -11,7 +11,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame, MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
+import { Button, Frame, MenuList, MenuListItem, Separator, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import type { CaseFileView } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { TASKBAR_HEIGHT, useWindowStore } from '../os/windowStore';
@@ -20,6 +20,7 @@ import { Icon } from '../os/icons';
 import wizardArt from '../assets/images/humble-county-wizard.jpg';
 import sealArt from '../assets/images/sheriff-seal.png';
 import { OfflineAlert } from '../os/OfflineAlert';
+import { CloseGlyph, TitleBarButton } from '../os/glyphs';
 import { DOC_TEXT } from '../theme';
 
 const SEEN_KEY = 'lastlogin.casefile.seen';
@@ -110,6 +111,44 @@ const RibbonSep = styled.div`
   margin: 3px 4px;
   border-left: 1px solid #808080;
   border-right: 1px solid #fff;
+`;
+
+/** The section tabs, folder-tab style. */
+const NavRow = styled.div`
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-top: 4px;
+  padding: 0 2px;
+`;
+
+const NavTab = styled.button<{ $active: boolean }>`
+  border: 2px solid;
+  border-color: #fff #404040 ${(p) => (p.$active ? '#d4d0c8' : '#404040')} #fff;
+  border-bottom-width: ${(p) => (p.$active ? 0 : 2)}px;
+  background: #d4d0c8;
+  padding: ${(p) => (p.$active ? '4px 14px 6px' : '3px 12px')};
+  font-size: 13px;
+  font-family: inherit;
+  margin-top: ${(p) => (p.$active ? 0 : 2)}px;
+  position: relative;
+  top: 2px;
+`;
+
+/** The plain-text note editor — Arial like every reading surface. */
+const NotePaper = styled.textarea`
+  flex: 1;
+  min-height: 0;
+  resize: none;
+  border: 2px inset #888;
+  background: #fff;
+  padding: 8px 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  user-select: text;
+  outline: none;
 `;
 
 const AboutOverlay = styled.div`
@@ -418,6 +457,124 @@ export function CaseFile({ windowId }: { windowId: string }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [send, windowId]);
 
+  // --- The four sections ---
+  type Section = 'messages' | 'notes' | 'evidence' | 'summary';
+  const [section, setSection] = useState<Section>('messages');
+
+  // --- The player's own documents (notes + evidence copies) ---
+  const [docs, setDocs] = useState<import('@gamecore/types.ts').ItemSummary[]>([]);
+  const [docId, setDocId] = useState<string | null>(null);
+  const [docText, setDocText] = useState('');
+  const [docName, setDocName] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const saveTimer = useRef(0);
+  const dirtyRef = useRef(false);
+
+  const isCopy = (name: string) => name.startsWith('Copy of ');
+
+  const fetchDocs = async () => {
+    const res = await send({ type: 'getDesktop' });
+    if (res.type === 'desktop') {
+      setDocs(res.items.filter((i) => i.editable && i.kind === 'document'));
+    }
+  };
+  useEffect(() => {
+    void fetchDocs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentEpoch]);
+
+  const flushSave = async () => {
+    window.clearTimeout(saveTimer.current);
+    if (!dirtyRef.current || !docId) return;
+    dirtyRef.current = false;
+    await send({ type: 'saveDocument', docId, name: docName, text: docText });
+    setNotice('Saved.');
+  };
+
+  const scheduleSave = (id: string, name: string, text: string) => {
+    dirtyRef.current = true;
+    window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => {
+      dirtyRef.current = false;
+      void send({ type: 'saveDocument', docId: id, name, text }).then(() => setNotice('Saved.'));
+    }, 900);
+  };
+
+  const openDoc = async (id: string) => {
+    await flushSave();
+    const res = await send({ type: 'open', itemId: id });
+    if (res.type === 'open' && res.ok && res.item) {
+      setDocId(res.item.id);
+      setDocName(res.item.name);
+      setDocText(res.item.body?.text ?? '');
+    }
+  };
+
+  const createNote = async () => {
+    setMenuOpen(null);
+    await flushSave();
+    const taken = new Set(docs.map((d) => d.name));
+    let name = 'New Note.txt';
+    for (let n = 2; taken.has(name) && n < 99; n++) name = `New Note (${n}).txt`;
+    const res = await send({ type: 'saveDocument', name, text: '' });
+    if (res.type === 'document' && res.ok && res.item) {
+      setSection('notes');
+      setDocId(res.item.id);
+      setDocName(res.item.name);
+      setDocText('');
+      await fetchDocs();
+    } else {
+      setNotice('The note could not be created.');
+    }
+  };
+
+  const commitRename = async (name: string) => {
+    if (!docId || !name.trim()) return;
+    const res = await send({ type: 'renameItem', itemId: docId, name: name.trim() });
+    if (res.type === 'document' && res.ok && res.item) {
+      setDocName(res.item.name);
+      await fetchDocs();
+    }
+  };
+
+  const deleteDoc = async () => {
+    setConfirmDelete(false);
+    if (!docId) return;
+    window.clearTimeout(saveTimer.current);
+    dirtyRef.current = false;
+    await send({ type: 'deleteDocument', docId });
+    setDocId(null);
+    setDocName('');
+    setDocText('');
+    await fetchDocs();
+    setNotice('Deleted.');
+  };
+
+  const editClipboard = (op: 'cut' | 'copy' | 'paste') => {
+    setMenuOpen(null);
+    const el = document.activeElement;
+    if (!(el instanceof HTMLTextAreaElement)) return;
+    if (op === 'paste') {
+      void navigator.clipboard.readText().then((clip) => {
+        const at = el.selectionStart;
+        const next = docText.slice(0, at) + clip + docText.slice(el.selectionEnd);
+        setDocText(next);
+        if (docId) scheduleSave(docId, docName, next);
+      });
+      return;
+    }
+    document.execCommand(op);
+    if (op === 'cut' && docId) {
+      // execCommand mutated the textarea; sync state on next tick.
+      window.setTimeout(() => {
+        setDocText(el.value);
+        scheduleSave(docId, docName, el.value);
+      }, 0);
+    }
+  };
+
+  const [guideOpen, setGuideOpen] = useState(false);
+
   const refetch = async () => {
     const res = await send({ type: 'getCaseFile' });
     if (res.type === 'casefile') setFile(res.view);
@@ -451,7 +608,7 @@ export function CaseFile({ windowId }: { windowId: string }) {
       .join('\n');
     const res = await send({
       type: 'saveDocument',
-      name: `${(m.subject ?? 'case message').replace(/[^\w -]/g, '').trim() || 'case message'}.txt`,
+      name: `Copy of ${(m.subject ?? 'case message').replace(/[^\w -]/g, '').trim() || 'case message'}.txt`,
       text: `${header}\n\n${m.text}`,
     });
     if (res.type === 'document' && res.ok && res.item) {
@@ -476,11 +633,6 @@ export function CaseFile({ windowId }: { windowId: string }) {
   const selectAll = () => {
     setMenuOpen(null);
     if (readingRef.current) window.getSelection()?.selectAllChildren(readingRef.current);
-  };
-
-  const newNote = () => {
-    setMenuOpen(null);
-    useWindowStore.getState().open('notepad');
   };
 
   // Win95 wizards were fixed dialogs — while setup runs, the window locks
@@ -627,6 +779,71 @@ export function CaseFile({ windowId }: { windowId: string }) {
   }
 
   const open = file.messages.find((m) => m.id === openId) ?? null;
+  const sectionDocs = docs.filter((d) => (section === 'evidence') === isCopy(d.name));
+  const online = gameView?.online === true;
+
+  const switchSection = (to: 'messages' | 'notes' | 'evidence' | 'summary') => {
+    setMenuOpen(null);
+    void flushSave();
+    setSection(to);
+  };
+
+  const docsPane = (
+    <Layout>
+      <MemoList>
+        {sectionDocs.map((d) => (
+          <MemoRow
+            key={d.id}
+            $active={d.id === docId}
+            $unread={false}
+            onClick={() => void openDoc(d.id)}
+          >
+            <span>{d.name}</span>
+            <small>{d.meta?.modifiedAt ?? ''}</small>
+          </MemoRow>
+        ))}
+        {sectionDocs.length === 0 && (
+          <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
+            {section === 'notes'
+              ? '(no notes yet — use New Note)'
+              : '(nothing copied yet — use Copy to Desktop on evidence, or Save Copy on a message)'}
+          </div>
+        )}
+      </MemoList>
+      {docId && sectionDocs.some((d) => d.id === docId) ? (
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: 4 }}>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <TextInput
+              value={docName}
+              onChange={(e) => setDocName(e.target.value)}
+              onBlur={() => void commitRename(docName)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void commitRename(docName);
+              }}
+              style={{ flex: 1 }}
+            />
+            <Button onClick={() => setConfirmDelete(true)} style={{ width: 70 }}>
+              Delete
+            </Button>
+          </div>
+          <NotePaper
+            value={docText}
+            spellCheck={false}
+            onChange={(e) => {
+              setDocText(e.target.value);
+              if (docId) scheduleSave(docId, docName, e.target.value);
+            }}
+          />
+        </div>
+      ) : (
+        <Reading>
+          <span style={{ color: '#777' }}>
+            {section === 'notes' ? 'Select a note, or use New Note.' : 'Select a copy.'}
+          </span>
+        </Reading>
+      )}
+    </Layout>
+  );
 
   return (
     <>
@@ -644,7 +861,17 @@ export function CaseFile({ windowId }: { windowId: string }) {
         ))}
         {menuOpen === 'file' && (
           <Drop $left={0}>
-            <MenuListItem size="sm" disabled={!open} onClick={open ? () => void saveTranscript() : undefined}>
+            <MenuListItem size="sm" onClick={() => void createNote()}>
+              New Note
+            </MenuListItem>
+            <MenuListItem
+              size="sm"
+              disabled={!docId}
+              onClick={docId ? () => { setMenuOpen(null); void flushSave(); } : undefined}
+            >
+              Save
+            </MenuListItem>
+            <MenuListItem size="sm" disabled={!open || section !== 'messages'} onClick={open && section === 'messages' ? () => void saveTranscript() : undefined}>
               Save Transcript to Desktop
             </MenuListItem>
             <MenuListItem size="sm" disabled>Print...</MenuListItem>
@@ -653,25 +880,45 @@ export function CaseFile({ windowId }: { windowId: string }) {
               size="sm"
               onClick={() => {
                 setMenuOpen(null);
+                void flushSave();
                 useWindowStore.getState().close(windowId);
               }}
             >
-              Exit
+              Close
             </MenuListItem>
           </Drop>
         )}
         {menuOpen === 'edit' && (
           <Drop $left={38}>
-            <MenuListItem size="sm" disabled={!open} onClick={open ? copyText : undefined}>
+            <MenuListItem size="sm" disabled={section === 'messages' || section === 'summary' || !docId} onClick={() => editClipboard('cut')}>
+              Cut
+            </MenuListItem>
+            <MenuListItem
+              size="sm"
+              disabled={section === 'summary'}
+              onClick={section === 'messages' ? copyText : () => editClipboard('copy')}
+            >
               Copy
             </MenuListItem>
-            <MenuListItem size="sm" disabled={!open} onClick={open ? selectAll : undefined}>
+            <MenuListItem size="sm" disabled={section === 'messages' || section === 'summary' || !docId} onClick={() => editClipboard('paste')}>
+              Paste
+            </MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" disabled={section !== 'messages' || !open} onClick={section === 'messages' && open ? selectAll : undefined}>
               Select All
             </MenuListItem>
           </Drop>
         )}
         {menuOpen === 'view' && (
           <Drop $left={78}>
+            <MenuListItem size="sm" onClick={() => switchSection('messages')}>Messages</MenuListItem>
+            <MenuListItem size="sm" onClick={() => switchSection('notes')}>Notes</MenuListItem>
+            <MenuListItem size="sm" onClick={() => switchSection('evidence')}>Evidence Copies</MenuListItem>
+            <MenuListItem size="sm" onClick={() => switchSection('summary')}>Case Summary</MenuListItem>
+            <Separator />
+            <MenuListItem size="sm" onClick={() => void checkServer()}>
+              Check for Updates
+            </MenuListItem>
             <MenuListItem
               size="sm"
               onClick={() => {
@@ -687,6 +934,16 @@ export function CaseFile({ windowId }: { windowId: string }) {
         )}
         {menuOpen === 'help' && (
           <Drop $left={122}>
+            <MenuListItem
+              size="sm"
+              disabled={(file.guide?.length ?? 0) === 0}
+              onClick={() => {
+                setMenuOpen(null);
+                setGuideOpen(true);
+              }}
+            >
+              Getting Started
+            </MenuListItem>
             <MenuListItem
               size="sm"
               onClick={() => {
@@ -706,9 +963,9 @@ export function CaseFile({ windowId }: { windowId: string }) {
           Check Server
         </RibbonButton>
         <RibbonButton
-          disabled={!open?.audioSrc}
+          disabled={section !== 'messages' || !open?.audioSrc}
           onClick={
-            open?.audioSrc
+            section === 'messages' && open?.audioSrc
               ? () => (playState === 'playing' ? stopAudio() : playAudio(open.audioSrc!))
               : undefined
           }
@@ -716,12 +973,15 @@ export function CaseFile({ windowId }: { windowId: string }) {
           <Icon name="sounds" size={22} />
           {playState === 'playing' ? 'Stop' : 'Play'}
         </RibbonButton>
-        <RibbonButton disabled={!open} onClick={open ? () => void saveTranscript() : undefined}>
+        <RibbonButton
+          disabled={section !== 'messages' || !open}
+          onClick={section === 'messages' && open ? () => void saveTranscript() : undefined}
+        >
           <Icon name="doc" size={22} />
           Save Copy
         </RibbonButton>
         <RibbonSep />
-        <RibbonButton onClick={newNote}>
+        <RibbonButton onClick={() => void createNote()}>
           <Icon name="notepad" size={22} />
           New Note
         </RibbonButton>
@@ -732,85 +992,116 @@ export function CaseFile({ windowId }: { windowId: string }) {
       </Ribbon>
 
       <TitleBand>{file.title || '...'}</TitleBand>
-      <Layout>
-        <MemoList>
-          {file.messages
-            .slice()
-            .reverse()
-            .map((m) => (
-              <MemoRow
-                key={m.id}
-                $active={m.id === openId}
-                $unread={!seen.includes(m.id)}
-                onClick={() => {
-                  setOpenId(m.id);
-                  markSeen(m.id);
-                }}
-              >
-                <span>{m.subject ?? '(no subject)'}</span>
-                <small>{m.date ?? ''}</small>
-              </MemoRow>
-            ))}
-          {file.messages.length === 0 && (
-            <div style={{ padding: 8, color: '#777', fontSize: 13 }}>(no messages on file)</div>
-          )}
-        </MemoList>
-        <Reading ref={readingRef}>
-          {open ? (
-            <>
-              <MemoHead>
-                {open.from ? `FROM: ${open.from}\n` : ''}
-                {open.date ? `DATE: ${open.date}\n` : ''}
-                RE: {open.subject ?? '(no subject)'}
-              </MemoHead>
-              {open.audioSrc && (
-                <Frame
-                  variant="well"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '6px 10px',
-                    marginBottom: 10,
-                    fontSize: 13,
-                    fontFamily: 'ms_sans_serif',
+
+      <NavRow>
+        {(
+          [
+            ['messages', 'Messages'],
+            ['notes', 'Notes'],
+            ['evidence', 'Evidence Copies'],
+            ['summary', 'Case Summary'],
+          ] as const
+        ).map(([id, label]) => (
+          <NavTab key={id} $active={section === id} onClick={() => switchSection(id)}>
+            {label}
+          </NavTab>
+        ))}
+      </NavRow>
+
+      {section === 'messages' && (
+        <Layout>
+          <MemoList>
+            {file.messages
+              .slice()
+              .reverse()
+              .map((m) => (
+                <MemoRow
+                  key={m.id}
+                  $active={m.id === openId}
+                  $unread={!seen.includes(m.id)}
+                  onClick={() => {
+                    setOpenId(m.id);
+                    markSeen(m.id);
                   }}
                 >
-                  <Icon name="sounds" size={20} />
-                  {playState === 'playing' ? (
-                    <Button size="sm" onClick={stopAudio} style={{ width: 64 }}>
-                      Stop
-                    </Button>
-                  ) : (
-                    <Button size="sm" onClick={() => playAudio(open.audioSrc!)} style={{ width: 64 }}>
-                      Play
-                    </Button>
-                  )}
-                  <span>
-                    Voice recording
-                    {playState === 'broken' && ' — could not be played. Transcript below.'}
-                    {playState === 'muted' && ' — sound is muted (see the taskbar).'}
-                  </span>
-                </Frame>
-              )}
-              {unwrapProse(open.text)}
-            </>
-          ) : (
-            <span style={{ color: '#777' }}>Select a message.</span>
-          )}
+                  <span>{m.subject ?? '(no subject)'}</span>
+                  <small>{m.date ?? ''}</small>
+                </MemoRow>
+              ))}
+            {file.messages.length === 0 && (
+              <div style={{ padding: 8, color: '#777', fontSize: 13 }}>(no messages on file)</div>
+            )}
+          </MemoList>
+          <Reading ref={readingRef}>
+            {open ? (
+              <>
+                <MemoHead>
+                  {open.from ? `FROM: ${open.from}\n` : ''}
+                  {open.date ? `DATE: ${open.date}\n` : ''}
+                  RE: {open.subject ?? '(no subject)'}
+                </MemoHead>
+                {open.audioSrc && (
+                  <Frame
+                    variant="well"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '6px 10px',
+                      marginBottom: 10,
+                      fontSize: 13,
+                      fontFamily: 'ms_sans_serif',
+                    }}
+                  >
+                    <Icon name="sounds" size={20} />
+                    {playState === 'playing' ? (
+                      <Button size="sm" onClick={stopAudio} style={{ width: 64 }}>
+                        Stop
+                      </Button>
+                    ) : (
+                      <Button size="sm" onClick={() => playAudio(open.audioSrc!)} style={{ width: 64 }}>
+                        Play
+                      </Button>
+                    )}
+                    <span>
+                      Voice recording
+                      {playState === 'broken' && ' — could not be played. Transcript below.'}
+                      {playState === 'muted' && ' — sound is muted (see the taskbar).'}
+                    </span>
+                  </Frame>
+                )}
+                {unwrapProse(open.text)}
+              </>
+            ) : (
+              <span style={{ color: '#777' }}>Select a message.</span>
+            )}
+          </Reading>
+        </Layout>
+      )}
+
+      {(section === 'notes' || section === 'evidence') && docsPane}
+
+      {section === 'summary' && (
+        <Reading style={{ flex: 1, minHeight: 0, marginTop: 4 }}>
+          {(file.summary ?? ['(no summary on file)']).join('\n')}
         </Reading>
-      </Layout>
+      )}
+
       <Frame
         variant="well"
-        style={{
-          marginTop: 4,
-          padding: '2px 8px',
-          fontSize: 12,
-          flexShrink: 0,
-          position: 'relative',
-        }}
+        style={{ marginTop: 4, padding: '2px 8px', fontSize: 12, flexShrink: 0, display: 'flex', position: 'relative' }}
       >
-        {notice ?? `${file.messages.length} message(s) on file`}
+        <span style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+          {notice ??
+            (section === 'messages'
+              ? `${file.messages.length} message(s) on file`
+              : section === 'summary'
+                ? file.title
+                : `${sectionDocs.length} item(s)`)}
+        </span>
+        <span style={{ flexShrink: 0, padding: '0 14px 0 12px', borderLeft: '1px solid #888' }}>
+          Case Server: {online ? 'Connected' : 'Offline'}
+        </span>
         <StatusGrip />
       </Frame>
 
@@ -830,6 +1121,60 @@ export function CaseFile({ windowId }: { windowId: string }) {
               <Button onClick={() => setAboutOpen(false)} style={{ width: 90 }}>
                 OK
               </Button>
+            </WindowContent>
+          </Window>
+        </AboutOverlay>
+      )}
+
+      {guideOpen && (
+        <AboutOverlay data-no-deskmenu onPointerDown={(e) => e.stopPropagation()}>
+          <Window shadow style={{ width: 460 }}>
+            <WindowHeader style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between' }}>
+              <span>Getting Started</span>
+              <TitleBarButton onClick={() => setGuideOpen(false)} aria-label="Close">
+                <CloseGlyph />
+              </TitleBarButton>
+            </WindowHeader>
+            <WindowContent style={{ fontSize: 13 }}>
+              <div style={{ maxHeight: 360, overflow: 'auto', paddingRight: 6 }}>
+                {(file.guide ?? []).map((g) => (
+                  <div key={g.title} style={{ marginBottom: 12 }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: 4 }}>{g.title}</div>
+                    <div style={{ fontFamily: 'Arial, sans-serif', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                      {unwrapProse(g.lines.join('\n'))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                <Button onClick={() => setGuideOpen(false)} style={{ width: 90 }}>
+                  OK
+                </Button>
+              </div>
+            </WindowContent>
+          </Window>
+        </AboutOverlay>
+      )}
+
+      {confirmDelete && (
+        <AboutOverlay data-no-deskmenu onPointerDown={(e) => e.stopPropagation()}>
+          <Window shadow style={{ width: 340 }}>
+            <WindowHeader style={{ fontSize: 13 }}>Confirm Delete</WindowHeader>
+            <WindowContent style={{ fontSize: 13 }}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <Icon name="warning" size={32} />
+                <p style={{ margin: 0 }}>
+                  Delete "{docName}"? This file is yours — the deletion is permanent.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
+                <Button onClick={() => void deleteDoc()} style={{ width: 80 }}>
+                  Yes
+                </Button>
+                <Button onClick={() => setConfirmDelete(false)} style={{ width: 80 }}>
+                  No
+                </Button>
+              </div>
             </WindowContent>
           </Window>
         </AboutOverlay>

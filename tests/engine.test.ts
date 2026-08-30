@@ -956,3 +956,26 @@ describe('case files setup', () => {
     expect(denied.result).toMatchObject({ type: 'document', ok: false });
   });
 });
+
+describe('case files workspace', () => {
+  it('deletes only the player own documents, never evidence', () => {
+    let s = offlineState();
+    s = run(s, { type: 'saveDocument', name: 'scratch.txt', text: 'x' }).state;
+    const docId = s.documents![0].id;
+    const okRes = run(s, { type: 'deleteDocument', docId });
+    expect(okRes.result).toMatchObject({ type: 'document', ok: true });
+    expect(okRes.state.documents).toHaveLength(0);
+
+    const denied = run(okRes.state, { type: 'deleteDocument', docId: 'file.ledger-copy' });
+    expect(denied.result).toMatchObject({ type: 'document', ok: false });
+  });
+
+  it('serves the case summary and the getting-started guide', () => {
+    const s = offlineState();
+    const res = run(s, { type: 'getCaseFile' }).result;
+    expect(res.type).toBe('casefile');
+    if (res.type !== 'casefile') return;
+    expect(res.view.summary?.join(' ')).toContain('MISSING');
+    expect((res.view.guide?.length ?? 0)).toBeGreaterThan(0);
+  });
+});

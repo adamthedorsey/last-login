@@ -232,6 +232,8 @@ function caseFileView(content: SeasonContent, state: PlayerState): CaseFileView 
       })),
   };
   if (handler.setup && !state.flags[CASE_SETUP_FLAG]) view.setup = handler.setup;
+  if (handler.setup) view.guide = handler.setup;
+  if (handler.summary) view.summary = handler.summary;
   return view;
 }
 
@@ -1140,6 +1142,18 @@ export function handleAction(
         newDiscoveries: newDiscoveries.length ? newDiscoveries : undefined,
         ended: ended || undefined,
       });
+    }
+
+    case 'deleteDocument': {
+      const docs = state.documents ?? [];
+      const doc = docs.find((d) => d.id === action.docId);
+      if (!doc) {
+        // Story items are evidence — deletion doesn't exist for them.
+        return done({ type: 'document', ok: false, error: 'not_found' });
+      }
+      state.documents = docs.filter((d) => d.id !== action.docId);
+      events.push({ type: 'doc_deleted', payload: { docId: action.docId } });
+      return done({ type: 'document', ok: true });
     }
 
     case 'getCaseFile': {

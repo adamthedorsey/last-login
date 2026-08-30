@@ -250,7 +250,11 @@ If not, don't build it that way.
   `audioSrc` voice recording (owner-approved sampled exception, reserved
   for important moments — routine handler traffic is text; the message
   lines double as the transcript and playback must degrade to them
-  gracefully).
+  gracefully). The app's four sections: Messages (handler), Notes and
+  Evidence Copies (both are the player's own documents — copies carry the
+  "Copy of " name prefix; deleteDocument works ONLY on player documents),
+  and Case Summary — handler content, OFFICIAL BACKGROUND ONLY: facts the
+  case already gave the player, never conclusions, never clue-tracking.
 - Workspace copies (`copyItem`) snapshot only the REDACTED text the player
   already received, from accessible unlocked items; copying an unread
   original applies its open effects. Copies are player documents; the
