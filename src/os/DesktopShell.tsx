@@ -239,7 +239,11 @@ export function DesktopShell() {
         {toasts.map((t) => (
           <ToastCard key={t.id} onClick={() => dismissToast(t.id)}>
             <WindowHeader style={{ fontSize: 13 }}>{t.title}</WindowHeader>
-            <WindowContent style={{ padding: 8 }}>{t.description}</WindowContent>
+            <WindowContent
+              style={{ padding: 8, fontFamily: 'Arial, Helvetica, sans-serif', lineHeight: 1.45 }}
+            >
+              {t.description}
+            </WindowContent>
           </ToastCard>
         ))}
       </ToastStack>
@@ -248,7 +252,9 @@ export function DesktopShell() {
         <CenterOverlay>
           <Window style={{ width: 430 }}>
             <WindowHeader>End of Season 1 demo</WindowHeader>
-            <WindowContent>
+            <WindowContent
+              style={{ fontFamily: 'Arial, Helvetica, sans-serif', fontSize: 14, lineHeight: 1.5 }}
+            >
               {/* Story text comes from the server-earned discovery — never hardcoded here. */}
               {view && view.discoveries.length > 0 && (
                 <>

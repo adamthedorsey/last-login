@@ -64,23 +64,23 @@ If not, don't build it that way.
   multiples of 16 only). Short, large, atmospheric text only.
 - LONG-FORM machine text is deliberately easier on modern eyes (creative
   license, owner-approved): Notepad documents and recovered logs use
-  `DOC_TEXT` from `src/theme.tsx` (Courier New 15px/1.5 — monospace is
+  `DOC_TEXT` from `src/theme.tsx` (Courier New 15px/1.55 — monospace is
   load-bearing: story documents contain column-aligned ASCII like the
-  ledger). Email bodies read in Arial 14px/1.6 — what Outlook Express
-  actually rendered mail in; the bitmap chrome font scales badly in long
-  paragraphs (never put column-aligned evidence in mail bodies). The Case
-  Files wizard body is Arial too (same call; its Times serif titles are
-  authentic Win95 Setup style). Do not put
-  Fixedsys or scaled ms_sans_serif back on reading surfaces.
+  ledger). Every OTHER reading surface is Arial: email bodies (14/1.6),
+  chat transcripts, the Case Files wizard body (its Times serif titles are
+  authentic Win95 Setup style), phone-call responses, discovery toasts,
+  the end card. Rule of thumb: chrome text (buttons, menus, labels, lists,
+  titles, status bars) stays bitmap W95F; anything a player READS at
+  length is Arial — or Courier when columns matter. Do not put Fixedsys
+  or scaled ms_sans_serif back on reading surfaces.
 - In-game web pages: Times New Roman / Arial / Courier New via the `PageBlock`
   style system — that's what the 1997 web actually used.
-- Font smoothing (owner calls): EVERYTHING renders aliased — body-level
-  `-webkit-font-smoothing: none` — with exactly ONE exception: `DOC_TEXT`
-  (Notepad documents / recovered logs) opts back into antialiasing, because
-  aliased Courier New is too spindly to read in long form. Chrome, mail
-  (Arial holds up aliased), web pages, and terminal surfaces all stay
-  aliased. Never add more smoothing exceptions without an owner call, and
-  never put scaled bitmap fonts on long-form reading surfaces.
+- Font smoothing (owner call): EVERYTHING renders aliased — body-level
+  `-webkit-font-smoothing: none` — with NO exceptions, the way a real 1997
+  machine drew text. Readability comes from face, size, and line-height
+  (vector faces alias cleanly), never from smoothing. Never add a
+  smoothing carve-out, and never put scaled bitmap fonts on long-form
+  reading surfaces.
 - Reading surfaces get comfortable line-height (1.45–1.55) and ≥14px sizes;
   chrome stays compact at 13–14px.
 - No webfonts beyond the three above. No variable fonts, no Inter/Roboto/system

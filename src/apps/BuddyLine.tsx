@@ -61,12 +61,15 @@ const LogInfo = styled(Frame).attrs({ variant: 'well' })`
   gap: 8px;
 `;
 
+/** Reading surface: Arial, like mail bodies — AIM-era clients rendered
+ * conversations in a proportional face, and the dialogue is long copy. */
 const Messages = styled(Frame).attrs({ variant: 'field' })`
   flex: 1;
   min-height: 0;
   overflow: auto;
   background: #fff;
   padding: 6px 8px;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 14px;
   user-select: text;
   line-height: 1.55;

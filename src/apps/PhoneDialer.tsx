@@ -19,7 +19,8 @@ const Pad = styled.div`
 const StatusWell = styled(Frame).attrs({ variant: 'well' })`
   margin-top: 8px;
   padding: 6px 8px;
-  font-size: 13px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
   line-height: 1.5;
   min-height: 76px;
   white-space: pre-wrap;
