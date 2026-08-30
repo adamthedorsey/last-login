@@ -58,13 +58,13 @@ export function RecycleBin() {
 
   // Deleted files can't be restored — but nothing stops you photographing
   // the wreck: a snapshot copy lands with your own files on the desktop.
-  const copyToDesktop = async (item: ItemSummary) => {
+  const saveToCaseFiles = async (item: ItemSummary) => {
     const res = await send({ type: 'copyItem', itemId: item.id });
     if (res.type === 'document' && res.ok && res.item) {
-      setNotice(`Copied to Desktop as "${res.item.name}"`);
+      setNotice(`Saved to Case Files as "${res.item.name}"`);
     } else {
       playError();
-      setNotice('This item cannot be copied.');
+      setNotice('This item cannot be saved to Case Files.');
     }
   };
 
@@ -146,12 +146,12 @@ export function RecycleBin() {
                   ? () => {
                       const it = ctxMenu.item;
                       setCtxMenu(null);
-                      void copyToDesktop(it);
+                      void saveToCaseFiles(it);
                     }
                   : undefined
               }
             >
-              Copy to Desktop
+              Save to Case Files
             </MenuListItem>
             <MenuListItem size="sm" disabled>Delete</MenuListItem>
             <Separator />

@@ -213,6 +213,10 @@ const HINT_REVEALED_FLAG = 'login-hint-revealed';
  * content (e.g. the opening briefing) gates on it. */
 export const CASE_SETUP_FLAG = 'case-setup-done';
 
+/** The pseudo-folder where Case Files keeps the player's notes and saved
+ * evidence copies — "Save to Case Files" lands here, off the desktop. */
+export const CASE_DOCS_FOLDER = 'casefile';
+
 /** The handler's memos, redacted to what the player has earned — plus the
  * setup wizard pages until first-run setup completes. */
 function caseFileView(content: SeasonContent, state: PlayerState): CaseFileView {
@@ -525,6 +529,33 @@ function snapshotText(item: ContentItem): string | undefined {
   if (b?.messages) {
     return [`[saved log — ${item.name}]`, '', ...b.messages.map((x) => `${x.from} (${x.at}): ${x.text}`)].join('\n');
   }
+  if (item.kind === 'photo') {
+    // An image "copy" is a reference card — the picture itself stays put.
+    const m = item.meta ?? {};
+    return [
+      `[Photograph — ${item.name}]`,
+      m.caption ? `Caption: ${m.caption}` : null,
+      m.createdAt ? `Dated: ${m.createdAt}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
+  if (item.kind === 'webpage' && b?.blocks) {
+    // A web page flattens to its readable text, the way 1997 "Save As
+    // Text" did. Layout furniture is dropped.
+    const m = item.meta ?? {};
+    const lines: string[] = [`[Saved page — ${m.siteTitle ?? item.name}]`];
+    if (m.url) lines.push(m.url, '');
+    for (const blk of b.blocks) {
+      if (blk.t === 'h' || blk.t === 'sub') lines.push(blk.text.toUpperCase(), '');
+      else if (blk.t === 'p' || blk.t === 'small' || blk.t === 'marquee' || blk.t === 'blink')
+        lines.push(blk.text, '');
+      else if (blk.t === 'list') lines.push(...blk.items.map((x) => `  - ${x}`), '');
+      else if (blk.t === 'link') lines.push(`  ${blk.text} <${blk.url}>`, '');
+      else if (blk.t === 'img') lines.push(`[image: ${blk.caption}]`, '');
+    }
+    return lines.join('\n').replace(/\n{3,}/g, '\n\n');
+  }
   if (typeof b?.text === 'string') return b.text;
   return undefined;
 }
@@ -746,8 +777,8 @@ export function handleAction(
     }
 
     case 'listChildren': {
-      // Player folders list their own documents.
-      if (playerFolder(state, action.parentId)) {
+      // Player folders (and the Case Files space) list their own documents.
+      if (action.parentId === CASE_DOCS_FOLDER || playerFolder(state, action.parentId)) {
         const items = (state.documents ?? [])
           .filter((d) => d.folderId === action.parentId)
           .map((d, i) => docSummary(d, i));
@@ -966,6 +997,12 @@ export function handleAction(
         createdAt: nowDate,
         modifiedAt: nowDate,
       };
+      if (
+        action.folderId === CASE_DOCS_FOLDER ||
+        (action.folderId && playerFolder(state, action.folderId))
+      ) {
+        doc.folderId = action.folderId;
+      }
       docs.push(doc);
       events.push({ type: 'save_document', payload: { docId: doc.id } });
       return done({ type: 'document', ok: true, item: docSummary(doc, docs.length - 1) });
@@ -1023,6 +1060,8 @@ export function handleAction(
         text: text.slice(0, MAX_DOC_TEXT),
         createdAt: nowDate,
         modifiedAt: nowDate,
+        // Saved evidence lives in Case Files, not on the desktop.
+        folderId: CASE_DOCS_FOLDER,
       };
       docs.push(copy);
       events.push({ type: 'copy_item', payload: { source: item.id, docId: copy.id } });

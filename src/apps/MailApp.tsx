@@ -216,13 +216,13 @@ export function MailApp() {
             void send({ type: 'copyItem', itemId: openMsg.id }).then((res) => {
               setStatus(
                 res.type === 'document' && res.ok && res.item
-                  ? `Copied to Desktop as "${res.item.name}"`
+                  ? `Saved to Case Files as "${res.item.name}"`
                   : 'This message cannot be copied.',
               );
             });
           }}
         >
-          Copy to Desktop
+          Save to Case Files
         </Button>
         <span style={{ fontSize: 12, marginLeft: 'auto', color: '#444' }}>
           casey_t@westwind.net

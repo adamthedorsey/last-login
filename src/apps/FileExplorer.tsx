@@ -402,10 +402,10 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
   };
 
   /** Snapshot an evidence file (or duplicate a player doc) onto the desktop. */
-  const copyToDesktop = async (item: ItemSummary) => {
+  const saveToCaseFiles = async (item: ItemSummary) => {
     const res = await send({ type: 'copyItem', itemId: item.id });
     if (res.type === 'document' && res.ok && res.item) {
-      flashNotice(`Copied to Desktop as "${res.item.name}"`);
+      flashNotice(`Saved to Case Files as "${res.item.name}"`);
     } else {
       playError();
       flashNotice(
@@ -661,12 +661,12 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
                   ? () => {
                       const it = ctxMenu.item;
                       setCtxMenu(null);
-                      void copyToDesktop(it);
+                      void saveToCaseFiles(it);
                     }
                   : undefined
               }
             >
-              Copy to Desktop
+              Save to Case Files
             </MenuListItem>
             <MenuListItem size="sm" disabled>Delete</MenuListItem>
             <Separator />

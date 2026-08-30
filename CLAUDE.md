@@ -256,9 +256,14 @@ If not, don't build it that way.
   and Case Summary — handler content, OFFICIAL BACKGROUND ONLY: facts the
   case already gave the player, never conclusions, never clue-tracking.
 - Workspace copies (`copyItem`) snapshot only the REDACTED text the player
-  already received, from accessible unlocked items; copying an unread
-  original applies its open effects. Copies are player documents; the
-  original evidence stays immutable.
+  already received, from accessible unlocked items (documents, emails,
+  logs, trash, photos as reference cards, web pages flattened to text);
+  copying an unread original applies its open effects. Copies are player
+  documents that live INSIDE Case Files (the `casefile` pseudo-folder),
+  never on the desktop — the "Save to Case Files" right-click, exposed
+  across Explorer, the desktop, the Recycle Bin, Mail, Picture Viewer and
+  NetVoyager, is the fiction's shell extension. The original evidence
+  stays immutable.
 
 ## Gameplay design pillars (see docs/gameplay-mechanics.md for the full list)
 - The computer IS the world: the player learns things only from what is on

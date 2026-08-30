@@ -36,6 +36,7 @@ export function PhotoViewer({ windowId, props }: AppWindowProps) {
   const [siblings, setSiblings] = useState<ItemSummary[]>([]);
   const [index, setIndex] = useState(0);
   const [photo, setPhoto] = useState<ItemContent | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,6 +93,23 @@ export function PhotoViewer({ windowId, props }: AppWindowProps) {
         >
           Next ▶
         </Button>
+        <Button
+          disabled={!photo}
+          onClick={
+            photo
+              ? () =>
+                  void send({ type: 'copyItem', itemId: photo.id }).then((res) => {
+                    setNotice(
+                      res.type === 'document' && res.ok && res.item
+                        ? `Saved to Case Files as "${res.item.name}"`
+                        : 'This picture could not be saved.',
+                    );
+                  })
+              : undefined
+          }
+        >
+          Save to Case Files
+        </Button>
         <span style={{ fontSize: 13 }}>
           {photo?.name}
           {counter}
@@ -105,8 +123,8 @@ export function PhotoViewer({ windowId, props }: AppWindowProps) {
         )}
       </Stage>
       <Caption>
-        {photo?.meta?.caption ?? '(no caption)'}
-        {photo?.meta?.createdAt ? ` — ${photo.meta.createdAt}` : ''}
+        {notice ??
+          `${photo?.meta?.caption ?? '(no caption)'}${photo?.meta?.createdAt ? ` — ${photo.meta.createdAt}` : ''}`}
       </Caption>
     </>
   );

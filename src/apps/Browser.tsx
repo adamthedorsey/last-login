@@ -891,6 +891,20 @@ export function Browser({ windowId, props }: AppWindowProps) {
         { label: 'New Navigator Window', disabled: true },
         { label: 'Open Location...', action: () => locationRef.current?.select() },
         'sep',
+        {
+          label: 'Save Page to Case Files',
+          disabled: viewState.kind !== 'page',
+          action: () => {
+            if (viewState.kind !== 'page') return;
+            void send({ type: 'copyItem', itemId: viewState.page.id }).then((res) => {
+              setStatus(
+                res.type === 'document' && res.ok && res.item
+                  ? `Saved to Case Files as "${res.item.name}"`
+                  : 'This page could not be saved.',
+              );
+            });
+          },
+        },
         { label: 'Print...', disabled: true },
         'sep',
         { label: 'Close', action: () => closeWindow(windowId) },

@@ -979,3 +979,23 @@ describe('case files workspace', () => {
     expect((res.view.guide?.length ?? 0)).toBeGreaterThan(0);
   });
 });
+
+describe('save to case files', () => {
+  it('evidence snapshots land in the Case Files space, not the desktop', () => {
+    let s = offlineState();
+    s = run(s, { type: 'copyItem', itemId: 'file.lists' }).state;
+    const desk = run(s, { type: 'getDesktop' }).result;
+    expect(desk.type === 'desktop' && desk.items.some((i) => i.name.startsWith('Copy of'))).toBe(false);
+    const cf = run(s, { type: 'listChildren', parentId: 'casefile' }).result;
+    expect(cf.type === 'children' && cf.items.some((i) => i.name === 'Copy of lists.txt')).toBe(true);
+  });
+
+  it('notes can be created directly in Case Files', () => {
+    let s = offlineState();
+    s = run(s, { type: 'saveDocument', name: 'leads.txt', text: 'x', folderId: 'casefile' }).state;
+    const cf = run(s, { type: 'listChildren', parentId: 'casefile' }).result;
+    expect(cf.type === 'children' && cf.items.some((i) => i.name === 'leads.txt')).toBe(true);
+    const desk = run(s, { type: 'getDesktop' }).result;
+    expect(desk.type === 'desktop' && desk.items.some((i) => i.name === 'leads.txt')).toBe(false);
+  });
+});

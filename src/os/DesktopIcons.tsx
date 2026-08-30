@@ -6,6 +6,7 @@ import { useGame } from '../game/gameContext';
 import { launchItem } from './launch';
 import { Icon } from './icons';
 import { PropertiesDialog } from './PropertiesDialog';
+import { canCopyItem } from './fileTypes';
 import { RecycleBinProps } from './RecycleBinProps';
 import { TASKBAR_HEIGHT, useWindowStore } from './windowStore';
 
@@ -567,6 +568,21 @@ export function DesktopIcons() {
             <MenuListItem size="sm" disabled>Copy</MenuListItem>
             <MenuListItem size="sm" disabled>Delete</MenuListItem>
             <Separator />
+            <MenuListItem
+              size="sm"
+              disabled={!canCopyItem(itemMenu.item)}
+              onClick={
+                canCopyItem(itemMenu.item)
+                  ? () => {
+                      const it = itemMenu.item;
+                      setItemMenu(null);
+                      void send({ type: 'copyItem', itemId: it.id });
+                    }
+                  : undefined
+              }
+            >
+              Save to Case Files
+            </MenuListItem>
             <MenuListItem
               size="sm"
               disabled={!itemMenu.item.editable}

@@ -501,7 +501,7 @@ export type GameAction =
    * wizard's "connect to case server" step is real: it runs a delivery
    * sweep and unlocks the handler's opening message. */
   | { type: 'caseFileSync' }
-  | { type: 'saveDocument'; docId?: string; name: string; text: string }
+  | { type: 'saveDocument'; docId?: string; name: string; text: string; folderId?: string }
   /** Copy a readable text-bearing item into the player workspace as an
    * editable snapshot ("Copy of ..."), or duplicate a player document. */
   | { type: 'copyItem'; itemId: string }

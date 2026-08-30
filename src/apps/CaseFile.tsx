@@ -473,8 +473,8 @@ export function CaseFile({ windowId }: { windowId: string }) {
   const isCopy = (name: string) => name.startsWith('Copy of ');
 
   const fetchDocs = async () => {
-    const res = await send({ type: 'getDesktop' });
-    if (res.type === 'desktop') {
+    const res = await send({ type: 'listChildren', parentId: 'casefile' });
+    if (res.type === 'children') {
       setDocs(res.items.filter((i) => i.editable && i.kind === 'document'));
     }
   };
@@ -516,7 +516,7 @@ export function CaseFile({ windowId }: { windowId: string }) {
     const taken = new Set(docs.map((d) => d.name));
     let name = 'New Note.txt';
     for (let n = 2; taken.has(name) && n < 99; n++) name = `New Note (${n}).txt`;
-    const res = await send({ type: 'saveDocument', name, text: '' });
+    const res = await send({ type: 'saveDocument', name, text: '', folderId: 'casefile' });
     if (res.type === 'document' && res.ok && res.item) {
       setSection('notes');
       setDocId(res.item.id);
@@ -594,30 +594,6 @@ export function CaseFile({ windowId }: { windowId: string }) {
 
   const openMessage = () => file?.messages.find((m) => m.id === openId) ?? null;
 
-  /** Save the open message into the player's workspace as a desktop file. */
-  const saveTranscript = async () => {
-    setMenuOpen(null);
-    const m = openMessage();
-    if (!m) return;
-    const header = [
-      m.from ? `FROM: ${m.from}` : null,
-      m.date ? `DATE: ${m.date}` : null,
-      `RE: ${m.subject ?? '(no subject)'}`,
-    ]
-      .filter(Boolean)
-      .join('\n');
-    const res = await send({
-      type: 'saveDocument',
-      name: `Copy of ${(m.subject ?? 'case message').replace(/[^\w -]/g, '').trim() || 'case message'}.txt`,
-      text: `${header}\n\n${m.text}`,
-    });
-    if (res.type === 'document' && res.ok && res.item) {
-      setNotice(`Saved to Desktop as "${res.item.name}"`);
-    } else {
-      setNotice('The transcript could not be saved.');
-    }
-  };
-
   const copyText = () => {
     setMenuOpen(null);
     const m = openMessage();
@@ -628,11 +604,6 @@ export function CaseFile({ windowId }: { windowId: string }) {
     } catch {
       setNotice('Copy failed.');
     }
-  };
-
-  const selectAll = () => {
-    setMenuOpen(null);
-    if (readingRef.current) window.getSelection()?.selectAllChildren(readingRef.current);
   };
 
   // Win95 wizards were fixed dialogs — while setup runs, the window locks
@@ -806,7 +777,7 @@ export function CaseFile({ windowId }: { windowId: string }) {
           <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
             {section === 'notes'
               ? '(no notes yet — use New Note)'
-              : '(nothing copied yet — use Copy to Desktop on evidence, or Save Copy on a message)'}
+              : '(nothing saved yet — right-click any file on the computer and choose Save to Case Files)'}
           </div>
         )}
       </MemoList>
@@ -871,10 +842,6 @@ export function CaseFile({ windowId }: { windowId: string }) {
             >
               Save
             </MenuListItem>
-            <MenuListItem size="sm" disabled={!open || section !== 'messages'} onClick={open && section === 'messages' ? () => void saveTranscript() : undefined}>
-              Save Transcript to Desktop
-            </MenuListItem>
-            <MenuListItem size="sm" disabled>Print...</MenuListItem>
             <Separator />
             <MenuListItem
               size="sm"
@@ -902,10 +869,6 @@ export function CaseFile({ windowId }: { windowId: string }) {
             </MenuListItem>
             <MenuListItem size="sm" disabled={section === 'messages' || section === 'summary' || !docId} onClick={() => editClipboard('paste')}>
               Paste
-            </MenuListItem>
-            <Separator />
-            <MenuListItem size="sm" disabled={section !== 'messages' || !open} onClick={section === 'messages' && open ? selectAll : undefined}>
-              Select All
             </MenuListItem>
           </Drop>
         )}
@@ -961,24 +924,6 @@ export function CaseFile({ windowId }: { windowId: string }) {
         <RibbonButton onClick={() => void checkServer()}>
           <Icon name="mail-app" size={22} />
           Check Server
-        </RibbonButton>
-        <RibbonButton
-          disabled={section !== 'messages' || !open?.audioSrc}
-          onClick={
-            section === 'messages' && open?.audioSrc
-              ? () => (playState === 'playing' ? stopAudio() : playAudio(open.audioSrc!))
-              : undefined
-          }
-        >
-          <Icon name="sounds" size={22} />
-          {playState === 'playing' ? 'Stop' : 'Play'}
-        </RibbonButton>
-        <RibbonButton
-          disabled={section !== 'messages' || !open}
-          onClick={section === 'messages' && open ? () => void saveTranscript() : undefined}
-        >
-          <Icon name="doc" size={22} />
-          Save Copy
         </RibbonButton>
         <RibbonSep />
         <RibbonButton onClick={() => void createNote()}>
