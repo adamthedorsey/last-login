@@ -36,6 +36,9 @@ function unwrapProse(text: string): string {
       out.length === 0 ||
       prev === '' ||
       line === '' ||
+      // A SHORT previous line ended on purpose (title, sign-off) — only
+      // lines that ran to the typewriter margin were wrapped mid-thought.
+      prev.length < 40 ||
       /^[\s]/.test(line) ||
       /^[-•\d]/.test(line.trim().slice(0, 1)) ||
       /^\[/.test(line) ||
@@ -144,10 +147,13 @@ const WizardBody = styled.div`
   margin-top: 4px;
 `;
 
-/** The wizard's left art panel: the office's own banner. */
+/** The wizard's left art panel: the office's own banner, always full
+ * width (never side-cropped); its own teal continues below when the
+ * window is taller than the art. */
 const ArtPanel = styled.div`
   border: 1px solid #000;
-  background: #00807f url(${wizardArt}) center top / cover no-repeat;
+  background: #5c7a72 url(${wizardArt}) top center no-repeat;
+  background-size: 100% auto;
   image-rendering: pixelated;
 `;
 
