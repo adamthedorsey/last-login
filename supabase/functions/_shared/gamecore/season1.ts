@@ -701,6 +701,32 @@ evidence against her)`,
       },
     },
 
+    {
+      // The lost cluster ScanDisk recovers on boot (the 2:31 AM power cut
+      // corrupted the FAT). Mundane flavor, not a clue: startup-file junk
+      // wrapped around a shred of the ferry-keeper story — the machine
+      // remembers even what nobody meant to keep.
+      id: 'file.chk',
+      kind: 'document',
+      name: 'FILE0001.CHK',
+      icon: 'doc',
+      parentId: 'folder.c',
+      meta: { createdAt: '1997-10-18', modifiedAt: '1997-10-18', sizeKb: 16 },
+      body: {
+        text: `±±°°ÌÍÌÍ0ÿØÿî±²Û²±ÍÌÍÌ°°±±
+LH /L:D /M:12 C:\\MTDOS\\MTCDEX.EXE
+SET BLASTER=A220 I5 D1 T4
+PATH=C:\\HORIZONS;C:\\MTDOS
+°°°±±±²²²ÛÛÛ²²²±±±°°°ÛÛ²±°±²Û
+
+he boy arrived on a Tuesday, soaked through, holding a shoebox.
+"There's a bird in here," he said. "It's not doing so hot."
+
+±²Û[ cluster 4,411 — unreadable ]Û²±
+ÌÍÌÍÌÍÌÍÌÍÌÍÌÍÌÍÌÍÌÍÌÍÌÍ`,
+      },
+    },
+
     // --- Desktop stray note (read it again after the end.) ---
     {
       id: 'file.readme-first',

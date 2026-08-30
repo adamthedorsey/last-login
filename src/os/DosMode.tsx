@@ -237,8 +237,39 @@ export function DosMode({ onExit }: { onExit: () => void }) {
       case 'vol':
         print([` Volume in drive C is ${volLabel}`, ` Volume Serial Number is ${volSerial}`, '']);
         return;
+      case 'mem':
+        print([
+          '',
+          'Memory Type        Total       Used       Free',
+          '----------------  --------   --------   --------',
+          'Conventional          640K       121K       519K',
+          'Upper                 155K       155K         0K',
+          'Reserved              384K       384K         0K',
+          'Extended (XMS)     31,573K     2,112K    29,461K',
+          '----------------  --------   --------   --------',
+          'Total memory       32,752K     2,772K    29,980K',
+          '',
+          'Largest executable program size       518K (530,432 bytes)',
+          '',
+        ]);
+        return;
+      case 'scandisk':
+        print([
+          '',
+          `Microtech ScanDisk checking drive C (${volLabel}) ...`,
+          '',
+          '  Media descriptor ............... OK',
+          '  File allocation tables ......... OK',
+          '  Directory structure ............ OK',
+          '  File system .................... OK',
+          '',
+          'ScanDisk found no errors on this drive.',
+          '1 recovered file fragment is saved in the root directory.',
+          '',
+        ]);
+        return;
       case 'help':
-        print(['DIR    CD    TYPE    CLS    VOL    VER    ECHO    EXIT', '']);
+        print(['DIR    CD    TYPE    CLS    VOL    VER    MEM    SCANDISK    ECHO    EXIT', '']);
         return;
       case 'win':
       case 'exit':

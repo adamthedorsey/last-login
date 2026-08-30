@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Button, Frame, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
 import { playError, playStartup } from './sounds';
+import { ScanDisk } from './ScanDisk';
 import { PIXEL_MONO } from '../theme';
 
 const BootScreen = styled.div`
@@ -105,15 +106,12 @@ function buildBootFrames(warning?: string[]): BootFrame[] {
   line('Detecting IDE devices ...', 1100);
   append(' 1 fixed disk, 1 CD-ROM', 500);
   line('Mouse initialized on COM1', 450);
-  // Server-sent story lines (e.g. the improper-shutdown stamp). The disk
-  // check that follows is generic chrome; the WORDING of the warning — and
-  // its timestamp — belongs to the season content.
+  // Server-sent story lines (e.g. the improper-shutdown stamp). The wording
+  // of the warning — and its timestamp — belongs to the season content. The
+  // actual disk check happens next, as a real ScanDisk pass.
   if (warning && warning.length > 0) {
     line('', 400);
     for (const w of warning) line(w, 800);
-    line('Checking drive C: for errors', 350);
-    for (let i = 0; i < 6; i++) append(' .', 170);
-    append(' done. No errors found.', 700);
   }
   line('', 300);
   line('Starting Microtech Horizons 95 ...', 1700);
@@ -124,7 +122,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   const { view, send } = useGame();
   // "Log on as a different user" skips the POST — the machine never turned
   // off. (Read without consuming; cleared once on mount for StrictMode.)
-  const [phase, setPhase] = useState<'boot' | 'login'>(() =>
+  const [phase, setPhase] = useState<'boot' | 'scandisk' | 'login'>(() =>
     sessionStorage.getItem('lastlogin.logoff') === '1' ? 'login' : 'boot',
   );
   useEffect(() => {
@@ -179,8 +177,11 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
     if (phase !== 'boot' || !fontsReady) return;
     if (frameIdx >= frames.length) {
       const t = window.setTimeout(() => {
-        // A warm reboot with a live session skips the login and resumes.
-        if (view?.loggedIn && onResume) onResume();
+        // A cold boot after the improper shutdown runs ScanDisk, exactly like
+        // 1995 did. A warm restart was a CLEAN shutdown, so it skips straight
+        // through and resumes the session.
+        if (view?.bootWarning?.length && !onResume) setPhase('scandisk');
+        else if (view?.loggedIn && onResume) onResume();
         else setPhase('login');
       }, 400);
       return () => window.clearTimeout(t);
@@ -237,6 +238,10 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
         )}
       </BootScreen>
     );
+  }
+
+  if (phase === 'scandisk') {
+    return <ScanDisk onDone={() => setPhase('login')} />;
   }
 
   return (
