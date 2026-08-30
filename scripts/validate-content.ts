@@ -103,6 +103,10 @@ function validate(content: SeasonContent): void {
     for (const f of Object.keys(ev.setFlags ?? {})) settableFlags.add(f);
   for (const seq of content.remoteAccess ?? [])
     for (const f of Object.keys(seq.onDone?.setFlags ?? {})) settableFlags.add(f);
+  // Flags the ENGINE itself sets (mechanism, not content): the earned login
+  // hint, the one-phone-line scare latch, Case Files first-run setup.
+  for (const f of ['login-hint-revealed', 'line-pickup-done', 'case-setup-done'])
+    settableFlags.add(f);
 
   // --- Scheduled events / remote sequences: unique ids, valid gates ---
   const eventIds = new Set<string>();
@@ -173,6 +177,10 @@ function validate(content: SeasonContent): void {
   }
   for (const ev of content.schedule ?? []) checkFlags(`event ${ev.id}`, ev.requires);
   for (const seq of content.remoteAccess ?? []) checkFlags(`remote ${seq.id}`, seq.requires);
+  for (const m of content.handler?.messages ?? []) {
+    checkReq(`handler memo ${m.id}`, m.requires);
+    checkFlags(`handler memo ${m.id}`, m.requires);
+  }
   for (const m of content.handler?.messages ?? []) checkFlags(`handler memo ${m.id}`, m.requires);
   for (const convo of content.conversations ?? [])
     for (const x of convo.interjections ?? [])

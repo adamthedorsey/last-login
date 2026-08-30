@@ -13,7 +13,7 @@ import { GRID, ORIGIN, loadLayout, saveLayout, snapToGrid as snap, type Layout }
 
 const IconButton = styled.button<{ $selected: boolean; $dragging: boolean }>`
   position: absolute;
-  width: 84px;
+  width: 92px;
   background: none;
   border: 1px dotted ${(p) => (p.$selected ? '#ffff99' : 'transparent')};
   padding: 4px 2px;

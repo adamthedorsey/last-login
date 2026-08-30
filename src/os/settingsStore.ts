@@ -19,8 +19,6 @@ export const WALLPAPERS: Array<{ name: string; color: string }> = [
 interface Persisted {
   wallpaper: string;
   saverMinutes: number;
-  /** "Show this Welcome Screen next time you start Horizons 95." */
-  showWelcome: boolean;
 }
 
 function load(): Persisted {
@@ -29,10 +27,9 @@ function load(): Persisted {
     return {
       wallpaper: typeof raw.wallpaper === 'string' ? raw.wallpaper : '#008080',
       saverMinutes: typeof raw.saverMinutes === 'number' ? raw.saverMinutes : 3,
-      showWelcome: typeof raw.showWelcome === 'boolean' ? raw.showWelcome : true,
     };
   } catch {
-    return { wallpaper: '#008080', saverMinutes: 3, showWelcome: true };
+    return { wallpaper: '#008080', saverMinutes: 3 };
   }
 }
 
@@ -41,7 +38,6 @@ interface SettingsStore extends Persisted {
   saverNonce: number;
   setWallpaper(color: string): void;
   setSaverMinutes(min: number): void;
-  setShowWelcome(show: boolean): void;
   previewSaver(): void;
 }
 
@@ -56,10 +52,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({ saverMinutes: Math.max(1, Math.min(10, saverMinutes)) });
     persist(get());
   },
-  setShowWelcome(showWelcome) {
-    set({ showWelcome });
-    persist(get());
-  },
   previewSaver() {
     set((s) => ({ saverNonce: s.saverNonce + 1 }));
   },
@@ -69,7 +61,7 @@ function persist(s: SettingsStore): void {
   try {
     localStorage.setItem(
       KEY,
-      JSON.stringify({ wallpaper: s.wallpaper, saverMinutes: s.saverMinutes, showWelcome: s.showWelcome }),
+      JSON.stringify({ wallpaper: s.wallpaper, saverMinutes: s.saverMinutes }),
     );
   } catch {
     /* ignore */

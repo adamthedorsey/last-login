@@ -104,10 +104,12 @@ export function registerAllApps(): void {
   });
   registerApp({
     id: 'casefile',
-    name: 'Case File',
+    name: 'Case Files',
     icon: 'notes',
     component: CaseFile,
-    defaultSize: { w: 620, h: 460 },
+    // Wide enough that the handler's authored lines (<= 56 chars) never
+    // re-wrap in the 15px Courier reading pane.
+    defaultSize: { w: 740, h: 500 },
     singleton: true,
   });
   // --- Accessories (the Win95-style default apps) ---

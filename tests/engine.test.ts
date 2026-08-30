@@ -788,12 +788,17 @@ describe('case file', () => {
     return res.type === 'casefile' ? res.view.messages.map((m) => m.id) : [];
   };
 
-  it('serves the standing orders to a fresh player, and nothing gated', () => {
+  it('serves nothing to a fresh player — the standing orders live in the setup wizard now', () => {
     const s = offlineState();
     const ids = memoIds(s);
-    expect(ids).toContain('hm.readfirst');
-    expect(ids).not.toContain('hm.careful');
-    expect(ids).not.toContain('hm.callme');
+    expect(ids).toHaveLength(0);
+    // After first-run setup, the briefing is on file; gated memos still are not.
+    const on = run(s, { type: 'connect' }).state;
+    const done = run(on, { type: 'caseFileSync' }).state;
+    const after = memoIds(done);
+    expect(after).toContain('hm.briefing');
+    expect(after).not.toContain('hm.careful');
+    expect(after).not.toContain('hm.callme');
   });
 
   it('reacts to progress: new memos appear as discoveries land', () => {
@@ -914,5 +919,40 @@ describe('phone dialer', () => {
     const s = offlineState();
     const { result } = run(s, { type: 'getSpeedDial' });
     expect(result.type === 'speedDial' && result.entries.length >= 3).toBe(true);
+  });
+});
+
+describe('case files setup', () => {
+  it('serves the wizard until the first sync, then never again', () => {
+    const s = offlineState();
+    const before = run(s, { type: 'getCaseFile' }).result;
+    expect(before.type === 'casefile' && (before.view.setup?.length ?? 0) > 0).toBe(true);
+    // The opening briefing is not on file until setup completes.
+    expect(before.type === 'casefile' && before.view.messages.length).toBe(0);
+
+    // Offline, the sync step is refused and nothing is marked done.
+    const refused = run(s, { type: 'caseFileSync' });
+    expect(refused.result).toMatchObject({ type: 'casefile', offline: true });
+    expect(refused.state.flags['case-setup-done']).toBeUndefined();
+
+    // Online, the sync completes setup and unlocks the briefing.
+    const on = run(refused.state, { type: 'connect' }).state;
+    const synced = run(on, { type: 'caseFileSync' });
+    expect(synced.state.flags['case-setup-done']).toBe(true);
+    const v = synced.result;
+    expect(v.type === 'casefile' && v.view.setup === undefined).toBe(true);
+    expect(v.type === 'casefile' && v.view.messages.some((m) => m.audioSrc)).toBe(true);
+
+    // The wizard never comes back.
+    const again = run(synced.state, { type: 'getCaseFile' }).result;
+    expect(again.type === 'casefile' && again.view.setup === undefined).toBe(true);
+  });
+
+  it('puts README.TXT on the desktop as read-only evidence', () => {
+    const s = offlineState();
+    const desk = run(s, { type: 'getDesktop' }).result;
+    expect(desk.type === 'desktop' && desk.items.some((i) => i.id === 'file.start-here')).toBe(true);
+    const denied = run(s, { type: 'renameItem', itemId: 'file.start-here', name: 'x.txt' });
+    expect(denied.result).toMatchObject({ type: 'document', ok: false });
   });
 });

@@ -299,11 +299,29 @@ export interface HandlerMessage {
   subject?: string;
   requires?: Requirement; // SERVER ONLY
   lines: string[];
+  /**
+   * A playable voice recording attached to this message (authorized asset
+   * path, e.g. "/audio/briefing.mp3"). The lines above double as its
+   * transcript. Reserve for important moments — routine traffic is text.
+   */
+  audioSrc?: string;
+}
+
+/** One page of the Case Files first-run setup wizard. Story data. */
+export interface HandlerSetupPage {
+  title: string;
+  lines: string[];
 }
 
 export interface CaseHandler {
-  /** The header the Case File app shows (e.g. the case number). */
+  /** The header the Case Files app shows (e.g. the case number). */
   title: string;
+  /**
+   * First-launch setup wizard pages, shown once (engine gates on the
+   * case-setup-done flag). The client renders them verbatim between its
+   * generic Welcome/Finish chrome and the sync step.
+   */
+  setup?: HandlerSetupPage[];
   messages: HandlerMessage[];
 }
 
@@ -473,6 +491,10 @@ export type GameAction =
   | { type: 'getRemoteSession' }
   | { type: 'remoteSessionDone' }
   | { type: 'getCaseFile' }
+  /** Finish Case Files first-run setup. Requires the line to be up — the
+   * wizard's "connect to case server" step is real: it runs a delivery
+   * sweep and unlocks the handler's opening message. */
+  | { type: 'caseFileSync' }
   | { type: 'saveDocument'; docId?: string; name: string; text: string }
   /** Copy a readable text-bearing item into the player workspace as an
    * editable snapshot ("Copy of ..."), or duplicate a player document. */
@@ -585,7 +607,16 @@ export interface FindHit extends ItemSummary {
 /** The case handler's memos the player has currently earned. No gates. */
 export interface CaseFileView {
   title: string;
-  messages: Array<{ id: string; date?: string; from?: string; subject?: string; text: string }>;
+  messages: Array<{
+    id: string;
+    date?: string;
+    from?: string;
+    subject?: string;
+    text: string;
+    audioSrc?: string;
+  }>;
+  /** Present (with the wizard pages) until first-run setup completes. */
+  setup?: HandlerSetupPage[];
 }
 
 export type ActionResult = (
@@ -665,7 +696,7 @@ export type ActionResult = (
       ended?: boolean;
       error?: string;
     }
-  | { type: 'casefile'; view: CaseFileView }
+  | { type: 'casefile'; view: CaseFileView; offline?: boolean }
   | { type: 'net'; online: boolean; newMail?: number }
   | { type: 'reset'; view: StateView }
   | { type: 'error'; error: string }

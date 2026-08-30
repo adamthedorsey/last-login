@@ -67,6 +67,12 @@ const GlobalStyles = createGlobalStyle`
     margin: 0;
     overflow: hidden;
   }
+  /* Form controls do NOT inherit the document font by default — without
+     this, every hand-rolled styled.button label silently renders in the
+     browser's Arial. The chrome face is law everywhere. */
+  button, input, textarea, select {
+    font-family: inherit;
+  }
   body {
     font-family: 'ms_sans_serif', Tahoma, 'Segoe UI', sans-serif;
     font-size: 14px;

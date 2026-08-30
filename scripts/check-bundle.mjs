@@ -32,6 +32,10 @@ const FORBIDDEN = [
   'moms flower', // casey's password hint (earned after failed attempts)
   '2141-1011', // DOS volume serial (the finale timestamp, hiding in plain sight)
   '02:17 AM', // the modem log's smoking-gun session
+  'Mercer', // the case handler's field contact (voice briefing)
+  'out of eyes and out of weeks', // briefing transcript
+  'Field Evidence Software', // setup wizard page (handler content)
+  'START HERE', // the desktop README's opening line
   'First Bank of Humble', // phone-line content (server-authored, canary)
   'HZLINK', // the remote-access takeover script (served only once triggered)
   'the-watcher', // its discovery id

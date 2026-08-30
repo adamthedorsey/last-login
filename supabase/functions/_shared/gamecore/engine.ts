@@ -9,6 +9,7 @@
 
 import type {
   ActionResult,
+  CaseFileView,
   Buddy,
   WireNotice,
   BuddyStatus,
@@ -207,6 +208,32 @@ function toDiscoveryView(d: Discovery): DiscoveryView {
  */
 const HINT_AFTER_ATTEMPTS = 3;
 const HINT_REVEALED_FLAG = 'login-hint-revealed';
+
+/** Set by caseFileSync when Case Files first-run setup completes. Handler
+ * content (e.g. the opening briefing) gates on it. */
+export const CASE_SETUP_FLAG = 'case-setup-done';
+
+/** The handler's memos, redacted to what the player has earned — plus the
+ * setup wizard pages until first-run setup completes. */
+function caseFileView(content: SeasonContent, state: PlayerState): CaseFileView {
+  const handler = content.handler;
+  if (!handler) return { title: '', messages: [] };
+  const view: CaseFileView = {
+    title: handler.title,
+    messages: handler.messages
+      .filter((m) => meetsRequirement(state, m.requires))
+      .map((m) => ({
+        id: m.id,
+        date: m.date,
+        from: m.from,
+        subject: m.subject,
+        text: m.lines.join('\n'),
+        audioSrc: m.audioSrc,
+      })),
+  };
+  if (handler.setup && !state.flags[CASE_SETUP_FLAG]) view.setup = handler.setup;
+  return view;
+}
 
 export function toStateView(
   content: SeasonContent,
@@ -1116,21 +1143,21 @@ export function handleAction(
     }
 
     case 'getCaseFile': {
-      // The handler's memos, redacted to what the player has earned. The
-      // Case File app is the sanctioned diegetic frame — every word here is
-      // season content.
-      const handler = content.handler;
-      if (!handler) return done({ type: 'casefile', view: { title: '', messages: [] } });
-      const messages = handler.messages
-        .filter((m) => meetsRequirement(state, m.requires))
-        .map((m) => ({
-          id: m.id,
-          date: m.date,
-          from: m.from,
-          subject: m.subject,
-          text: m.lines.join('\n'),
-        }));
-      return done({ type: 'casefile', view: { title: handler.title, messages } });
+      return done({ type: 'casefile', view: caseFileView(content, state) });
+    }
+
+    case 'caseFileSync': {
+      // The wizard's "connect to case server" step is real: it needs the
+      // line up, and completing it is what unlocks the handler's opening
+      // message (via the engine-set flag). Runs once; harmless after.
+      if (!state.online) {
+        return done({ type: 'casefile', view: caseFileView(content, state), offline: true });
+      }
+      if (!state.flags[CASE_SETUP_FLAG]) {
+        state.flags[CASE_SETUP_FLAG] = true;
+        events.push({ type: 'case_setup_done' });
+      }
+      return done({ type: 'casefile', view: caseFileView(content, state) });
     }
 
     case 'getRemoteSession': {

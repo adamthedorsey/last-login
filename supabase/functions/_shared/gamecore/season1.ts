@@ -323,33 +323,91 @@ export const SEASON1: SeasonContent = {
   // =========================================================================
   handler: {
     title: 'CASE 97-0244 — TAYLOR, CASEY A. — MISSING',
+    // First-launch setup wizard (see Case Files app). Institutional 1997
+    // setup-speak; the ground rules that used to live in a READ FIRST memo.
+    setup: [
+      {
+        title: 'Welcome',
+        lines: [
+          'Case Files v1.2',
+          "Humble County Sheriff's Department",
+          'Field Evidence Software',
+          '',
+          'This software is your workspace for CASE 97-0244:',
+          'the disappearance of Casey Taylor.',
+          '',
+          'Setup will prepare this computer and connect to the',
+          'case server. Click Next to continue.',
+        ],
+      },
+      {
+        title: 'Evidence Protection',
+        lines: [
+          'The files on this computer are preserved evidence.',
+          '',
+          'You may open them, read them, and copy them into',
+          'your own workspace. You may not change or delete',
+          'the originals.',
+          '',
+          'This software sees to that. So does the Sheriff.',
+        ],
+      },
+      {
+        title: 'Your Workspace',
+        lines: [
+          'Your notes and copies are kept separate from the',
+          'evidence, on the desktop of this machine.',
+          '',
+          '  - Write notes with Notepad. They save to the desktop.',
+          '  - Copy evidence with the right mouse button',
+          '    (Copy to Desktop).',
+          '  - Case Files receives messages from this office.',
+          '',
+          'The WestWind account is paid through November.',
+          'Dialing in on her line is authorized. New case',
+          'materials and messages require the phone line.',
+        ],
+      },
+    ],
     messages: [
       {
-        id: 'hm.readfirst',
+        // The opening voice briefing — delivered by the first case-server
+        // sync (the wizard's connect step sets the engine flag). Audio is
+        // an owner-approved sampled exception; the lines are its transcript.
+        id: 'hm.briefing',
         date: '1997-10-18',
-        from: 'D. Purvis, Sheriff',
-        subject: 'READ FIRST',
+        from: "T. Mercer, Sheriff's Office",
+        subject: 'case briefing (voice recording)',
+        requires: { flag: 'case-setup-done' },
+        audioSrc: '/audio/mercer-briefing.mp3',
+        // Keep handler lines <= 52 chars: the Case Files reading pane wraps
+        // hard at its default width, and re-wrapped monospace reads ragged.
         lines: [
-          "The Taylor girl's computer is in this office as of Thursday.",
-          'Officially it has been examined. Officially there was nothing',
-          'on it.',
+          '[VOICE RECORDING — TRANSCRIPT]',
           '',
-          'I have one deputy with a bad hip and a state lab that quotes me',
-          'six weeks. You asked to look. So look.',
+          "This is Tom Mercer, Humble County Sheriff's",
+          "Office. If you're hearing this, the software",
+          "took, and you're sitting at Casey Taylor's",
+          'machine.',
           '',
-          'Ground rules, and this software will hold you to them:',
+          'Officially, this computer has been examined.',
+          'Officially, there was nothing on it. You be',
+          'the judge of that.',
           '',
-          '  1. Original files are evidence. You can read them. You cannot',
-          '     change them. The software sees to that.',
-          '  2. Keep your own notes in her Notepad. What you save is yours',
-          '     and stays separate from the evidence.',
-          '  3. The WestWind account is paid through November. Dialing in',
-          '     on her line is authorized. Watch who you talk to out there.',
+          'Sheriff signed off on your access because we',
+          'are out of eyes and out of weeks. The state',
+          "lab quotes us six. She doesn't have six.",
           '',
-          'Anything that matters, write it down. Everything you open, I',
-          'hear about. Work like somebody is watching.',
+          'Everything of hers is locked down as evidence.',
+          'You can read it, you can copy it, but the',
+          "machine won't let you change it. Don't take",
+          'that personal — it holds me to the same.',
           '',
-          '- D.P.',
+          'Go where the machine takes you. Keep notes as',
+          "you go. Anything that matters, I'll see it.",
+          "I'll be in touch through this program.",
+          '',
+          '— end of recording —',
         ],
       },
       {
@@ -2003,12 +2061,34 @@ and things go back to nor
       meta: { appId: 'dialup', desktop: { x: 216, y: 216 } },
     },
     {
+      // The sheriff's office's pointer, dead center on the desktop: the
+      // player's very first breadcrumb. Evidence rules apply to it too.
+      id: 'file.start-here',
+      kind: 'document',
+      name: 'README.TXT',
+      icon: 'doc',
+      meta: {
+        createdAt: '1997-10-18',
+        modifiedAt: '1997-10-18',
+        sizeKb: 1,
+        desktop: { x: 408, y: 216 },
+      },
+      body: {
+        text: `START HERE
+
+Connect to the Internet (double-click WestWind Online),
+then open CASE FILES.
+
+- Humble County Sheriff's Office`,
+      },
+    },
+    {
       // The one anachronism-on-purpose: the sheriff's office installed its
       // evidence viewer before handing over the keyboard. Chrome-level app;
       // every word it shows is engine-served handler content.
       id: 'shortcut.casefile',
       kind: 'shortcut',
-      name: 'Case File',
+      name: 'Case Files',
       icon: 'notes',
       meta: { appId: 'casefile', desktop: { x: 24, y: 312 } },
     },

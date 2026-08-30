@@ -1,18 +1,22 @@
 /**
- * Case File — the evidence viewer the sheriff's office installed before
+ * Case Files — the evidence workspace the sheriff's office installed before
  * handing over the keyboard. The one diegetic channel between the player
- * and the case handler: it explains why we're at this machine and reacts
- * to progress.
+ * and the case handler.
  *
- * EVERY string it displays (title, memos, names) is engine-served handler
- * content — this file is pure chrome. New memos appear as discoveries
- * land (contentEpoch refetch).
+ * First launch runs a 1997-style setup wizard. Its STORY pages (and every
+ * memo, name, and subject) are engine-served handler content — this file is
+ * pure chrome: generic install-speak, staged sync lines, transport buttons.
+ * Setup completes server-side (caseFileSync needs the line up), so the
+ * wizard runs exactly once per season, across reloads.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Frame } from 'react95';
+import { Button, Frame } from 'react95';
 import type { CaseFileView } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
+import { useWindowStore } from '../os/windowStore';
+import { isMuted } from '../os/sounds';
+import { Icon } from '../os/icons';
 import { DOC_TEXT } from '../theme';
 
 const SEEN_KEY = 'lastlogin.casefile.seen';
@@ -88,11 +92,82 @@ const MemoHead = styled.div`
   font-weight: bold;
 `;
 
+// --- The setup wizard (plain, institutional, 1997) ----------------------
+
+const WizardBody = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 14px;
+  margin-top: 4px;
+`;
+
+/** The wizard's left art panel: flat teal, a cascade of machine icons. */
+const ArtPanel = styled.div`
+  background: #00807f;
+  border: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 0 0 18px;
+`;
+
+const WizTitle = styled.div`
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 26px;
+  font-weight: bold;
+  margin: 4px 0 12px;
+`;
+
+const WizText = styled.div`
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+`;
+
+const SyncWell = styled(Frame).attrs({ variant: 'well' })`
+  margin-top: 12px;
+  padding: 8px 10px;
+  font-size: 13px;
+  min-height: 84px;
+  background: #fff;
+`;
+
+const WizRule = styled.div`
+  height: 2px;
+  border-top: 1px solid #808080;
+  border-bottom: 1px solid #fff;
+  margin: 10px 0 8px;
+  flex-shrink: 0;
+`;
+
+const SYNC_LINES = [
+  'Connecting...',
+  'Verifying case access...',
+  'Downloading case information...',
+  'Retrieving messages...',
+];
+const SYNC_STEP_MS = 700;
+
 export function CaseFile() {
-  const { send, contentEpoch } = useGame();
+  const { send, view: gameView, contentEpoch } = useGame();
+  const openApp = useWindowStore((s) => s.open);
   const [file, setFile] = useState<CaseFileView | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [seen, setSeen] = useState<string[]>(loadSeen);
+
+  // Wizard state. `page` counts through the server pages, then the sync
+  // step. -1 = not in the wizard (normal workspace).
+  const [page, setPage] = useState(0);
+  const [syncStage, setSyncStage] = useState<'idle' | 'running' | 'offline' | 'done'>('idle');
+  const [syncShown, setSyncShown] = useState(0);
+  const [newCount, setNewCount] = useState(0);
+
+  // Voice playback (chrome only — the recording itself is served content).
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playState, setPlayState] = useState<'idle' | 'playing' | 'broken' | 'muted'>('idle');
 
   const markSeen = (id: string) => {
     setSeen((prev) => {
@@ -112,26 +187,227 @@ export function CaseFile() {
     void send({ type: 'getCaseFile' }).then((res) => {
       if (cancelled || res.type !== 'casefile') return;
       setFile(res.view);
-      // Newest memo opens by default the first time it exists.
-      setOpenId((prev) => {
-        const id = prev ?? res.view.messages[res.view.messages.length - 1]?.id ?? null;
-        if (id) markSeen(id);
-        return id;
-      });
+      if (!res.view.setup) {
+        // Newest memo opens by default the first time it exists.
+        setOpenId((prev) => {
+          const id = prev ?? res.view.messages[res.view.messages.length - 1]?.id ?? null;
+          if (id) markSeen(id);
+          return id;
+        });
+      }
     });
     return () => {
       cancelled = true;
     };
   }, [send, contentEpoch]);
 
-  const open = file?.messages.find((m) => m.id === openId) ?? null;
+  // Stop any playing recording when the window content changes/unmounts.
+  useEffect(
+    () => () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    },
+    [openId],
+  );
+
+  const stopAudio = () => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setPlayState('idle');
+  };
+
+  const playAudio = (src: string) => {
+    stopAudio();
+    if (isMuted()) {
+      setPlayState('muted');
+      return;
+    }
+    try {
+      const a = new Audio(src);
+      a.volume = 0.9;
+      a.onended = () => setPlayState('idle');
+      a.onerror = () => setPlayState('broken');
+      audioRef.current = a;
+      void a.play().then(
+        () => setPlayState('playing'),
+        () => setPlayState('broken'),
+      );
+    } catch {
+      setPlayState('broken');
+    }
+  };
+
+  // --- The sync step: staged theater, then the real engine call ---
+  const runSync = () => {
+    if (gameView && !gameView.online) {
+      setSyncStage('offline');
+      return;
+    }
+    setSyncStage('running');
+    setSyncShown(1);
+  };
+
+  useEffect(() => {
+    if (syncStage !== 'running') return;
+    if (syncShown < SYNC_LINES.length) {
+      const t = window.setTimeout(() => setSyncShown((n) => n + 1), SYNC_STEP_MS);
+      return () => window.clearTimeout(t);
+    }
+    // All lines shown — do the real thing.
+    const t = window.setTimeout(() => {
+      void send({ type: 'caseFileSync' }).then((res) => {
+        if (res.type !== 'casefile') return;
+        if (res.offline) {
+          // The line dropped under us mid-setup.
+          setSyncStage('offline');
+          return;
+        }
+        setFile(res.view);
+        setNewCount(res.view.messages.filter((m) => !seen.includes(m.id)).length);
+        setSyncStage('done');
+      });
+    }, SYNC_STEP_MS);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seen is read once at completion
+  }, [syncStage, syncShown, send]);
+
+  const finishWizard = () => {
+    // Land in the inbox with the newest message open (the briefing).
+    const id = file?.messages[file.messages.length - 1]?.id ?? null;
+    setOpenId(id);
+    if (id) markSeen(id);
+    setSyncStage('idle');
+  };
+
+  // ----------------------------------------------------------------------
+
+  if (!file) {
+    return (
+      <Frame variant="well" style={{ flex: 1, padding: 12, fontSize: 13 }}>
+        Opening Case Files ...
+      </Frame>
+    );
+  }
+
+  // The wizard runs while the engine says setup is pending (and until the
+  // player clicks Finish on the completed sync).
+  if ((file.setup && file.setup.length > 0) || syncStage === 'done') {
+    const pages = file.setup ?? [];
+    const onSyncStep = page >= pages.length;
+    const current = onSyncStep ? null : pages[page];
+    const finished = syncStage === 'done';
+
+    return (
+      <>
+        <TitleBand>Case Files Setup</TitleBand>
+        <WizardBody>
+          <ArtPanel>
+            <Icon name="computer" size={44} />
+            <Icon name="notes" size={30} />
+            <Icon name="doc" size={24} />
+            <Icon name="dialup" size={30} />
+          </ArtPanel>
+          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            {finished ? (
+              <>
+                <WizTitle>Setup Complete</WizTitle>
+                <WizText>
+                  {'Case Files is ready.\n\n'}
+                  {newCount > 0
+                    ? `${newCount} new message${newCount === 1 ? '' : 's'} received.`
+                    : 'No new messages.'}
+                </WizText>
+              </>
+            ) : onSyncStep ? (
+              <>
+                <WizTitle>Connect to Case Server</WizTitle>
+                {syncStage === 'running' ? (
+                  <SyncWell>
+                    {SYNC_LINES.slice(0, syncShown).map((l) => (
+                      <div key={l}>{l}</div>
+                    ))}
+                  </SyncWell>
+                ) : (
+                  <WizText>
+                    {'Setup will now connect to the case server to retrieve\n'}
+                    {'case information and messages.\n\n'}
+                    {gameView?.online
+                      ? 'The connection is up. Click Next to continue.'
+                      : 'This computer is not connected. Connect to the\nInternet, then click Next.'}
+                    {syncStage === 'offline' && (
+                      <div style={{ marginTop: 10, color: '#802020' }}>
+                        The case server could not be reached. Connect to the
+                        Internet and try again.
+                      </div>
+                    )}
+                    {!gameView?.online && (
+                      <div style={{ marginTop: 12 }}>
+                        <Button onClick={() => openApp('dialup')} style={{ width: 110 }}>
+                          Connect...
+                        </Button>
+                      </div>
+                    )}
+                  </WizText>
+                )}
+              </>
+            ) : (
+              <>
+                <WizTitle>{current?.title}</WizTitle>
+                <WizText>{current?.lines.join('\n')}</WizText>
+              </>
+            )}
+          </div>
+        </WizardBody>
+        <WizRule />
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexShrink: 0 }}>
+          <Button
+            disabled={finished || page === 0 || syncStage === 'running'}
+            onClick={() => {
+              setSyncStage('idle');
+              setPage((p) => Math.max(0, p - 1));
+            }}
+            style={{ width: 90 }}
+          >
+            {'< Back'}
+          </Button>
+          {finished ? (
+            <Button onClick={finishWizard} style={{ width: 90, fontWeight: 'bold' }}>
+              Finish
+            </Button>
+          ) : (
+            <Button
+              disabled={syncStage === 'running'}
+              onClick={() => {
+                if (onSyncStep) runSync();
+                else setPage((p) => p + 1);
+              }}
+              style={{ width: 90 }}
+            >
+              {'Next >'}
+            </Button>
+          )}
+          <Button
+            disabled={syncStage === 'running' || finished}
+            onClick={() => useWindowStore.getState().windows.forEach((w) => {
+              if (w.appId === 'casefile') useWindowStore.getState().close(w.id);
+            })}
+            style={{ width: 90, marginLeft: 8 }}
+          >
+            Cancel
+          </Button>
+        </div>
+      </>
+    );
+  }
+
+  const open = file.messages.find((m) => m.id === openId) ?? null;
 
   return (
     <>
-      <TitleBand>{file?.title ?? '...'}</TitleBand>
+      <TitleBand>{file.title || '...'}</TitleBand>
       <Layout>
         <MemoList>
-          {(file?.messages ?? [])
+          {file.messages
             .slice()
             .reverse()
             .map((m) => (
@@ -148,8 +424,8 @@ export function CaseFile() {
                 <small>{m.date ?? ''}</small>
               </MemoRow>
             ))}
-          {file && file.messages.length === 0 && (
-            <div style={{ padding: 8, color: '#777', fontSize: 13 }}>(no memos on file)</div>
+          {file.messages.length === 0 && (
+            <div style={{ padding: 8, color: '#777', fontSize: 13 }}>(no messages on file)</div>
           )}
         </MemoList>
         <Reading>
@@ -160,15 +436,45 @@ export function CaseFile() {
                 {open.date ? `DATE: ${open.date}\n` : ''}
                 RE: {open.subject ?? '(no subject)'}
               </MemoHead>
+              {open.audioSrc && (
+                <Frame
+                  variant="well"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '6px 10px',
+                    marginBottom: 10,
+                    fontSize: 13,
+                    fontFamily: 'ms_sans_serif',
+                  }}
+                >
+                  <Icon name="sounds" size={20} />
+                  {playState === 'playing' ? (
+                    <Button size="sm" onClick={stopAudio} style={{ width: 64 }}>
+                      Stop
+                    </Button>
+                  ) : (
+                    <Button size="sm" onClick={() => playAudio(open.audioSrc!)} style={{ width: 64 }}>
+                      Play
+                    </Button>
+                  )}
+                  <span>
+                    Voice recording
+                    {playState === 'broken' && ' — could not be played. Transcript below.'}
+                    {playState === 'muted' && ' — sound is muted (see the taskbar).'}
+                  </span>
+                </Frame>
+              )}
               {open.text}
             </>
           ) : (
-            <span style={{ color: '#777' }}>Select a memo.</span>
+            <span style={{ color: '#777' }}>Select a message.</span>
           )}
         </Reading>
       </Layout>
       <Frame variant="well" style={{ marginTop: 4, padding: '2px 8px', fontSize: 12, flexShrink: 0 }}>
-        {file ? `${file.messages.length} memo(s) on file` : 'Opening case file ...'}
+        {`${file.messages.length} message(s) on file`}
       </Frame>
     </>
   );

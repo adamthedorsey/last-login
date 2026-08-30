@@ -107,11 +107,14 @@ If not, don't build it that way.
 ### Sound
 - Synthesized chip-style tones only (`src/os/sounds.ts`). Short, quiet,
   mutable. No sampled audio, no music beds, no modern notification sounds.
-  ONE owner-approved exception: the dial-up handshake plays a real sampled
-  modem recording (`src/assets/sounds/dial-up-modem.mp3`) IN FULL (~26s,
-  the staging is paced to it — anticipation is the point). A click skips
-  and stops it cleanly; the chip-tone version is the fallback if playback
-  is blocked. No other samples.
+  TWO owner-approved exceptions: (1) the dial-up handshake plays a real
+  sampled modem recording (`src/assets/sounds/dial-up-modem.mp3`) IN FULL
+  (~26s, the staging is paced to it — anticipation is the point). A click
+  skips and stops it cleanly; the chip-tone version is the fallback if
+  playback is blocked. (2) Case Files handler messages may attach a voice
+  recording (`audioSrc`, served from `public/audio/`) — reserved for
+  important case moments, always with the transcript in the message lines.
+  No other samples.
 
 ### Language & content
 - In-world text never references anything after 1997 (no smartphones, social
@@ -124,10 +127,9 @@ If not, don't build it that way.
 - The one sanctioned fourth-wall surface is quiet system feedback: the small
   discovery toast and the end-of-demo dialog. Player note-taking is diegetic:
   Notepad edits and saves real player documents to the desktop (saveDocument).
-- The Welcome tips box (`src/os/Welcome.tsx`) is OS chrome: its tips teach
-  how the MACHINE works (Properties, Recycle Bin, Find, the phone line) in
-  generic 1990s manual voice. Never put story text or clue content in a tip —
-  it's client code, so any story string there is a bundle leak.
+- NO first-boot welcome/tips box: this is Casey's long-lived account, not a
+  fresh install — the machine greets nobody. Mechanical teaching belongs to
+  the Case Files setup wizard (server content) and period-true affordances.
 - Find: Files or Folders is engine-backed (`findFiles`): it walks only
   accessible, unlocked folders server-side, so it can never out-run gating.
   Keep it that way — no client-side file indexes, ever.
@@ -208,10 +210,18 @@ If not, don't build it that way.
   text in RemoteSession.tsx. Rendering is stepped (fixed per-character and
   per-line clocks), any input past the arming grace skips to the end, and
   acknowledging drops the connection. Threatening, never punishing.
-- The Case File app is the sanctioned diegetic frame (machine-is-evidence
-  rules, handler reactions). Its memos are `handler` season content served
-  via `getCaseFile`; the app is chrome — any handler string in client code
-  is a bundle leak. Keep it and the Welcome tips box separate surfaces.
+- The Case Files app is the sanctioned diegetic frame (machine-is-evidence
+  rules, handler reactions). Its memos AND its first-launch setup-wizard
+  pages are `handler` season content served via `getCaseFile`; the app is
+  chrome — any handler string in client code is a bundle leak. (The wizard's
+  generic install-speak — "Connecting...", "Setup Complete" — is chrome and
+  stays client-side.) Setup completes server-side (`caseFileSync`, which
+  requires the line up and sets the engine flag `case-setup-done`), so the
+  wizard runs exactly once per season. Handler messages may carry an
+  `audioSrc` voice recording (owner-approved sampled exception, reserved
+  for important moments — routine handler traffic is text; the message
+  lines double as the transcript and playback must degrade to them
+  gracefully).
 - Workspace copies (`copyItem`) snapshot only the REDACTED text the player
   already received, from accessible unlocked items; copying an unread
   original applies its open effects. Copies are player documents; the

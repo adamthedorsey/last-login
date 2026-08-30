@@ -129,3 +129,17 @@ texture and tragedy, not clues; that's deliberate (not everyone who knows
 something is a puzzle piece). Keep the 4:1 mundane ratio around every row
 above. Every `[PROPOSED]` is overrulable — but if S9 or S12 change, rebuild
 the matrix first and the graph second.
+
+## The frame (out-of-fiction characters) — canon
+
+- **Sheriff D. Purvis** — signed off on the player's access; personally
+  reacts to case beats through Case Files memos (river, careful, dial-in,
+  call-the-office). Gruff, protective of his county, aware some names "buy
+  their own weather."
+- **Tom Mercer** — the Sheriff's Office field contact who installed the
+  Case Files software and administers the case server. Delivers the OPENING
+  VOICE BRIEFING (first message after first-run setup; transcript in
+  content, recording at `public/audio/mercer-briefing.mp3` — asset to be
+  supplied). Routine Mercer traffic is text; audio is reserved for
+  important moments. The old READ FIRST ground rules now live in the setup
+  wizard pages.
