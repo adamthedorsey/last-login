@@ -149,7 +149,12 @@ If not, don't build it that way.
   just signed on.") — buddy names in client strings are spoiler leaks; the
   roster itself, populated from the server, does the telling.
 - Buddy presence changes are authored as `overrides` on the roster entry
-  (requirement → status), never client-side logic.
+  (requirement → status, including `idle`), never client-side logic. Timed
+  presence is a scheduled event setting a flag an override keys on.
+- A buddy who messages FIRST is an `interjections` entry on the conversation
+  (requirement-gated lines anchored into the rebuilt transcript) plus a
+  scheduled event with an `im` wire notice — the client only opens the
+  window and steps the new lines in.
 
 ### Dial-up (the online/offline mechanic)
 - The core loop: OFFLINE = explore what Casey already had on the machine;
@@ -167,6 +172,20 @@ If not, don't build it that way.
   delivered it lives on the disk and reads fine offline. Sweeps run on
   connect and continuously while online. Going online CAN trigger story
   (that's the habit loop) but must not always — mundane connects are good.
+- Anything TIMED is a `schedule` event in season content: fires once per
+  season, N seconds into the current connection, requirement-gated, effects
+  are FLAGS ONLY, with an optional server-authored wire notice. The client's
+  10s online heartbeat (`checkMail`) is pure polling theater; client code
+  never knows what an event means, only how to chirp/toast/refetch. Timed
+  mail = event flag + an `arrivesOnline` item requiring it (attach a `mail`
+  notice so it announces itself whatever action the sweep rides in on).
+- The web loads SLOWLY on purpose: NetVoyager stages text in chunks and
+  fills image frames one at a time — stepped, under ~2.5s, click-skippable,
+  Stop keeps the partial page. Client theater only; never let load timing
+  gate content.
+- Email attachments are ordinary CHILD ITEMS of an email — ancestor-chain
+  gating makes them exactly as visible as their mail. Clue-bearing images go
+  through the authorized content path, never `public/`.
 - The modem handshake is synthesized chip tones (~3s), click-skippable.
 - The Phone Dialer shares the ONE phone line: dialing while online is
   refused by the ENGINE (`state.online`), and every number's outcome is
@@ -181,7 +200,22 @@ If not, don't build it that way.
   StateView.
 - The blue screen is pure flavor: rare (random click budget, at most twice a
   session), silent, loses nothing, any key continues. Never let it interrupt
-  an overlay (saver, dialogs, DOS, end card) and never make it a punishment.
+  an overlay (saver, dialogs, DOS, end card, remote session) and never make
+  it a punishment.
+- The remote-access takeover (`remoteAccess` in content) is a story
+  set-piece: triggers on the event clock, stays pending until watched
+  (reload replays it), and its ENTIRE script is engine-served — no story
+  text in RemoteSession.tsx. Rendering is stepped (fixed per-character and
+  per-line clocks), any input past the arming grace skips to the end, and
+  acknowledging drops the connection. Threatening, never punishing.
+- The Case File app is the sanctioned diegetic frame (machine-is-evidence
+  rules, handler reactions). Its memos are `handler` season content served
+  via `getCaseFile`; the app is chrome — any handler string in client code
+  is a bundle leak. Keep it and the Welcome tips box separate surfaces.
+- Workspace copies (`copyItem`) snapshot only the REDACTED text the player
+  already received, from accessible unlocked items; copying an unread
+  original applies its open effects. Copies are player documents; the
+  original evidence stays immutable.
 
 ## Gameplay design pillars (see docs/gameplay-mechanics.md for the full list)
 - The computer IS the world: the player learns things only from what is on
@@ -202,10 +236,10 @@ If not, don't build it that way.
   timed or "live" is SERVER-authored and server-scheduled — never client
   timers that know story content. Images reach the player naturally (slow web
   pages, mail attachments), not via galleries or reward screens.
-- Feature roadmap for these pillars (scheduled events, live buddy list, slow
-  web loading, attachments, remote-access DOS sequence, case-handler app,
-  workspace file duplication) is tracked in GitHub issues #2–#8 and indexed
-  in docs/gameplay-mechanics.md.
+- The feature mechanics behind these pillars (scheduled events, live buddy
+  list, slow web loading, attachments, remote-access DOS sequence, the Case
+  File app, workspace copies) shipped under GitHub issues #2–#8; their rules
+  live in the sections above and docs/gameplay-mechanics.md indexes them.
 
 ## Security model (non-negotiable, see README for detail)
 - Story content lives ONLY in `supabase/functions/_shared/gamecore/` and the

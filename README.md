@@ -52,8 +52,10 @@ engine.ts, types.ts      + generated supabase/seed.sql
   opened items / unlocks / flags), ancestor-chain visibility, password checks with
   brute-force lockout, discovery triggers, gated search, DTO redaction.
 - **`season1.ts`** — the entire story as data. Items form one tree (folders, files,
-  photos, mailboxes, emails, IM conversations, web pages, trash, shortcuts,
-  bookmarks) with optional `requires`, `password`, `onOpen` effects.
+  photos, mailboxes, emails with attachments, IM conversations, web pages, trash,
+  shortcuts, bookmarks) with optional `requires`, `password`, `onOpen` effects —
+  plus `schedule` (timed ambient events while online), `remoteAccess` (the
+  dial-in takeover set-piece), and `handler` (the Case File memos).
 
 Two hosts run the same engine:
 
@@ -81,6 +83,7 @@ src/
   apps/        applications registered in a small AppDefinition registry:
                File Explorer, Notepad, Picture Viewer, Mail,
                Chat (BuddyLine network), NetVoyager (browser), Recycle Bin,
+               Case File (the diegetic case-handler frame),
                and accessories: Calculator, Calendar,
                Solitaire, Minefield, Paint, CD Player, Clock
   dev/         DEV-only panel (reset, state dump, grant discovery, skip login)
@@ -95,7 +98,9 @@ HTML** — there is no XSS surface from story content.
 
 The in-world clock is frozen season data (`clock.now`, Oct 18 1997, 9:47 PM) and
 flows through `StateView` — components never use the real date for in-world time.
-A future event scheduler can replace the constant without touching components.
+Real time exists in exactly one place: the scheduled-event clock, which measures
+seconds into the current dial-up connection (server-side, via `onlineSince`) to
+fire content-authored ambient events — never wall-clock dates.
 
 ---
 
@@ -263,20 +268,22 @@ Gameplay mechanics and design pillars (with the feature roadmap):
 - No e2e test harness yet (the slice was verified by hand in-browser).
 - `player_events` are written but nothing reads them yet (no analytics views).
 
-## Next 5 highest-value steps
+## Next highest-value steps
 
-1. **Real login puzzle + first-run framing** — why are we at this machine? A
-   proper cold open (voicemail text, a note from the sheriff's office) and a
-   login puzzle solvable from physical-world hints.
+1. **Real login puzzle + first-run framing** — why are we at this machine? The
+   Case File app now carries the frame; a proper cold open (voicemail text, a
+   note from the sheriff's office) and a login puzzle solvable from
+   physical-world hints are still open.
 2. **Season 1, Act 1 content pass** — grow to a few dozen emails/logs/files with
    2–3 optional side threads, and 1–2 more password targets (a locked diary, a
    webmail account) to exercise the unlock system.
 3. **E2E + CI** — Playwright happy path (login → chain → end card) against the
    dev adapter, plus `npm run verify` and `supabase test db` in CI.
-4. **Scheduled/triggered events** — a GameClock event table ("an email arrives
-   after discovery X", "a buddy signs on"), which the engine already has room for
-   (`events`, `contentEpoch` refetching, toasts). Tracked as issue #2; the
-   mechanics it unlocks (live buddy list, remote-access sequence, and more)
-   are indexed in `docs/gameplay-mechanics.md`.
-5. **Authoring ergonomics** — content validation (zod schema + referential checks
+4. **Authoring ergonomics** — content validation (zod schema + referential checks
    for ids/requirements at `gen:seed` time) so writers can't ship a broken chain.
+
+(The former #4, scheduled/triggered events, shipped along with the rest of the
+gameplay-mechanics roadmap — issues #2–#8, indexed in
+`docs/gameplay-mechanics.md`: ambient events, the live buddy list, slow web
+loading, mail attachments, the remote-access set-piece, the Case File app,
+and workspace copies.)
