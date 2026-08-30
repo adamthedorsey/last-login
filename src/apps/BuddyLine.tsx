@@ -36,7 +36,7 @@ const BuddyRow = styled.button<{ $offline: boolean }>`
   background: transparent;
   padding: 2px 10px;
   font-size: 13px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   color: ${(p) => (p.$offline ? '#888' : '#000')};
   font-style: ${(p) => (p.$offline ? 'italic' : 'normal')};
   &:hover {
@@ -103,7 +103,7 @@ const PromptBtn = styled.button`
   background: transparent;
   padding: 3px 6px;
   font-size: 13px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   color: #000080;
   &:hover {
     background: #000080;

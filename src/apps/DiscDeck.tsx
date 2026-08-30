@@ -35,7 +35,7 @@ const TrackRow = styled.button<{ $active: boolean }>`
   color: ${(p) => (p.$active ? '#fff' : 'inherit')};
   font-size: 13px;
   padding: 2px 8px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
 `;
 
 function mmss(s: number): string {

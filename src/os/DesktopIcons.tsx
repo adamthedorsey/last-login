@@ -21,7 +21,7 @@ const IconButton = styled.button<{ $selected: boolean; $dragging: boolean }>`
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   color: #fff;
   z-index: ${(p) => (p.$dragging ? 10 : 1)};
   opacity: ${(p) => (p.$dragging ? 0.75 : 1)};

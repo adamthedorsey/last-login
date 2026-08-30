@@ -21,7 +21,7 @@ const Header = styled(WindowHeader)`
   display: flex;
   align-items: center;
   gap: 6px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   flex-shrink: 0;
 `;
 

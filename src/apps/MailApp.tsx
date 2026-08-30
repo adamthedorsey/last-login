@@ -38,7 +38,7 @@ const BoxRow = styled.button<{ $active: boolean }>`
   background: ${(p) => (p.$active ? '#000080' : 'transparent')};
   color: ${(p) => (p.$active ? '#fff' : 'inherit')};
   padding: 4px 6px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   font-size: 13px;
 `;
 
@@ -59,7 +59,7 @@ const MsgRow = styled.button<{ $active: boolean; $unread: boolean }>`
   color: ${(p) => (p.$active ? '#fff' : 'inherit')};
   font-weight: ${(p) => (p.$unread ? 'bold' : 'normal')};
   font-size: 13px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   span {
     overflow: hidden;
     white-space: nowrap;

@@ -20,7 +20,7 @@ const Screen = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 100010;
-  cursor: default;
+  cursor: var(--cursor-arrow);
 `;
 
 const Body = styled.div`

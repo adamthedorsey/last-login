@@ -14,7 +14,7 @@ const BootScreen = styled.div`
   font-size: 16px;
   padding: 28px;
   white-space: pre-wrap;
-  cursor: pointer;
+  cursor: var(--cursor-arrow);
 `;
 
 // The one sanctioned blink: a DOS block cursor, snapping — never fading.

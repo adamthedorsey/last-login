@@ -13,7 +13,7 @@ const Swatch = styled.button<{ $color: string; $active: boolean }>`
   background: ${(p) => p.$color};
   border: 2px ${(p) => (p.$active ? 'inset #000' : 'outset #fff')};
   padding: 0;
-  cursor: default;
+  cursor: var(--cursor-arrow);
 `;
 
 const CanvasWell = styled(Frame).attrs({ variant: 'field' })`

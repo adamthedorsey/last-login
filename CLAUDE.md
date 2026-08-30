@@ -81,6 +81,13 @@ If not, don't build it that way.
   no icon libraries, no emoji as primary iconography.
 - Images ship as SVGs styled like period photos/GIF banners (flat shapes,
   caption strips, dithered-dusk palettes). `image-rendering: pixelated` stays on.
+- Cursors: OUR OWN pixel art (`src/assets/cursors/`, wired as CSS vars in
+  `src/theme.tsx`) in the classic generic shapes — arrow everywhere
+  (including buttons: Win95 never showed a hand on controls), I-beam on
+  text, hand ONLY on in-game web links, and the hourglass via the
+  `html.busy` class while an engine call runs long. Never ship extracted
+  Microsoft .cur files; new cursor states use the same hand-drawn approach.
+  Modern resize arrows on window edges are the accepted exception.
 - Never reproduce real logos, trademarks, or brand lookalikes (no Windows flag,
   Netscape N, AOL, etc.).
 - Naming policy: OS accessories use PLAIN GENERIC names, exactly like Win95 did

@@ -44,7 +44,7 @@ const HitRow = styled.button<{ $selected: boolean }>`
   font-size: 13px;
   background: ${(p) => (p.$selected ? '#000080' : 'transparent')};
   color: ${(p) => (p.$selected ? '#fff' : 'inherit')};
-  cursor: default;
+  cursor: var(--cursor-arrow);
   span {
     overflow: hidden;
     white-space: nowrap;

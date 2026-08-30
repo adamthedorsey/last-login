@@ -35,7 +35,7 @@ const Cell = styled.button<{ $selected: boolean }>`
   align-items: center;
   gap: 4px;
   padding: 8px 4px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   font-size: 13px;
   span {
     text-align: center;
@@ -64,7 +64,7 @@ const MenuButton = styled.button<{ $open: boolean }>`
   color: ${(p) => (p.$open ? '#fff' : 'inherit')};
   padding: 2px 8px;
   font-size: 13px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
 `;
 
 const Drop = styled(MenuList)`
@@ -91,7 +91,7 @@ const ListCell = styled.button<{ $selected: boolean }>`
   align-items: center;
   gap: 6px;
   padding: 2px 4px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   font-size: 13px;
   text-align: left;
   span {
@@ -118,7 +118,7 @@ const HeadCell = styled.button`
   font-weight: bold;
   text-align: left;
   padding: 1px 6px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   overflow: hidden;
   white-space: nowrap;
 `;
@@ -132,7 +132,7 @@ const DetailRow = styled.button<{ $selected: boolean }>`
   background: ${(p) => (p.$selected ? '#000080' : 'transparent')};
   color: ${(p) => (p.$selected ? '#fff' : 'inherit')};
   padding: 2px 0;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   font-size: 13px;
   text-align: left;
   span {

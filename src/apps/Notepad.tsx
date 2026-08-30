@@ -36,7 +36,7 @@ const MenuButton = styled.button<{ $open: boolean }>`
   color: ${(p) => (p.$open ? '#fff' : 'inherit')};
   padding: 2px 8px;
   font-size: 13px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
 `;
 
 const Drop = styled(MenuList)`

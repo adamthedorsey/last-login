@@ -78,7 +78,7 @@ const Face = styled.button`
   font-size: 17px;
   border: 2px outset #fff;
   background: #d4d0c8;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   &:active {
     border-style: inset;
   }
@@ -97,7 +97,7 @@ const Sq = styled.button<{ $revealed: boolean; $boom?: boolean }>`
   font-size: 14px;
   font-weight: bold;
   line-height: 1;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   border: ${(p) => (p.$revealed ? '1px solid #a8a8a8' : '2px outset #fff')};
   background: ${(p) => (p.$boom ? '#ff4040' : p.$revealed ? '#d0ccc4' : '#d4d0c8')};
   padding: 0;

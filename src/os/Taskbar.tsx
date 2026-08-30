@@ -74,7 +74,7 @@ const TrayButton = styled.button`
   border: none;
   background: none;
   padding: 0;
-  cursor: pointer;
+  cursor: var(--cursor-arrow);
   font-size: 13px;
   line-height: 1;
 `;
@@ -87,7 +87,7 @@ const TrayClock = styled.button`
   border: none;
   background: none;
   padding: 0;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   font-size: 13px;
   line-height: 1;
   font-variant-numeric: tabular-nums;

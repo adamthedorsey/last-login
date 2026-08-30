@@ -108,7 +108,7 @@ export function DateTimeApplet() {
       </Row>
       <Rule />
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <Button onClick={() => setRefused(true)} style={{ width: 150 }}>
+        <Button onClick={() => setRefused(true)} style={{ whiteSpace: 'nowrap', padding: '0 16px' }}>
           Change Date/Time...
         </Button>
       </div>

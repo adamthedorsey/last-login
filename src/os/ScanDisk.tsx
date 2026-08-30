@@ -16,7 +16,7 @@ const Screen = styled.div`
   font-size: 16px;
   padding: 48px 64px;
   white-space: pre-wrap;
-  cursor: pointer;
+  cursor: var(--cursor-arrow);
 `;
 
 const Title = styled.div`

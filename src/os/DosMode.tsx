@@ -26,7 +26,7 @@ const Screen = styled.div`
   white-space: pre-wrap;
   word-break: break-all;
   z-index: 100006;
-  cursor: text;
+  cursor: var(--cursor-text);
 `;
 
 const Cursor = styled.span`

@@ -5,6 +5,10 @@ import original from 'react95/dist/themes/original';
 import msSans from 'react95/dist/fonts/ms_sans_serif.woff2';
 import msSansBold from 'react95/dist/fonts/ms_sans_serif_bold.woff2';
 import fsex from '@south-paw/typeface-fixed-system-excelsior/files/fsex300.woff';
+import curArrow from './assets/cursors/arrow.png';
+import curWait from './assets/cursors/hourglass.png';
+import curText from './assets/cursors/ibeam.png';
+import curHand from './assets/cursors/hand.png';
 import type { ReactNode } from 'react';
 
 /**
@@ -74,6 +78,24 @@ const GlobalStyles = createGlobalStyle`
   }
   * { box-sizing: border-box; }
   img { image-rendering: pixelated; }
+
+  /* Win95 cursor set — our own pixel art in the classic shapes. The modern
+     OS pointer is the last place the present day leaks in; not any more.
+     Each var carries a keyword fallback in case an image fails to load. */
+  :root {
+    --cursor-arrow: url(${curArrow}) 0 0, default;
+    --cursor-wait: url(${curWait}) 6 7, wait;
+    --cursor-text: url(${curText}) 2 7, text;
+    --cursor-hand: url(${curHand}) 5 0, pointer;
+  }
+  body { cursor: var(--cursor-arrow); }
+  /* Win95 showed the ARROW over buttons and controls — never a hand. */
+  button, select, label, summary { cursor: var(--cursor-arrow); }
+  input, textarea { cursor: var(--cursor-text); }
+  /* The 1997 web DID show the hand — but only on links. */
+  a { cursor: var(--cursor-hand); }
+  /* The busy hourglass, everywhere at once, exactly like the real thing. */
+  html.busy, html.busy * { cursor: var(--cursor-wait) !important; }
 `;
 
 // react95 v4 was written for styled-components v5 prop forwarding; with v6 we

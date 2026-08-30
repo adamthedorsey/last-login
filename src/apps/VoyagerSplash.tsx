@@ -99,7 +99,7 @@ const SplashPanel = styled.div`
   border: 2px outset #aab;
   box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4);
   padding: 26px 28px 14px;
-  cursor: pointer;
+  cursor: var(--cursor-arrow);
   font-family: 'Times New Roman', serif;
 `;
 

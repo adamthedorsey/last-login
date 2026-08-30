@@ -89,10 +89,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const client = clientRef.current;
       if (!client) return { type: 'error', error: 'not_ready' };
       // The hourglass: a slow call (the real server, not the dev adapter)
-      // turns the pointer to `wait` after a beat, exactly like 1997 did.
+      // flips EVERY cursor to the pixel hourglass after a beat, exactly
+      // like 1997 did (the .busy rule lives in the global styles).
       pendingSends += 1;
       const hourglass = window.setTimeout(() => {
-        document.body.style.cursor = 'wait';
+        document.documentElement.classList.add('busy');
       }, 150);
       let res: ActionResult;
       try {
@@ -100,7 +101,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       } finally {
         pendingSends -= 1;
         window.clearTimeout(hourglass);
-        if (pendingSends === 0) document.body.style.cursor = '';
+        if (pendingSends === 0) document.documentElement.classList.remove('busy');
       }
       if (viewRef.current?.online) setNetActivity((n) => n + 1);
       if (res.linePickup) {

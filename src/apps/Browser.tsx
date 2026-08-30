@@ -96,7 +96,7 @@ const MenuButton = styled.button<{ $open: boolean }>`
   color: ${(p) => (p.$open ? '#fff' : 'inherit')};
   padding: 2px 8px;
   font-size: 13px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
 `;
 
 const DropMenu = styled(MenuList)`
@@ -127,7 +127,7 @@ const NavButton = styled.button`
   min-width: 46px;
   padding: 2px 4px 1px;
   font-size: 11px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   color: #222;
   &:hover:not(:disabled) {
     border: 1px outset #fff;

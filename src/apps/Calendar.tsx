@@ -35,7 +35,7 @@ const DayCell = styled.button<{ $today: boolean; $selected: boolean; $muted: boo
   text-align: left;
   padding: 2px 3px;
   min-height: 34px;
-  cursor: default;
+  cursor: var(--cursor-arrow);
   position: relative;
 `;
 

@@ -68,7 +68,7 @@ const ShutdownScreen = styled.div`
   font-family: ${PIXEL_MONO};
   text-align: center;
   z-index: 100005;
-  cursor: pointer;
+  cursor: var(--cursor-arrow);
 `;
 
 type ShutChoice = 'shutdown' | 'restart' | 'dos' | 'logoff';
