@@ -379,7 +379,7 @@ export const SEASON1: SeasonContent = {
         from: "T. Mercer, Sheriff's Office",
         subject: 'case briefing (voice recording)',
         requires: { flag: 'case-setup-done' },
-        audioSrc: '/audio/mercer-briefing.mp3',
+        audioSrc: '/audio/mercer-briefing.m4a',
         // Keep handler lines <= 52 chars: the Case Files reading pane wraps
         // hard at its default width, and re-wrapped monospace reads ragged.
         lines: [

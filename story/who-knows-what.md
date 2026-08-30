@@ -139,7 +139,7 @@ the matrix first and the graph second.
 - **Tom Mercer** — the Sheriff's Office field contact who installed the
   Case Files software and administers the case server. Delivers the OPENING
   VOICE BRIEFING (first message after first-run setup; transcript in
-  content, recording at `public/audio/mercer-briefing.mp3` — asset to be
-  supplied). Routine Mercer traffic is text; audio is reserved for
+  content, recording at `public/audio/mercer-briefing.m4a`, processed to 1997
+  phone-band quality from `src/assets/sounds/tom_mercer_humble_county_sheriff.mp3`). Routine Mercer traffic is text; audio is reserved for
   important moments. The old READ FIRST ground rules now live in the setup
   wizard pages.
