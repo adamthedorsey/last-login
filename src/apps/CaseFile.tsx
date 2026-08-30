@@ -17,7 +17,7 @@ import { useGame } from '../game/gameContext';
 import { useWindowStore } from '../os/windowStore';
 import { isMuted } from '../os/sounds';
 import { Icon } from '../os/icons';
-import wizardArt from '../assets/images/humble-county-wizard.png';
+import wizardArt from '../assets/images/humble-county-wizard.jpg';
 import { DOC_TEXT } from '../theme';
 
 const SEEN_KEY = 'lastlogin.casefile.seen';
@@ -99,8 +99,8 @@ const WizardBody = styled.div`
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 14px;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
   margin-top: 4px;
 `;
 
@@ -119,15 +119,15 @@ const WizTitle = styled.div`
 `;
 
 const WizText = styled.div`
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 15px;
+  line-height: 1.5;
   white-space: pre-wrap;
 `;
 
 const SyncWell = styled(Frame).attrs({ variant: 'well' })`
   margin-top: 12px;
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: 15px;
   min-height: 84px;
   background: #fff;
 `;
