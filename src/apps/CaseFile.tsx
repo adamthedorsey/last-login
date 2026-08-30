@@ -397,7 +397,7 @@ export function CaseFile({ windowId }: { windowId: string }) {
                     {gameView?.online
                       ? 'The connection is up. Click Next to continue.'
                       : 'This computer is not connected. Connect to the\nInternet, then click Next.'}
-                    {syncStage === 'offline' && (
+                    {syncStage === 'offline' && !gameView?.online && (
                       <div style={{ marginTop: 10, color: '#802020' }}>
                         The case server could not be reached. Connect to the
                         Internet and try again.
