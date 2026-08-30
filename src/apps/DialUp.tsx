@@ -181,6 +181,11 @@ export function DialUp({ windowId }: AppWindowProps) {
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 2 }}>
         <Icon name="dialup" size={32} />
         <b>Connect To: WestWind Online</b>
+        {phase === 'dialing' && (
+          <span style={{ marginLeft: 'auto' }}>
+            <Hourglass size={22} />
+          </span>
+        )}
       </div>
       <Row>
         <label htmlFor="du-user">User name:</label>
@@ -199,11 +204,6 @@ export function DialUp({ windowId }: AppWindowProps) {
           {lines.map((l, i) => (
             <div key={i}>{l}</div>
           ))}
-          {phase === 'dialing' && (
-            <div style={{ marginTop: 6 }}>
-              <Hourglass size={22} />
-            </div>
-          )}
         </StatusWell>
       ) : null}
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 'auto', paddingTop: 14, flexShrink: 0 }}>

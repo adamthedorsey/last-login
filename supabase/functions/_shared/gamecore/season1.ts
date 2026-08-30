@@ -1081,7 +1081,10 @@ he boy arrived on a Tuesday, soaked through, holding a shoebox.
     {
       id: 'file.readme-first',
       kind: 'document',
-      name: 'readme 1st.txt',
+      // Renamed from "readme 1st.txt" so it never collides with the
+      // sheriff's README.TXT — this one is Jonathan's note, and the
+      // filename stays personal on purpose (re-read it after the end).
+      name: 'from j.txt',
       icon: 'doc',
       parentId: 'folder.c',
       meta: {

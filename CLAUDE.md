@@ -28,6 +28,10 @@ If not, don't build it that way.
 - Selection highlight is solid `#000080` with white text. Period.
 - Assume 800x600-era density: compact paddings, 13px-ish UI text, no
   airy whitespace-heavy layouts.
+- Desktop icons live on the fixed 96px grid (`docs/desktop-grid.md`): every
+  authored `meta.desktop` sits on a documented slot, and items that appear
+  or vanish mid-game are authored to FREE slots from that table — update it
+  with any change.
 
 ### Motion
 - No smooth/eased animations, no fades, no springs, no smooth scrolling.
