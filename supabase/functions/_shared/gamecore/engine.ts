@@ -360,9 +360,22 @@ function toChatView(
   const self = content.computer.imScreenname ?? 'me';
   const messages: ImMessage[] = [];
   let minute = 0;
+  // Unprompted lines the buddy has volunteered, keyed to their anchor point.
+  const interjections = (convo.interjections ?? []).filter((x) =>
+    meetsRequirement(state, x.requires),
+  );
+  const interject = (anchor: string | undefined) => {
+    for (const x of interjections) {
+      if (x.afterPromptId !== anchor) continue;
+      for (const text of x.lines) {
+        messages.push({ from: convo.screenname, at: chatClock(content, minute), text });
+      }
+    }
+  };
   for (const text of convo.opener) {
     messages.push({ from: convo.screenname, at: chatClock(content, minute), text });
   }
+  interject(undefined);
   let signedOff = false;
   for (const id of usedPrompts(state, convo.screenname)) {
     const p = convo.prompts.find((x) => x.id === id);
@@ -372,6 +385,7 @@ function toChatView(
     for (const reply of p.replies) {
       messages.push({ from: convo.screenname, at: chatClock(content, minute), text: reply });
     }
+    interject(p.id);
     if (p.signOff) signedOff = true;
   }
   return {

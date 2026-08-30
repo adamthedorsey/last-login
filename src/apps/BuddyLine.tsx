@@ -123,9 +123,20 @@ export function BuddyLine({ props }: AppWindowProps) {
   const [offlineAlert, setOfflineAlert] = useState(false);
   const [activeBuddy, setActiveBuddy] = useState<BuddyView | null>(null);
   const requestedConvo = props.conversationId as string | undefined;
+  // Set when a wire notice opened this window: a buddy messaged FIRST.
+  const requestedLive = props.liveScreenname as string | undefined;
+  const wireSeq = props.wireSeq as number | undefined;
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const self = view?.imScreenname ?? 'me';
+
+  /** How many incoming lines sit at the very end of the transcript —
+   * on a wire-triggered open, exactly those step in; the rest shows at once. */
+  const trailingIncoming = (msgs: ChatView['messages']): number => {
+    let n = 0;
+    for (let i = msgs.length - 1; i >= 0 && msgs[i].from !== self; i--) n++;
+    return n;
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -167,6 +178,28 @@ export function BuddyLine({ props }: AppWindowProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestedConvo]);
 
+  // A buddy messaged first (wire notice): their window opens on its own and
+  // only the NEW trailing lines step in.
+  useEffect(() => {
+    if (requestedLive) void openLiveByName(requestedLive, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestedLive, wireSeq]);
+
+  // While a live conversation is open, refetch it whenever content shifts
+  // (scheduled events can add lines mid-chat); extra lines step in.
+  useEffect(() => {
+    if (!chat) return;
+    let cancelled = false;
+    void send({ type: 'getConversation', screenname: chat.screenname }).then((res) => {
+      if (cancelled || res.type !== 'chat' || !res.ok || !res.chat) return;
+      if (res.chat.messages.length > chat.messages.length) setChat(res.chat);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts to content shifts only
+  }, [contentEpoch]);
+
   const openLog = async (conversationId: string) => {
     setNotice(null);
     setChat(null);
@@ -179,19 +212,30 @@ export function BuddyLine({ props }: AppWindowProps) {
     }
   };
 
-  const openLive = async (b: BuddyView): Promise<boolean> => {
-    const res = await send({ type: 'getConversation', screenname: b.screenname });
+  const openLiveByName = async (screenname: string, fromWire = false): Promise<boolean> => {
+    const res = await send({ type: 'getConversation', screenname });
     if (res.type === 'chat' && res.ok && res.chat) {
       setNotice(null);
       setConvo(null);
       setChat(res.chat);
-      // A conversation already underway shows its history at once; only a
-      // first contact steps the opener in line by line.
+      setActiveBuddy((prev) => buddies.find((b) => b.screenname === screenname) ?? prev);
       const talkedBefore = res.chat.messages.some((m) => m.from === self);
-      setVisible(talkedBefore ? res.chat.messages.length : 0);
+      if (fromWire) {
+        // They spoke first: step in exactly the unheard trailing lines.
+        setVisible(res.chat.messages.length - trailingIncoming(res.chat.messages));
+      } else {
+        // A conversation already underway shows its history at once; only a
+        // first contact steps the opener in line by line.
+        setVisible(talkedBefore ? res.chat.messages.length : 0);
+      }
       return true;
     }
     return false;
+  };
+
+  const openLive = async (b: BuddyView): Promise<boolean> => {
+    setActiveBuddy(b);
+    return openLiveByName(b.screenname);
   };
 
   const onBuddyClick = async (b: BuddyView) => {
@@ -234,12 +278,8 @@ export function BuddyLine({ props }: AppWindowProps) {
 
   const groups = [...new Set(buddies.map((b) => b.group))];
   const fullyRevealed = !!chat && visible >= chat.messages.length;
-  const liveStatus =
-    activeBuddy && chat
-      ? activeBuddy.status === 'away'
-        ? 'away'
-        : 'online'
-      : '';
+  const rosterEntry = chat ? buddies.find((b) => b.screenname === chat.screenname) : undefined;
+  const liveStatus = rosterEntry?.status ?? activeBuddy?.status ?? 'online';
 
   return (
     <>
@@ -266,13 +306,15 @@ export function BuddyLine({ props }: AppWindowProps) {
                         ? `Away: ${b.awayMessage ?? ''}`
                         : b.status === 'offline'
                           ? 'Offline'
-                          : 'Online'
+                          : b.status === 'idle'
+                            ? 'Idle'
+                            : 'Online'
                     }
                     onDoubleClick={() => void onBuddyClick(b)}
                   >
                     {b.screenname}
                     {b.alias ? ` (${b.alias})` : ''}
-                    {b.status === 'away' ? ' ⏾' : ''}
+                    {b.status === 'away' ? ' ⏾' : b.status === 'idle' ? ' (idle)' : ''}
                   </BuddyRow>
                 ))}
             </div>

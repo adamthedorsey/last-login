@@ -152,6 +152,9 @@ export const SEASON1: SeasonContent = {
       group: 'Buddies',
       status: 'online',
       conversationId: 'im.sadie',
+      // She falls quiet late in a long session — watching her own screen,
+      // same as you. (Idle buddies still answer; they were just staring.)
+      overrides: [{ requires: { flag: 'sadie-gone-quiet' }, status: 'idle' }],
     },
     {
       screenname: 'AngelJx',
@@ -160,6 +163,16 @@ export const SEASON1: SeasonContent = {
       status: 'away',
       awayMessage: 'grounded. 4ever apparently.',
       conversationId: 'im.angel',
+      // A couple of minutes in she risks it and flips properly online —
+      // until her mom's footsteps put the away message back up, reworded.
+      overrides: [
+        { requires: { flag: 'angel-risking-it' }, status: 'online' },
+        {
+          requires: { flag: 'angel-mom-came-in' },
+          status: 'away',
+          awayMessage: "MOM I'M DOING HOMEWORK. (i am not doing homework)",
+        },
+      ],
     },
     {
       screenname: 'BigChad4x4',
@@ -196,6 +209,23 @@ export const SEASON1: SeasonContent = {
   // =========================================================================
   schedule: [
     {
+      // A couple of minutes in, Angel decides her mom is probably asleep
+      // and flips from away to properly online. The roster doorbell rings.
+      id: 'evt.angel-on',
+      afterOnlineSeconds: 150,
+      setFlags: { 'angel-risking-it': true },
+      notice: { kind: 'buddy-on' },
+    },
+    {
+      // If the player has introduced themselves to Sadie, she messages
+      // FIRST a few minutes later — the window opens itself, 1997-style.
+      id: 'evt.sadie-knock',
+      afterOnlineSeconds: 240,
+      requires: { flag: 'sadie-talking' },
+      setFlags: { 'sadie-checked-in': true },
+      notice: { kind: 'im', screenname: 'sadiedraws77' },
+    },
+    {
       // Seven minutes into any session, Angel — who has been watching that
       // buddy list all week — sends the machine another chain letter. Grief
       // does what grief does. (And read again after the finale: she wasn't
@@ -204,6 +234,32 @@ export const SEASON1: SeasonContent = {
       afterOnlineSeconds: 420,
       setFlags: { 'angel-sent-luck': true },
       notice: { kind: 'mail' },
+    },
+    {
+      // Footsteps in the hallway: Angel's away message goes back up,
+      // reworded. Silent — the roster just quietly changes.
+      id: 'evt.angel-caught',
+      afterOnlineSeconds: 540,
+      requires: { flag: 'angel-risking-it' },
+      setFlags: { 'angel-mom-came-in': true },
+      notice: { kind: 'roster' },
+    },
+    {
+      // Ten minutes in, Sadie goes idle. Nothing happened. She is sixteen
+      // and it is late and her best friend is missing.
+      id: 'evt.sadie-idle',
+      afterOnlineSeconds: 600,
+      setFlags: { 'sadie-gone-quiet': true },
+      notice: { kind: 'roster' },
+    },
+    {
+      // THE EPILOGUE DOORBELL. Minutes after the player learns about the
+      // 2:14 AM login, GhostBridge signs on — someone noticed activity on
+      // this machine. (His roster entry is gated on the same discovery.)
+      id: 'evt.ghost-on',
+      afterOnlineSeconds: 0,
+      requires: { discovery: 'the-house' },
+      notice: { kind: 'buddy-on' },
     },
   ],
 
@@ -280,6 +336,20 @@ export const SEASON1: SeasonContent = {
             'the kind of person who keeps the drawing you made her in second grade.',
             'she has a code word with me. for if things ever got Actually Bad. i’m not telling you what it is. it’s ours.',
             'just don’t stop halfway, ok? whatever you find. she wouldn’t.',
+          ],
+        },
+      ],
+      interjections: [
+        {
+          // evt.sadie-knock: she messages first, a few minutes after the
+          // introduction. Anchored after the intro exchange.
+          id: 'knock1',
+          afterPromptId: 'intro',
+          requires: { flag: 'sadie-checked-in' },
+          lines: [
+            'you still there?',
+            'sorry. i keep remembering things and typing at you is better than staring at the ceiling.',
+            'ask me whatever. i mean it. nobody else is asking.',
           ],
         },
       ],

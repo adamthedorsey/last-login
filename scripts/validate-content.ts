@@ -124,6 +124,14 @@ function validate(content: SeasonContent): void {
       for (const d of p.discover ?? [])
         if (!discoveryIds.has(d)) errors.push(`${who}#${p.id}: grants unknown discovery "${d}"`);
     }
+    const iids = new Set<string>();
+    for (const x of convo.interjections ?? []) {
+      if (iids.has(x.id)) errors.push(`${who}: duplicate interjection id "${x.id}"`);
+      iids.add(x.id);
+      checkReq(`${who} interjection ${x.id}`, x.requires);
+      if (x.afterPromptId && !convo.prompts.some((p) => p.id === x.afterPromptId))
+        errors.push(`${who} interjection ${x.id}: unknown afterPromptId "${x.afterPromptId}"`);
+    }
   }
   // A `flag` requirement that nothing can ever set is a dead gate.
   const checkFlags = (owner: string, req: Requirement | undefined) => {
@@ -142,6 +150,9 @@ function validate(content: SeasonContent): void {
     for (const p of convo.prompts) checkFlags(`conversation ${convo.screenname}#${p.id}`, p.requires);
   }
   for (const ev of content.schedule ?? []) checkFlags(`event ${ev.id}`, ev.requires);
+  for (const convo of content.conversations ?? [])
+    for (const x of convo.interjections ?? [])
+      checkFlags(`conversation ${convo.screenname} interjection ${x.id}`, x.requires);
 
   // --- Every discovery must be grantable, finale must exist ---
   // Granters are items AND chat prompts (a live-conversation reveal counts

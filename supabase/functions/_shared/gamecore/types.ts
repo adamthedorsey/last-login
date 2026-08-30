@@ -150,7 +150,7 @@ export interface Discovery {
   endsDemo?: boolean;
 }
 
-export type BuddyStatus = 'online' | 'offline' | 'away';
+export type BuddyStatus = 'online' | 'offline' | 'away' | 'idle';
 
 export interface Buddy {
   screenname: string;
@@ -190,6 +190,22 @@ export interface ChatPrompt {
   signOff?: boolean;
 }
 
+/**
+ * A line (or lines) the BUDDY sends unprompted once its requirements are
+ * met — typically a flag set by a scheduled event. Anchored into the
+ * rebuilt transcript after the named exchange (after the opener when no
+ * anchor is given).
+ */
+export interface ChatInterjection {
+  /** Unique within its conversation. */
+  id: string;
+  /** Transcript anchor: insert after this exchange (a prompt id). */
+  afterPromptId?: string;
+  /** When these lines exist at all. SERVER ONLY. */
+  requires?: Requirement;
+  lines: string[];
+}
+
 export interface ChatConversation {
   /** The buddy this conversation belongs to (must match a roster entry). */
   screenname: string;
@@ -199,6 +215,8 @@ export interface ChatConversation {
   opener: string[];
   /** Every prompt is one-shot: once said, it never re-offers. */
   prompts: ChatPrompt[];
+  /** Unprompted lines the buddy volunteers (see ChatInterjection). */
+  interjections?: ChatInterjection[];
 }
 
 // ---------------------------------------------------------------------------

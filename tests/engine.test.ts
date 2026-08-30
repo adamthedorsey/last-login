@@ -612,7 +612,8 @@ describe('scheduled events', () => {
     const s = loggedInState();
     const first = run(s, { type: 'checkMail' }, NOW + 421_000);
     const second = run(first.state, { type: 'checkMail' }, NOW + 900_000);
-    expect(second.result.wire).toBeUndefined();
+    // Later sweeps may fire OTHER events, but never this one again.
+    expect(second.result.wire?.some((w) => w.kind === 'mail')).toBeFalsy();
     expect(second.state.firedEvents?.filter((id) => id === EVENT)).toHaveLength(1);
   });
 
@@ -636,6 +637,68 @@ describe('scheduled events', () => {
     s = run(s, { type: 'checkMail' }, NOW + 421_000).state;
     s = run(s, { type: 'disconnect' }, NOW + 422_000).state;
     expect(inboxIds(s, NOW + 423_000)).toContain(EVENT_MAIL);
+  });
+});
+
+describe('live buddy list', () => {
+  const buddyStatus = (s: PlayerState, name: string, now: number) => {
+    const res = run(s, { type: 'getBuddies' }, now).result;
+    return res.type === 'buddies' ? res.buddies.find((b) => b.screenname === name) : undefined;
+  };
+
+  it('flips Angel online a couple of minutes into a session', () => {
+    let s = loggedInState();
+    expect(buddyStatus(s, 'AngelJx', NOW)?.status).toBe('away');
+    s = run(s, { type: 'checkMail' }, NOW + 151_000).state;
+    expect(buddyStatus(s, 'AngelJx', NOW + 151_000)?.status).toBe('online');
+  });
+
+  it('puts Angel back on away, reworded, when her mom comes in', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'checkMail' }, NOW + 600_000).state;
+    const angel = buddyStatus(s, 'AngelJx', NOW + 600_000);
+    expect(angel?.status).toBe('away');
+    expect(angel?.awayMessage).toContain('HOMEWORK');
+  });
+
+  it('marks Sadie idle late in a long session — and she still answers', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'checkMail' }, NOW + 601_000).state;
+    expect(buddyStatus(s, 'sadiedraws77', NOW + 601_000)?.status).toBe('idle');
+    const chat = run(s, { type: 'getConversation', screenname: 'sadiedraws77' }, NOW + 601_000).result;
+    expect(chat).toMatchObject({ type: 'chat', ok: true });
+  });
+
+  it('Sadie messages first once introduced: interjection lands after the intro exchange', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'say', screenname: 'sadiedraws77', promptId: 'intro' }).state;
+    // Before the event: no unprompted lines.
+    const before = run(s, { type: 'getConversation', screenname: 'sadiedraws77' }, NOW + 10_000).result;
+    expect(before.type === 'chat' && before.chat?.messages.some((m) => m.text.includes('you still there?'))).toBe(false);
+    // The knock fires four minutes in and carries an 'im' wire notice.
+    const tick = run(s, { type: 'checkMail' }, NOW + 241_000);
+    expect(tick.result.wire?.some((w) => w.kind === 'im' && w.screenname === 'sadiedraws77')).toBe(true);
+    const after = run(tick.state, { type: 'getConversation', screenname: 'sadiedraws77' }, NOW + 242_000).result;
+    expect(after.type === 'chat' && after.chat?.messages.some((m) => m.text.includes('you still there?'))).toBe(true);
+  });
+
+  it('never knocks if the player has not introduced themselves', () => {
+    const s = loggedInState();
+    const { result } = run(s, { type: 'checkMail' }, NOW + 241_000);
+    expect(result.wire?.some((w) => w.kind === 'im')).toBeFalsy();
+  });
+
+  it('rings the epilogue doorbell on the first sweep online after the finale', () => {
+    let s = loggedInState();
+    for (const step of CHAIN) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    expect(s.discoveries).toContain('the-house');
+    // The line-pickup scare dropped the connection mid-chain (who-shaped);
+    // he signs on the moment the player dials back in.
+    expect(s.online).toBeFalsy();
+    const { result } = run(s, { type: 'connect' }, NOW + 2_000);
+    expect(result.wire?.some((w) => w.kind === 'buddy-on')).toBe(true);
   });
 });
 

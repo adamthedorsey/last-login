@@ -79,18 +79,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       if (ended) {
         // The season doesn't end with a dialog. It ends with a sign-on —
-        // which needs the line to be up. Offline, he simply waits for the
-        // player's next connection.
-        window.setTimeout(() => {
-          if (!viewRef.current?.online) return;
-          playBuddyOn();
-          setToasts((prev) => [
-            ...prev,
-            { id: ++toastId, title: 'Chat', description: 'Someone just signed on.' },
-          ]);
-          setContentEpoch((e) => e + 1);
-        }, 4500);
-        // If the player never takes the bait, the season card still arrives.
+        // authored as a scheduled event (the engine fires it on the next
+        // wire sweep while online; offline, he waits for the next
+        // connection). If the player never takes the bait, the season
+        // card still arrives.
         window.setTimeout(() => {
           if (!endCardSeenRef.current) setShowEndCard(true);
         }, 120000);
