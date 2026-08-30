@@ -150,7 +150,7 @@ export interface Discovery {
   endsDemo?: boolean;
 }
 
-export type BuddyStatus = 'online' | 'offline' | 'away';
+export type BuddyStatus = 'online' | 'offline' | 'away' | 'idle';
 
 export interface Buddy {
   screenname: string;
@@ -190,6 +190,22 @@ export interface ChatPrompt {
   signOff?: boolean;
 }
 
+/**
+ * A line (or lines) the BUDDY sends unprompted once its requirements are
+ * met — typically a flag set by a scheduled event. Anchored into the
+ * rebuilt transcript after the named exchange (after the opener when no
+ * anchor is given).
+ */
+export interface ChatInterjection {
+  /** Unique within its conversation. */
+  id: string;
+  /** Transcript anchor: insert after this exchange (a prompt id). */
+  afterPromptId?: string;
+  /** When these lines exist at all. SERVER ONLY. */
+  requires?: Requirement;
+  lines: string[];
+}
+
 export interface ChatConversation {
   /** The buddy this conversation belongs to (must match a roster entry). */
   screenname: string;
@@ -199,6 +215,96 @@ export interface ChatConversation {
   opener: string[];
   /** Every prompt is one-shot: once said, it never re-offers. */
   prompts: ChatPrompt[];
+  /** Unprompted lines the buddy volunteers (see ChatInterjection). */
+  interjections?: ChatInterjection[];
+}
+
+// ---------------------------------------------------------------------------
+// Scheduled events (server-authored ambient life)
+// ---------------------------------------------------------------------------
+
+/**
+ * A notice the engine stamps onto the result of the action during which
+ * something happened on the wire. It is the ONLY way ambient events reach
+ * the client — client code never knows what an event means, only how to
+ * chirp and toast about it. All text here is server-authored.
+ */
+export interface WireNotice {
+  kind: 'mail' | 'im' | 'buddy-on' | 'buddy-off' | 'roster' | 'system' | 'remote';
+  /** Toast title/body. Optional — the client has generic per-kind fallbacks. */
+  title?: string;
+  text?: string;
+  /** For 'im': the buddy whose window should open (server data, not client copy). */
+  screenname?: string;
+}
+
+/**
+ * A content-authored ambient event: N seconds into the current dial-up
+ * session, if `requires` are met, it fires exactly once per season. Effects
+ * are FLAGS ONLY — everything downstream (mail arriving, buddy presence,
+ * chat interjections) hangs off those flags through the existing gating
+ * machinery. SERVER ONLY.
+ */
+export interface ScheduledEvent {
+  id: string;
+  /** Seconds into the current connection before this may fire. */
+  afterOnlineSeconds: number;
+  requires?: Requirement;
+  setFlags?: Record<string, boolean>;
+  /** What the client shows/plays when it fires (omit for a silent change). */
+  notice?: WireNotice;
+}
+
+// ---------------------------------------------------------------------------
+// Remote access (the takeover set-piece)
+// ---------------------------------------------------------------------------
+
+/** One beat of a remote-access script, played back by the takeover screen.
+ * `cmd` text is typed character-by-character on a fixed clock and must
+ * include its own prompt (e.g. "C:\\>vol") — the client renders, never
+ * composes. SERVER ONLY until triggered; served whole once earned. */
+export type RemoteScriptLine =
+  | { t: 'sys'; text: string }
+  | { t: 'cmd'; text: string }
+  | { t: 'out'; lines: string[] }
+  | { t: 'pause'; ms: number };
+
+/**
+ * A story set-piece: while the player is online, the GUI drops and someone
+ * dials INTO the machine. Triggers like a scheduled event (delay into the
+ * current connection + requirements), fires once per season, and must then
+ * be watched: the client plays the script and acknowledges, which applies
+ * `onDone` and drops the connection. SERVER ONLY.
+ */
+export interface RemoteAccessSequence {
+  id: string;
+  afterOnlineSeconds: number;
+  requires?: Requirement;
+  script: RemoteScriptLine[];
+  onDone?: { setFlags?: Record<string, boolean>; discover?: string[] };
+}
+
+// ---------------------------------------------------------------------------
+// Case handler (the diegetic frame: whose machine is this, and why are we
+// allowed to be here)
+// ---------------------------------------------------------------------------
+
+/** One memo from the case handler. Progress-gated like everything else;
+ * every word is story data — the client app renders, never writes. */
+export interface HandlerMessage {
+  id: string;
+  /** In-world date shown on the memo. */
+  date?: string;
+  from?: string;
+  subject?: string;
+  requires?: Requirement; // SERVER ONLY
+  lines: string[];
+}
+
+export interface CaseHandler {
+  /** The header the Case File app shows (e.g. the case number). */
+  title: string;
+  messages: HandlerMessage[];
 }
 
 export interface SeasonContent {
@@ -246,6 +352,12 @@ export interface SeasonContent {
   linePickup?: { requires: Requirement };
   /** Numbers the Phone Dialer can voice-dial (see PhoneNumber). SERVER ONLY. */
   phones?: PhoneNumber[];
+  /** Timed ambient events, swept while the player is online. SERVER ONLY. */
+  schedule?: ScheduledEvent[];
+  /** Remote-access takeover set-pieces (see RemoteAccessSequence). SERVER ONLY. */
+  remoteAccess?: RemoteAccessSequence[];
+  /** The case handler's memos (see CaseHandler). SERVER ONLY values. */
+  handler?: CaseHandler;
   maxPasswordAttempts: number;
   lockoutSeconds: number;
 }
@@ -312,6 +424,10 @@ export interface PlayerState {
   onlineSince?: number;
   /** Ids of arrivesOnline items that have been delivered to the machine. */
   delivered?: string[];
+  /** Ids of scheduled events that have fired (each fires once per season). */
+  firedEvents?: string[];
+  /** Ids of remote-access sequences the player has watched to the end. */
+  remoteSeen?: string[];
 }
 
 export function newPlayerState(): PlayerState {
@@ -354,7 +470,13 @@ export type GameAction =
   | { type: 'getBuddies' }
   | { type: 'getConversation'; screenname: string }
   | { type: 'say'; screenname: string; promptId: string }
+  | { type: 'getRemoteSession' }
+  | { type: 'remoteSessionDone' }
+  | { type: 'getCaseFile' }
   | { type: 'saveDocument'; docId?: string; name: string; text: string }
+  /** Copy a readable text-bearing item into the player workspace as an
+   * editable snapshot ("Copy of ..."), or duplicate a player document. */
+  | { type: 'copyItem'; itemId: string }
   | { type: 'createFolder'; name: string }
   | { type: 'moveDocument'; docId: string; folderId?: string }
   | { type: 'renameItem'; itemId: string; name: string }
@@ -409,6 +531,9 @@ export interface StateView {
   onlineSeconds?: number;
   /** True once the line-pickup beat has fired (client shows it one time). */
   linePickup?: boolean;
+  /** A remote-access takeover has triggered and not yet been watched: the
+   * shell must play it (and replay it after a reload) until acknowledged. */
+  remotePending?: boolean;
   wallpaper: string;
   homeUrl: string;
   loggedIn: boolean;
@@ -455,6 +580,12 @@ export interface SearchResult {
 /** One Find: Files or Folders hit — a summary plus its "In Folder" path. */
 export interface FindHit extends ItemSummary {
   path: string;
+}
+
+/** The case handler's memos the player has currently earned. No gates. */
+export interface CaseFileView {
+  title: string;
+  messages: Array<{ id: string; date?: string; from?: string; subject?: string; text: string }>;
 }
 
 export type ActionResult = (
@@ -515,7 +646,26 @@ export type ActionResult = (
       ended?: boolean;
       error?: string;
     }
-  | { type: 'document'; ok: boolean; item?: ItemSummary; error?: string }
+  | {
+      type: 'document';
+      ok: boolean;
+      item?: ItemSummary;
+      error?: string;
+      /** Copying an unread original counts as reading it (copyItem). */
+      newDiscoveries?: DiscoveryView[];
+      ended?: boolean;
+    }
+  | {
+      type: 'remote';
+      ok: boolean;
+      /** The script to play (getRemoteSession on a pending takeover). */
+      script?: RemoteScriptLine[];
+      /** Set on remoteSessionDone when watching it earned something. */
+      newDiscoveries?: DiscoveryView[];
+      ended?: boolean;
+      error?: string;
+    }
+  | { type: 'casefile'; view: CaseFileView }
   | { type: 'net'; online: boolean; newMail?: number }
   | { type: 'reset'; view: StateView }
   | { type: 'error'; error: string }
@@ -525,6 +675,11 @@ export type ActionResult = (
    * the action was — the client's cue to refresh and show the scare.
    */
   linePickup?: true;
+  /**
+   * Wire notices from scheduled events that fired during this action (the
+   * machine did something on its own — see WireNotice).
+   */
+  wire?: WireNotice[];
 };
 
 export interface EngineOutcome {

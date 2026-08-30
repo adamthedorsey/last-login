@@ -131,6 +131,14 @@ export const SEASON1: SeasonContent = {
         'Dr. Sparks writes them. Value-Med fills them. Cash, strangers’ initials, license plates from three counties away. That’s what Casey found — and what somebody needed her not to have found.',
     },
     {
+      // Granted by watching the remote-access set-piece (single-path by
+      // design — it is an event that happens TO the player, not a puzzle).
+      id: 'the-watcher',
+      title: 'The watcher',
+      description:
+        'Someone just dialed into this machine like they’d done it a hundred times — no guessing, no fumbling, straight to her private folder, looking for one file that is no longer there. That is how you know things nobody posted, and quote files that live nowhere else. It was never magic. It was access.',
+    },
+    {
       id: 'who-shaped',
       title: 'A familiar shape',
       description:
@@ -152,6 +160,9 @@ export const SEASON1: SeasonContent = {
       group: 'Buddies',
       status: 'online',
       conversationId: 'im.sadie',
+      // She falls quiet late in a long session — watching her own screen,
+      // same as you. (Idle buddies still answer; they were just staring.)
+      overrides: [{ requires: { flag: 'sadie-gone-quiet' }, status: 'idle' }],
     },
     {
       screenname: 'AngelJx',
@@ -160,6 +171,16 @@ export const SEASON1: SeasonContent = {
       status: 'away',
       awayMessage: 'grounded. 4ever apparently.',
       conversationId: 'im.angel',
+      // A couple of minutes in she risks it and flips properly online —
+      // until her mom's footsteps put the away message back up, reworded.
+      overrides: [
+        { requires: { flag: 'angel-risking-it' }, status: 'online' },
+        {
+          requires: { flag: 'angel-mom-came-in' },
+          status: 'away',
+          awayMessage: "MOM I'M DOING HOMEWORK. (i am not doing homework)",
+        },
+      ],
     },
     {
       screenname: 'BigChad4x4',
@@ -187,6 +208,224 @@ export const SEASON1: SeasonContent = {
   // the next time they're online somebody in the house picks up the
   // extension and kills the connection. Once. (They're not alone.)
   linePickup: { requires: { discovery: 'who-shaped' } },
+
+  // =========================================================================
+  // SCHEDULED EVENTS — the machine lives a little while the line is up.
+  // Effects are flags only; mail/presence/chat hang off them through the
+  // normal gating machinery. Each fires once per season, N seconds into a
+  // connection. Mundane beats suspicious: not everything here is story.
+  // =========================================================================
+  schedule: [
+    {
+      // A couple of minutes in, Angel decides her mom is probably asleep
+      // and flips from away to properly online. The roster doorbell rings.
+      id: 'evt.angel-on',
+      afterOnlineSeconds: 150,
+      setFlags: { 'angel-risking-it': true },
+      notice: { kind: 'buddy-on' },
+    },
+    {
+      // If the player has introduced themselves to Sadie, she messages
+      // FIRST a few minutes later — the window opens itself, 1997-style.
+      id: 'evt.sadie-knock',
+      afterOnlineSeconds: 240,
+      requires: { flag: 'sadie-talking' },
+      setFlags: { 'sadie-checked-in': true },
+      notice: { kind: 'im', screenname: 'sadiedraws77' },
+    },
+    {
+      // Seven minutes into any session, Angel — who has been watching that
+      // buddy list all week — sends the machine another chain letter. Grief
+      // does what grief does. (And read again after the finale: she wasn't
+      // the only one who noticed this machine signing on at night.)
+      id: 'evt.angel-forward',
+      afterOnlineSeconds: 420,
+      setFlags: { 'angel-sent-luck': true },
+      notice: { kind: 'mail' },
+    },
+    {
+      // Footsteps in the hallway: Angel's away message goes back up,
+      // reworded. Silent — the roster just quietly changes.
+      id: 'evt.angel-caught',
+      afterOnlineSeconds: 540,
+      requires: { flag: 'angel-risking-it' },
+      setFlags: { 'angel-mom-came-in': true },
+      notice: { kind: 'roster' },
+    },
+    {
+      // Ten minutes in, Sadie goes idle. Nothing happened. She is sixteen
+      // and it is late and her best friend is missing.
+      id: 'evt.sadie-idle',
+      afterOnlineSeconds: 600,
+      setFlags: { 'sadie-gone-quiet': true },
+      notice: { kind: 'roster' },
+    },
+    {
+      // THE EPILOGUE DOORBELL. Minutes after the player learns about the
+      // 2:14 AM login, GhostBridge signs on — someone noticed activity on
+      // this machine. (His roster entry is gated on the same discovery.)
+      id: 'evt.ghost-on',
+      afterOnlineSeconds: 0,
+      requires: { discovery: 'the-house' },
+      notice: { kind: 'buddy-on' },
+    },
+  ],
+
+  // =========================================================================
+  // REMOTE ACCESS — the Act 3 set-piece. A minute after the player has the
+  // pipeline (someone's whole crime, sitting in a school folder), the GUI
+  // drops and a practiced hand dials in: checks the volume, goes straight
+  // to `personal stuff`, asks for one file that is no longer there, says
+  // goodnight, hangs up. This is HOW GhostBridge always knew — the same
+  // session the modem log has been recording at 11-something every night.
+  // Watching it earns `the-watcher` and costs the connection.
+  // =========================================================================
+  remoteAccess: [
+    {
+      id: 'remote.ghost-checkin',
+      afterOnlineSeconds: 60,
+      requires: { discovery: 'the-pipeline' },
+      script: [
+        { t: 'sys', text: 'HZLINK 1.2 remote console — carrier 28800' },
+        { t: 'sys', text: 'supervisor session (no password required)' },
+        { t: 'sys', text: '' },
+        { t: 'pause', ms: 1100 },
+        { t: 'cmd', text: 'C:\\>vol' },
+        {
+          t: 'out',
+          lines: [' Volume in drive C is CASEY', ' Volume Serial Number is 2141-1011', ''],
+        },
+        { t: 'pause', ms: 700 },
+        { t: 'cmd', text: 'C:\\>cd my documents\\personal stuff' },
+        { t: 'cmd', text: 'C:\\MY DOCUMENTS\\PERSONAL STUFF>dir diary.doc' },
+        { t: 'pause', ms: 500 },
+        { t: 'out', lines: ['File not found', ''] },
+        { t: 'pause', ms: 2000 },
+        { t: 'cmd', text: 'C:\\MY DOCUMENTS\\PERSONAL STUFF>echo goodnight' },
+        { t: 'out', lines: ['goodnight', ''] },
+        { t: 'pause', ms: 900 },
+        { t: 'cmd', text: 'C:\\MY DOCUMENTS\\PERSONAL STUFF>exit' },
+        { t: 'sys', text: '' },
+        { t: 'sys', text: 'NO CARRIER' },
+        { t: 'pause', ms: 1400 },
+      ],
+      onDone: { discover: ['the-watcher'], setFlags: { 'watched-remote': true } },
+    },
+  ],
+
+  // =========================================================================
+  // CASE HANDLER — the frame. The machine sits in the sheriff's office; the
+  // player is the unofficial pair of eyes Purvis can't spare a deputy for.
+  // His memos establish the rules (originals are evidence, notes are yours,
+  // dialing out is authorized) and react to progress. Whether "keep it on
+  // the machine" is protection or a leash is never resolved in the text —
+  // contradictions are gameplay.
+  // =========================================================================
+  handler: {
+    title: 'CASE 97-0244 — TAYLOR, CASEY A. — MISSING',
+    messages: [
+      {
+        id: 'hm.readfirst',
+        date: '1997-10-18',
+        from: 'D. Purvis, Sheriff',
+        subject: 'READ FIRST',
+        lines: [
+          "The Taylor girl's computer is in this office as of Thursday.",
+          'Officially it has been examined. Officially there was nothing',
+          'on it.',
+          '',
+          'I have one deputy with a bad hip and a state lab that quotes me',
+          'six weeks. You asked to look. So look.',
+          '',
+          'Ground rules, and this software will hold you to them:',
+          '',
+          '  1. Original files are evidence. You can read them. You cannot',
+          '     change them. The software sees to that.',
+          '  2. Keep your own notes in her Notepad. What you save is yours',
+          '     and stays separate from the evidence.',
+          '  3. The WestWind account is paid through November. Dialing in',
+          '     on her line is authorized. Watch who you talk to out there.',
+          '',
+          'Anything that matters, write it down. Everything you open, I',
+          'hear about. Work like somebody is watching.',
+          '',
+          '- D.P.',
+        ],
+      },
+      {
+        id: 'hm.river',
+        date: '1997-10-18',
+        from: 'D. Purvis, Sheriff',
+        subject: 're: the river',
+        requires: { discovery: 'the-meeting' },
+        lines: [
+          'So she was meeting somebody. That much we had from the Thompson',
+          'girl in week one. WHO is the whole case.',
+          '',
+          'Keep to the machine. Do not go interviewing my county.',
+          '',
+          '- D.P.',
+        ],
+      },
+      {
+        id: 'hm.careful',
+        date: '1997-10-18',
+        from: 'D. Purvis, Sheriff',
+        subject: '(no subject)',
+        requires: { discovery: 'the-pipeline' },
+        lines: [
+          'I got your meaning. Stop.',
+          '',
+          'Listen to me now. Do not print that page. Do not speak that',
+          'name to a living soul in this county until I say so. Some names',
+          'here buy their own weather.',
+          '',
+          'Keep it on the machine. I mean it.',
+          '',
+          '- D.P.',
+        ],
+      },
+      {
+        id: 'hm.dialin',
+        date: '1997-10-18',
+        from: 'D. Purvis, Sheriff',
+        subject: 're: the session',
+        requires: { discovery: 'the-watcher' },
+        lines: [
+          'Say that again. Somebody dialed IN?',
+          '',
+          'Nothing in this case file says that machine takes calls. I am',
+          'going to find out who set that up. Until I do, you and I never',
+          'had this conversation.',
+          '',
+          'Log everything. Touch nothing. Keep the line unplugged when you',
+          'are not using it.',
+          '',
+          '- D.P.',
+        ],
+      },
+      {
+        id: 'hm.callme',
+        date: '1997-10-18',
+        from: 'D. Purvis, Sheriff',
+        subject: 'CALL THE OFFICE',
+        requires: { discovery: 'the-house' },
+        lines: [
+          'Enough. Call the office. Ask for me and nobody else.',
+          '',
+          'Do not use the machine again tonight. Do not tell the family',
+          'anything yet.',
+          '',
+          'You did what the six-week lab could not, and I am sorry for',
+          'what it cost you to learn it.',
+          '',
+          'Now call.',
+          '',
+          '- D.P.',
+        ],
+      },
+    ],
+  },
 
   // =========================================================================
   // LIVE CONVERSATIONS — Oct 18, 9:47 PM. The player is signed on as Casey.
@@ -261,6 +500,20 @@ export const SEASON1: SeasonContent = {
             'the kind of person who keeps the drawing you made her in second grade.',
             'she has a code word with me. for if things ever got Actually Bad. i’m not telling you what it is. it’s ours.',
             'just don’t stop halfway, ok? whatever you find. she wouldn’t.',
+          ],
+        },
+      ],
+      interjections: [
+        {
+          // evt.sadie-knock: she messages first, a few minutes after the
+          // introduction. Anchored after the intro exchange.
+          id: 'knock1',
+          afterPromptId: 'intro',
+          requires: { flag: 'sadie-checked-in' },
+          lines: [
+            'you still there?',
+            'sorry. i keep remembering things and typing at you is better than staring at the ceiling.',
+            'ask me whatever. i mean it. nobody else is asking.',
           ],
         },
       ],
@@ -973,9 +1226,27 @@ ok 1) it has my NAME on it so it's basically legally binding and
 taking chances and neither should you.
 
 (also fair pics came back from the developer. you look cute, i look
-like i'm being arrested.)
+like i'm being arrested. PROOF ATTACHED. scanning them at my cousin's
+took an HOUR so appreciate it.)
 
 xoxo angel`,
+      },
+    },
+    {
+      // Attachment on Angel's chain letter — images reach the machine the
+      // way they actually did in 1997: scanned at a cousin's, mailed over
+      // the wire. (Same roll of film as the print in C:\Pictures — the
+      // machine keeps meeting the same day from different directions.)
+      id: 'attach.fair-scan',
+      kind: 'photo',
+      name: 'fair_us_three.jpg',
+      icon: 'photo',
+      parentId: 'email.angel.chain',
+      meta: {
+        createdAt: '1997-10-07',
+        sizeKb: 92,
+        caption: 'us three at the fair!! i am NOT being arrested i am WINNING a churro. — a',
+        photoSrc: '/photos/fair_ferris_aug97.jpg',
       },
     },
     {
@@ -1148,6 +1419,37 @@ warm anyway.
       },
     },
     {
+      // Ambient, not story: delivered by evt.angel-forward a few minutes into
+      // a session. Mundane on arrival — and quietly awful after the finale,
+      // because Angel wasn't wrong that somebody kept signing on as Casey.
+      id: 'email.angel.chain2',
+      kind: 'email',
+      arrivesOnline: true,
+      name: 'FW: FW: FW: FW: THE GOOD LUCK ANGEL!!!',
+      icon: 'mail',
+      parentId: 'mailbox.inbox',
+      requires: { flag: 'angel-sent-luck' },
+      meta: {
+        from: 'angel jackson <angeljx@westwind.net>',
+        to: 'casey_t@westwind.net',
+        date: '1997-10-18T21:55:00',
+      },
+      body: {
+        text: `>>> SEND TO 10 FRIENDS IN 24 HOURS OR ELSE <<<
+
+ok so i know you're not her. somebody keeps signing on as her late
+at night and sadie says it's probably police stuff. so. hi.
+
+send it anyway. ten people. i told her when she comes back i'm
+sending her ten more and i'm starting now. that's how sure i am
+that she's coming back.
+
+do NOT break the chain. not this one. please.
+
+- a`,
+      },
+    },
+    {
       // ACT 2. Sadie does the player's thinking with them — and clears Chad.
       id: 'email.sadie.notchad',
       kind: 'email',
@@ -1311,7 +1613,59 @@ safe to hand it to.
 Whoever reads this: she was sixteen, and she was the only one in
 this county doing my job. Look at where the money goes.
 
+I attach the letter itself. Not the quoted scraps — the letter.
+Keep a copy somewhere they can't reach.
+
 - Sam Reed`,
+      },
+    },
+    {
+      // Attachment on Sam's plain-spoken mail: the September letter to the
+      // Board, whole. Evidence-grade — worth copying into your own notes.
+      // Inherits the email's gating through the ancestor chain.
+      id: 'attach.board-letter',
+      kind: 'document',
+      name: 'boardletter_sept.txt',
+      icon: 'doc',
+      parentId: 'email.sam.plain',
+      meta: { createdAt: '1997-09-08', modifiedAt: '1997-09-08', sizeKb: 3 },
+      body: {
+        text: `REED'S DRUG STORE — est. 1939
+S. Reed, R.Ph., proprietor
+
+September 8, 1997
+
+West Virginia Board of Pharmacy
+Charleston, W.Va.
+
+To whom it may concern:
+
+I write regarding a pattern of scheduled-narcotic prescriptions
+originating from a single local practice and filled at a single
+local pharmacy, in volumes that in forty years behind a counter I
+have never seen approached.
+
+Since March of this year I have observed, from my own window:
+
+  - Saturday dispensing hours at a practice that kept none for
+    a decade;
+  - patients paying cash, carrying plates from three counties
+    away;
+  - refill intervals no honest course of treatment could survive.
+
+A pharmacist who fills a script is not required to ask why. A
+doctor who writes one is not required to answer. Between those two
+courtesies a great deal of harm is presently driving in and out of
+this county on Saturday mornings.
+
+I am aware what it costs a man in a small town to put his name to
+a letter like this one. I have signed it anyway, and I will sign
+it again for any inspector you care to send.
+
+Respectfully,
+
+Samuel Reed, R.Ph.
+Reed's Drug Store, Humble`,
       },
     },
     {
@@ -1647,6 +2001,16 @@ and things go back to nor
       name: 'WestWind Online',
       icon: 'dialup',
       meta: { appId: 'dialup', desktop: { x: 216, y: 216 } },
+    },
+    {
+      // The one anachronism-on-purpose: the sheriff's office installed its
+      // evidence viewer before handing over the keyboard. Chrome-level app;
+      // every word it shows is engine-served handler content.
+      id: 'shortcut.casefile',
+      kind: 'shortcut',
+      name: 'Case File',
+      icon: 'notes',
+      meta: { appId: 'casefile', desktop: { x: 24, y: 312 } },
     },
     {
       id: 'shortcut.recycle',

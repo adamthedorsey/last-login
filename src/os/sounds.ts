@@ -159,6 +159,12 @@ export function playBuddyOn(): void {
   tone(784, 130, 200, 'square', 0.025);
 }
 
+/** A buddy signing off: the doorbell in reverse. */
+export function playBuddyOff(): void {
+  tone(784, 0, 120, 'square', 0.025);
+  tone(523, 130, 200, 'square', 0.03);
+}
+
 /** One incoming instant-message blip. Quiet — it can fire in a row. */
 export function playImMsg(): void {
   tone(740, 0, 70, 'square', 0.018);

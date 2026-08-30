@@ -1,8 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { ActionResult, DiscoveryView, GameAction, StateView } from '@gamecore/types.ts';
+import type { ActionResult, DiscoveryView, GameAction, StateView, WireNotice } from '@gamecore/types.ts';
 import { createGameClient, type GameClient } from './client';
 import { GameContext, type GameContextValue, type Toast } from './gameContext';
-import { playBuddyOn, playNotify } from '../os/sounds';
+import { playBuddyOff, playBuddyOn, playImMsg, playNotify } from '../os/sounds';
+import { useWindowStore } from '../os/windowStore';
+
+/** Generic per-kind toast copy — deliberately spoiler-free client strings.
+ * Anything specific (names, subjects) must arrive IN the notice, server-sent. */
+const WIRE_FALLBACK: Partial<Record<WireNotice['kind'], { title: string; text: string }>> = {
+  mail: { title: 'Mail', text: 'You have new mail.' },
+  im: { title: 'Chat', text: 'New instant message.' },
+  'buddy-on': { title: 'Chat', text: 'Someone just signed on.' },
+  'buddy-off': { title: 'Chat', text: 'Someone just signed off.' },
+  system: { title: 'System', text: '' },
+};
+
+/** How often the client asks "anything on the wire?" while connected. Pure
+ * polling theater — all timing/content decisions live in the engine. */
+const HEARTBEAT_MS = 10000;
 
 let toastId = 0;
 /** In-flight engine calls — the wait cursor clears when the last one lands. */
@@ -64,21 +79,59 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       if (ended) {
         // The season doesn't end with a dialog. It ends with a sign-on —
-        // which needs the line to be up. Offline, he simply waits for the
-        // player's next connection.
-        window.setTimeout(() => {
-          if (!viewRef.current?.online) return;
-          playBuddyOn();
-          setToasts((prev) => [
-            ...prev,
-            { id: ++toastId, title: 'Chat', description: 'Someone just signed on.' },
-          ]);
-          setContentEpoch((e) => e + 1);
-        }, 4500);
-        // If the player never takes the bait, the season card still arrives.
+        // authored as a scheduled event (the engine fires it on the next
+        // wire sweep while online; offline, he waits for the next
+        // connection). If the player never takes the bait, the season
+        // card still arrives.
         window.setTimeout(() => {
           if (!endCardSeenRef.current) setShowEndCard(true);
         }, 120000);
+      }
+    },
+    [refreshView],
+  );
+
+  /** Ambient wire notices: chirp, toast, and refetch. The client only ever
+   * renders what the server sent — it has no idea what any event MEANS. */
+  const handleWire = useCallback(
+    (notices: WireNotice[]) => {
+      for (const n of notices) {
+        switch (n.kind) {
+          case 'mail':
+            playNotify();
+            break;
+          case 'im':
+            playImMsg();
+            break;
+          case 'buddy-on':
+            playBuddyOn();
+            break;
+          case 'buddy-off':
+            playBuddyOff();
+            break;
+          case 'roster':
+          case 'remote':
+            break; // silent — the refetch below tells the shell/roster
+          default:
+            playNotify();
+        }
+        const fb = WIRE_FALLBACK[n.kind];
+        if (fb) {
+          setToasts((prev) => [
+            ...prev,
+            { id: ++toastId, title: n.title ?? fb.title, description: n.text ?? fb.text },
+          ]);
+        }
+        if (n.kind === 'im' && n.screenname) {
+          // Somebody messaged first — their window opens, like it did in 1997.
+          useWindowStore.getState().open('buddyline', {
+            props: { liveScreenname: n.screenname, wireSeq: Date.now() },
+          });
+        }
+      }
+      if (notices.length > 0) {
+        setContentEpoch((e) => e + 1);
+        void refreshView();
       }
     },
     [refreshView],
@@ -111,13 +164,34 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setContentEpoch((e) => e + 1);
         void refreshView();
       }
-      if (res.type === 'open' || res.type === 'visit' || res.type === 'chat') {
+      if (res.wire) handleWire(res.wire);
+      if (
+        res.type === 'open' ||
+        res.type === 'visit' ||
+        res.type === 'chat' ||
+        res.type === 'remote' ||
+        res.type === 'document'
+      ) {
         noteDiscoveries(res.newDiscoveries, res.ended);
       }
       if (res.type === 'net') {
-        // Connection state or mail delivery changed — every app refetches.
-        setContentEpoch((e) => e + 1);
-        void refreshView();
+        // Refetch only when something actually changed — the heartbeat polls
+        // this result shape every few seconds and must not thrash the apps.
+        const wasOnline = viewRef.current?.online === true;
+        const newMail = res.newMail ?? 0;
+        if (res.online !== wasOnline || newMail > 0) {
+          setContentEpoch((e) => e + 1);
+          void refreshView();
+        }
+        // Mail that arrived silently (no authored notice) still gets the
+        // generic chime — arrival IS the ambient event.
+        if (newMail > 0 && !res.wire?.some((w) => w.kind === 'mail')) {
+          playNotify();
+          setToasts((prev) => [
+            ...prev,
+            { id: ++toastId, title: 'Mail', description: 'You have new mail.' },
+          ]);
+        }
       }
       if (res.type === 'document' && res.ok) {
         // A player file was created/renamed — desktop views should refetch.
@@ -131,8 +205,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       return res;
     },
-    [noteDiscoveries, refreshView],
+    [noteDiscoveries, refreshView, handleWire],
   );
+
+  // The heartbeat: while the line is up, ask the engine every few seconds
+  // whether anything happened on the wire (scheduled events, mail delivery).
+  // Offline, the machine is a sealed box and nothing ticks.
+  const online = view?.online === true;
+  useEffect(() => {
+    if (!online) return;
+    const t = window.setInterval(() => {
+      void send({ type: 'checkMail' });
+    }, HEARTBEAT_MS);
+    return () => window.clearInterval(t);
+  }, [online, send]);
 
   const dismissToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));

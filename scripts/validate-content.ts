@@ -99,6 +99,40 @@ function validate(content: SeasonContent): void {
   for (const convo of content.conversations ?? [])
     for (const p of convo.prompts)
       for (const f of Object.keys(p.setFlags ?? {})) settableFlags.add(f);
+  for (const ev of content.schedule ?? [])
+    for (const f of Object.keys(ev.setFlags ?? {})) settableFlags.add(f);
+  for (const seq of content.remoteAccess ?? [])
+    for (const f of Object.keys(seq.onDone?.setFlags ?? {})) settableFlags.add(f);
+
+  // --- Scheduled events / remote sequences: unique ids, valid gates ---
+  const eventIds = new Set<string>();
+  for (const ev of content.schedule ?? []) {
+    const who = `event ${ev.id}`;
+    if (eventIds.has(ev.id)) errors.push(`${who}: duplicate event id`);
+    eventIds.add(ev.id);
+    checkReq(who, ev.requires);
+    if (ev.afterOnlineSeconds < 0) errors.push(`${who}: negative afterOnlineSeconds`);
+  }
+  for (const seq of content.remoteAccess ?? []) {
+    const who = `remote ${seq.id}`;
+    if (eventIds.has(seq.id)) errors.push(`${who}: id collides with a scheduled event`);
+    eventIds.add(seq.id);
+    checkReq(who, seq.requires);
+    if (seq.afterOnlineSeconds < 0) errors.push(`${who}: negative afterOnlineSeconds`);
+    if (seq.script.length === 0) errors.push(`${who}: empty script`);
+    for (const d of seq.onDone?.discover ?? [])
+      if (!discoveryIds.has(d)) errors.push(`${who}: grants unknown discovery "${d}"`);
+  }
+
+  // --- Case handler memos: unique ids, valid gates, non-empty ---
+  const memoIds = new Set<string>();
+  for (const m of content.handler?.messages ?? []) {
+    const who = `handler memo ${m.id}`;
+    if (memoIds.has(m.id)) errors.push(`${who}: duplicate memo id`);
+    memoIds.add(m.id);
+    checkReq(who, m.requires);
+    if (m.lines.length === 0) errors.push(`${who}: empty memo`);
+  }
 
   for (const convo of content.conversations ?? []) {
     const who = `conversation ${convo.screenname}`;
@@ -111,6 +145,14 @@ function validate(content: SeasonContent): void {
       checkReq(`${who}#${p.id}`, p.requires);
       for (const d of p.discover ?? [])
         if (!discoveryIds.has(d)) errors.push(`${who}#${p.id}: grants unknown discovery "${d}"`);
+    }
+    const iids = new Set<string>();
+    for (const x of convo.interjections ?? []) {
+      if (iids.has(x.id)) errors.push(`${who}: duplicate interjection id "${x.id}"`);
+      iids.add(x.id);
+      checkReq(`${who} interjection ${x.id}`, x.requires);
+      if (x.afterPromptId && !convo.prompts.some((p) => p.id === x.afterPromptId))
+        errors.push(`${who} interjection ${x.id}: unknown afterPromptId "${x.afterPromptId}"`);
     }
   }
   // A `flag` requirement that nothing can ever set is a dead gate.
@@ -129,6 +171,12 @@ function validate(content: SeasonContent): void {
     checkFlags(`conversation ${convo.screenname}`, convo.requires);
     for (const p of convo.prompts) checkFlags(`conversation ${convo.screenname}#${p.id}`, p.requires);
   }
+  for (const ev of content.schedule ?? []) checkFlags(`event ${ev.id}`, ev.requires);
+  for (const seq of content.remoteAccess ?? []) checkFlags(`remote ${seq.id}`, seq.requires);
+  for (const m of content.handler?.messages ?? []) checkFlags(`handler memo ${m.id}`, m.requires);
+  for (const convo of content.conversations ?? [])
+    for (const x of convo.interjections ?? [])
+      checkFlags(`conversation ${convo.screenname} interjection ${x.id}`, x.requires);
 
   // --- Every discovery must be grantable, finale must exist ---
   // Granters are items AND chat prompts (a live-conversation reveal counts
@@ -141,6 +189,9 @@ function validate(content: SeasonContent): void {
     for (const p of convo.prompts)
       for (const d of p.discover ?? [])
         granters.set(d, [...(granters.get(d) ?? []), `chat:${convo.screenname}#${p.id}`]);
+  for (const seq of content.remoteAccess ?? [])
+    for (const d of seq.onDone?.discover ?? [])
+      granters.set(d, [...(granters.get(d) ?? []), `remote:${seq.id}`]);
   for (const d of content.discoveries) {
     const g = granters.get(d.id) ?? [];
     if (g.length === 0) errors.push(`discovery "${d.id}" is granted by nothing`);
@@ -158,10 +209,29 @@ function validate(content: SeasonContent): void {
   state.online = true; // the omniscient player dials in immediately
   state.unlocked = [...Object.keys(content.passwords)]; // authored passwords are solvable
   const said = new Set<string>();
+  const firedSim = new Set<string>();
   let changed = true;
   let rounds = 0;
   while (changed && rounds++ < 1000) {
     changed = false;
+    // Scheduled events: the omniscient player has all the time in the world,
+    // so timing is ignored — only the requirement gates matter here.
+    for (const ev of content.schedule ?? []) {
+      if (firedSim.has(ev.id) || !meetsRequirement(state, ev.requires)) continue;
+      firedSim.add(ev.id);
+      if (ev.setFlags) Object.assign(state.flags, ev.setFlags);
+      changed = true;
+    }
+    // Remote sequences: the omniscient player watches them the moment they
+    // can trigger, earning whatever watching grants.
+    for (const seq of content.remoteAccess ?? []) {
+      if (firedSim.has(seq.id) || !meetsRequirement(state, seq.requires)) continue;
+      firedSim.add(seq.id);
+      if (seq.onDone?.setFlags) Object.assign(state.flags, seq.onDone.setFlags);
+      for (const d of seq.onDone?.discover ?? [])
+        if (!state.discoveries.includes(d)) state.discoveries.push(d);
+      changed = true;
+    }
     for (const item of content.items) {
       if (state.opened.includes(item.id)) continue;
       // Wire content gets delivered the moment its requirements are met.

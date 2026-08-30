@@ -26,6 +26,7 @@ import {
   SystemApplet,
 } from './ControlPanel';
 import { SystemMonitor } from './SystemMonitor';
+import { CaseFile } from './CaseFile';
 
 export function registerAllApps(): void {
   registerApp({
@@ -99,6 +100,14 @@ export function registerAllApps(): void {
     icon: 'game',
     component: Solitaire,
     defaultSize: { w: 640, h: 560 },
+    singleton: true,
+  });
+  registerApp({
+    id: 'casefile',
+    name: 'Case File',
+    icon: 'notes',
+    component: CaseFile,
+    defaultSize: { w: 620, h: 460 },
     singleton: true,
   });
   // --- Accessories (the Win95-style default apps) ---

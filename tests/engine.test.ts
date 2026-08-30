@@ -579,6 +579,309 @@ describe('find files', () => {
   });
 });
 
+describe('scheduled events', () => {
+  const EVENT = 'evt.angel-forward'; // 420s into a connection, no other gate
+  const EVENT_MAIL = 'email.angel.chain2';
+
+  const inboxIds = (s: PlayerState, now: number): string[] => {
+    const res = run(s, { type: 'listChildren', parentId: 'mailbox.inbox' }, now).result;
+    return res.type === 'children' ? res.items.map((i) => i.id) : [];
+  };
+
+  it('does not fire before its delay has elapsed', () => {
+    const s = loggedInState(); // connected at NOW
+    const { state, result } = run(s, { type: 'checkMail' }, NOW + 60_000);
+    expect(state.firedEvents ?? []).not.toContain(EVENT);
+    expect(result.wire).toBeUndefined();
+    expect(inboxIds(state, NOW + 60_000)).not.toContain(EVENT_MAIL);
+  });
+
+  it('fires once due: sets flags, delivers the gated mail, stamps a wire notice', () => {
+    const s = loggedInState();
+    const later = NOW + 421_000;
+    const { state, result } = run(s, { type: 'checkMail' }, later);
+    expect(state.firedEvents).toContain(EVENT);
+    expect(state.flags['angel-sent-luck']).toBe(true);
+    expect(state.delivered).toContain(EVENT_MAIL);
+    expect(result.wire?.some((w) => w.kind === 'mail')).toBe(true);
+    expect(result).toMatchObject({ type: 'net', online: true, newMail: 1 });
+    expect(inboxIds(state, later)).toContain(EVENT_MAIL);
+  });
+
+  it('fires exactly once per season', () => {
+    const s = loggedInState();
+    const first = run(s, { type: 'checkMail' }, NOW + 421_000);
+    const second = run(first.state, { type: 'checkMail' }, NOW + 900_000);
+    // Later sweeps may fire OTHER events, but never this one again.
+    expect(second.result.wire?.some((w) => w.kind === 'mail')).toBeFalsy();
+    expect(second.state.firedEvents?.filter((id) => id === EVENT)).toHaveLength(1);
+  });
+
+  it('never ticks while offline', () => {
+    const s = offlineState();
+    const { state } = run(s, { type: 'getDesktop' }, NOW + 10_000_000);
+    expect(state.firedEvents ?? []).not.toContain(EVENT);
+  });
+
+  it('measures its delay against the CURRENT connection, not wall time', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'disconnect' }, NOW + 300_000).state;
+    s = run(s, { type: 'connect' }, NOW + 400_000).state;
+    // 500s of wall time have passed, but only 100s of this connection.
+    const { state } = run(s, { type: 'checkMail' }, NOW + 500_000);
+    expect(state.firedEvents ?? []).not.toContain(EVENT);
+  });
+
+  it('the delivered mail persists offline like anything else on the disk', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'checkMail' }, NOW + 421_000).state;
+    s = run(s, { type: 'disconnect' }, NOW + 422_000).state;
+    expect(inboxIds(s, NOW + 423_000)).toContain(EVENT_MAIL);
+  });
+});
+
+describe('live buddy list', () => {
+  const buddyStatus = (s: PlayerState, name: string, now: number) => {
+    const res = run(s, { type: 'getBuddies' }, now).result;
+    return res.type === 'buddies' ? res.buddies.find((b) => b.screenname === name) : undefined;
+  };
+
+  it('flips Angel online a couple of minutes into a session', () => {
+    let s = loggedInState();
+    expect(buddyStatus(s, 'AngelJx', NOW)?.status).toBe('away');
+    s = run(s, { type: 'checkMail' }, NOW + 151_000).state;
+    expect(buddyStatus(s, 'AngelJx', NOW + 151_000)?.status).toBe('online');
+  });
+
+  it('puts Angel back on away, reworded, when her mom comes in', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'checkMail' }, NOW + 600_000).state;
+    const angel = buddyStatus(s, 'AngelJx', NOW + 600_000);
+    expect(angel?.status).toBe('away');
+    expect(angel?.awayMessage).toContain('HOMEWORK');
+  });
+
+  it('marks Sadie idle late in a long session — and she still answers', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'checkMail' }, NOW + 601_000).state;
+    expect(buddyStatus(s, 'sadiedraws77', NOW + 601_000)?.status).toBe('idle');
+    const chat = run(s, { type: 'getConversation', screenname: 'sadiedraws77' }, NOW + 601_000).result;
+    expect(chat).toMatchObject({ type: 'chat', ok: true });
+  });
+
+  it('Sadie messages first once introduced: interjection lands after the intro exchange', () => {
+    let s = loggedInState();
+    s = run(s, { type: 'say', screenname: 'sadiedraws77', promptId: 'intro' }).state;
+    // Before the event: no unprompted lines.
+    const before = run(s, { type: 'getConversation', screenname: 'sadiedraws77' }, NOW + 10_000).result;
+    expect(before.type === 'chat' && before.chat?.messages.some((m) => m.text.includes('you still there?'))).toBe(false);
+    // The knock fires four minutes in and carries an 'im' wire notice.
+    const tick = run(s, { type: 'checkMail' }, NOW + 241_000);
+    expect(tick.result.wire?.some((w) => w.kind === 'im' && w.screenname === 'sadiedraws77')).toBe(true);
+    const after = run(tick.state, { type: 'getConversation', screenname: 'sadiedraws77' }, NOW + 242_000).result;
+    expect(after.type === 'chat' && after.chat?.messages.some((m) => m.text.includes('you still there?'))).toBe(true);
+  });
+
+  it('never knocks if the player has not introduced themselves', () => {
+    const s = loggedInState();
+    const { result } = run(s, { type: 'checkMail' }, NOW + 241_000);
+    expect(result.wire?.some((w) => w.kind === 'im')).toBeFalsy();
+  });
+
+  it('rings the epilogue doorbell on the first sweep online after the finale', () => {
+    let s = loggedInState();
+    for (const step of CHAIN) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    expect(s.discoveries).toContain('the-house');
+    // The line-pickup scare dropped the connection mid-chain (who-shaped);
+    // he signs on the moment the player dials back in.
+    expect(s.online).toBeFalsy();
+    const { result } = run(s, { type: 'connect' }, NOW + 2_000);
+    expect(result.wire?.some((w) => w.kind === 'buddy-on')).toBe(true);
+  });
+});
+
+describe('email attachments', () => {
+  it('serves attachments as children of a readable mail', () => {
+    const s = loggedInState();
+    const res = run(s, { type: 'listChildren', parentId: 'email.angel.chain' }).result;
+    expect(res.type === 'children' && res.items.some((i) => i.id === 'attach.fair-scan')).toBe(true);
+  });
+
+  it('gates an attachment with its mail: unreachable until the mail is delivered', () => {
+    let s = loggedInState();
+    const early = run(s, { type: 'open', itemId: 'attach.board-letter' }).result;
+    expect(early).toMatchObject({ type: 'open', ok: false });
+    // Earn through the-clean-truck; the next sweep delivers Sam's letter.
+    for (const step of CHAIN.slice(0, 4)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    s = run(s, { type: 'checkMail' }).state;
+    expect(s.delivered).toContain('email.sam.plain');
+    const late = run(s, { type: 'open', itemId: 'attach.board-letter' }).result;
+    expect(late).toMatchObject({ type: 'open', ok: true });
+  });
+});
+
+describe('remote access', () => {
+  /** Earn the-pipeline while online (linePickup waits for who-shaped). */
+  const reachPipeline = (): PlayerState => {
+    let s = loggedInState();
+    for (const step of CHAIN.slice(0, 5)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    expect(s.discoveries).toContain('the-pipeline');
+    expect(s.online).toBe(true);
+    return s;
+  };
+
+  it('withholds the script until the takeover has triggered', () => {
+    const s = loggedInState();
+    expect(run(s, { type: 'getRemoteSession' }).result).toMatchObject({
+      type: 'remote',
+      ok: false,
+    });
+  });
+
+  it('triggers a minute into a session once the pipeline is known', () => {
+    const s = reachPipeline();
+    const tick = run(s, { type: 'checkMail' }, NOW + 61_000);
+    expect(tick.result.wire?.some((w) => w.kind === 'remote')).toBe(true);
+    const view = run(tick.state, { type: 'getState' }, NOW + 61_000).result;
+    expect(view.type === 'state' && view.view.remotePending).toBe(true);
+    const script = run(tick.state, { type: 'getRemoteSession' }, NOW + 62_000).result;
+    expect(script.type === 'remote' && script.ok && (script.script?.length ?? 0) > 0).toBe(true);
+  });
+
+  it('acknowledging grants the-watcher, drops the line, and never replays', () => {
+    const s = reachPipeline();
+    const triggered = run(s, { type: 'checkMail' }, NOW + 61_000).state;
+    const done = run(triggered, { type: 'remoteSessionDone' }, NOW + 90_000);
+    expect(done.result).toMatchObject({ type: 'remote', ok: true });
+    expect(
+      done.result.type === 'remote' &&
+        done.result.newDiscoveries?.some((d) => d.id === 'the-watcher'),
+    ).toBe(true);
+    expect(done.state.online).toBeFalsy();
+    // Watched once: no longer pending, and it never re-triggers.
+    const view = run(done.state, { type: 'getState' }, NOW + 91_000).result;
+    expect(view.type === 'state' && view.view.remotePending).toBeFalsy();
+    let s2 = run(done.state, { type: 'connect' }, NOW + 100_000).state;
+    s2 = run(s2, { type: 'checkMail' }, NOW + 200_000).state;
+    expect(run(s2, { type: 'getRemoteSession' }, NOW + 201_000).result).toMatchObject({
+      type: 'remote',
+      ok: false,
+    });
+  });
+
+  it('does not trigger for a player who lacks the discovery, however long they idle', () => {
+    const s = loggedInState();
+    const { state } = run(s, { type: 'checkMail' }, NOW + 3_600_000);
+    expect(state.firedEvents ?? []).not.toContain('remote.ghost-checkin');
+  });
+});
+
+describe('case file', () => {
+  const memoIds = (s: PlayerState): string[] => {
+    const res = run(s, { type: 'getCaseFile' }).result;
+    return res.type === 'casefile' ? res.view.messages.map((m) => m.id) : [];
+  };
+
+  it('serves the standing orders to a fresh player, and nothing gated', () => {
+    const s = offlineState();
+    const ids = memoIds(s);
+    expect(ids).toContain('hm.readfirst');
+    expect(ids).not.toContain('hm.careful');
+    expect(ids).not.toContain('hm.callme');
+  });
+
+  it('reacts to progress: new memos appear as discoveries land', () => {
+    let s = loggedInState();
+    for (const step of CHAIN.slice(0, 5)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    const ids = memoIds(s);
+    expect(ids).toContain('hm.river');
+    expect(ids).toContain('hm.careful');
+    expect(ids).not.toContain('hm.callme');
+  });
+
+  it('never leaks gates: memos carry only display fields', () => {
+    const s = offlineState();
+    const res = run(s, { type: 'getCaseFile' }).result;
+    expect(res.type).toBe('casefile');
+    if (res.type !== 'casefile') return;
+    for (const m of res.view.messages) {
+      expect(Object.keys(m).sort()).toEqual(
+        expect.not.arrayContaining(['requires', 'lines']),
+      );
+      expect(typeof m.text).toBe('string');
+    }
+  });
+});
+
+describe('workspace copies', () => {
+  it('snapshots an email with its envelope; the copy is a normal player doc', () => {
+    const s = offlineState();
+    const { state, result } = run(s, { type: 'copyItem', itemId: 'email.chad.sorry' });
+    expect(result).toMatchObject({ type: 'document', ok: true });
+    const doc = (state.documents ?? [])[0];
+    expect(doc?.name).toBe('Copy of im sorry ok.txt');
+    expect(doc?.text).toContain('From: chad daniels');
+    expect(doc?.text).toContain('Subject: im sorry ok');
+    const renamed = run(state, { type: 'renameItem', itemId: doc!.id, name: 'chad alibi.txt' });
+    expect(renamed.result).toMatchObject({ type: 'document', ok: true });
+  });
+
+  it('copying an unread original counts as reading it', () => {
+    let s = loggedInState();
+    for (const step of CHAIN.slice(0, 4)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    const { state, result } = run(s, { type: 'copyItem', itemId: 'file.ledger-copy' });
+    expect(
+      result.type === 'document' && result.newDiscoveries?.some((d) => d.id === 'the-pipeline'),
+    ).toBe(true);
+    expect(state.discoveries).toContain('the-pipeline');
+  });
+
+  it('refuses items the player cannot reach, and items without text', () => {
+    const s = offlineState();
+    expect(run(s, { type: 'copyItem', itemId: 'file.ledger-copy' }).result).toMatchObject({
+      type: 'document',
+      ok: false,
+      error: 'not_found',
+    });
+    expect(run(s, { type: 'copyItem', itemId: 'photo.fair' }).result).toMatchObject({
+      type: 'document',
+      ok: false,
+      error: 'not_supported',
+    });
+  });
+
+  it('duplicates a player document beside the original', () => {
+    let s = offlineState();
+    s = run(s, { type: 'saveDocument', name: 'notes.txt', text: 'junebug?' }).state;
+    const docId = (s.documents ?? [])[0].id;
+    const { state, result } = run(s, { type: 'copyItem', itemId: docId });
+    expect(result).toMatchObject({ type: 'document', ok: true });
+    expect(state.documents?.map((d) => d.name)).toContain('Copy of notes.txt');
+  });
+
+  it('enforces the workspace document cap', () => {
+    let s = offlineState();
+    for (let i = 0; i < 24; i++) {
+      s = run(s, { type: 'saveDocument', name: `n${i}.txt`, text: 'x' }).state;
+    }
+    expect(run(s, { type: 'copyItem', itemId: 'email.chad.sorry' }).result).toMatchObject({
+      type: 'document',
+      ok: false,
+      error: 'too_many',
+    });
+  });
+});
+
 describe('phone dialer', () => {
   it('cannot get a dial tone while the modem holds the line', () => {
     const s = loggedInState(); // online

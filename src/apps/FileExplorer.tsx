@@ -6,7 +6,8 @@ import { useGame } from '../game/gameContext';
 import { launchItem } from '../os/launch';
 import { Icon } from '../os/icons';
 import { PropertiesDialog } from '../os/PropertiesDialog';
-import { TYPE_NAMES, fmtShortStamp } from '../os/fileTypes';
+import { TYPE_NAMES, canCopyItem, fmtShortStamp } from '../os/fileTypes';
+import { playError } from '../os/sounds';
 import { useWindowStore } from '../os/windowStore';
 import { placeIcon, snapToGrid, ORIGIN } from '../os/desktopLayout';
 import { TASKBAR_HEIGHT } from '../os/windowStore';
@@ -244,6 +245,8 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [ghost, setGhost] = useState<{ item: ItemSummary; x: number; y: number } | null>(null);
   const [floppyError, setFloppyError] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const noticeTimer = useRef(0);
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; item: ItemSummary } | null>(null);
   const [propsItem, setPropsItem] = useState<ItemSummary | null>(null);
   const ctxRef = useRef<HTMLDivElement | null>(null);
@@ -391,6 +394,27 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
     void loadFolder(current.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentEpoch]);
+
+  const flashNotice = (text: string) => {
+    setNotice(text);
+    window.clearTimeout(noticeTimer.current);
+    noticeTimer.current = window.setTimeout(() => setNotice(null), 4000);
+  };
+
+  /** Snapshot an evidence file (or duplicate a player doc) onto the desktop. */
+  const copyToDesktop = async (item: ItemSummary) => {
+    const res = await send({ type: 'copyItem', itemId: item.id });
+    if (res.type === 'document' && res.ok && res.item) {
+      flashNotice(`Copied to Desktop as "${res.item.name}"`);
+    } else {
+      playError();
+      flashNotice(
+        res.type === 'document' && res.error === 'too_many'
+          ? 'Cannot copy: the Desktop is full of your files already.'
+          : 'This item cannot be copied.',
+      );
+    }
+  };
 
   const enter = (item: ItemSummary) => {
     // No disk in the drive. There was never a disk in the drive.
@@ -629,7 +653,21 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
             </MenuListItem>
             <Separator />
             <MenuListItem size="sm" disabled>Cut</MenuListItem>
-            <MenuListItem size="sm" disabled>Copy</MenuListItem>
+            <MenuListItem
+              size="sm"
+              disabled={!canCopyItem(ctxMenu.item)}
+              onClick={
+                canCopyItem(ctxMenu.item)
+                  ? () => {
+                      const it = ctxMenu.item;
+                      setCtxMenu(null);
+                      void copyToDesktop(it);
+                    }
+                  : undefined
+              }
+            >
+              Copy to Desktop
+            </MenuListItem>
             <MenuListItem size="sm" disabled>Delete</MenuListItem>
             <Separator />
             <MenuListItem
@@ -731,6 +769,7 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
       )}
       <StatusBar>
         {(() => {
+          if (notice) return notice;
           if (selected.length > 1) return `${selected.length} object(s) selected`;
           const base = `${items.length} object(s)`;
           const it = items.find((i) => i.id === selected[0]);

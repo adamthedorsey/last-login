@@ -230,6 +230,40 @@ const ImgPlaceholder = styled.div`
   max-width: 420px;
 `;
 
+/** A picture that hasn't come down the wire yet: the era's empty frame
+ * with the little placeholder glyph in the corner. Snaps to content. */
+const ImgPending = styled.div`
+  border: 1px solid #999;
+  background: rgba(255, 255, 255, 0.85);
+  width: 200px;
+  height: 110px;
+  margin: 10px auto;
+  display: flex;
+  align-items: flex-start;
+  padding: 4px;
+`;
+
+function PendingGlyph() {
+  return (
+    <svg width={20} height={20} viewBox="0 0 20 20" shapeRendering="crispEdges" aria-hidden>
+      <rect x={1} y={1} width={18} height={18} fill="#fff" stroke="#888" />
+      <rect x={4} y={4} width={5} height={4} fill="#c03030" />
+      <rect x={11} y={5} width={5} height={5} fill="#3050b0" />
+      <rect x={4} y={11} width={12} height={5} fill="#2a8a2a" />
+    </svg>
+  );
+}
+
+/**
+ * Staged page load: which leading blocks are on screen, and how many of the
+ * page's images have "arrived". `null` means fully loaded (the default for
+ * everything that isn't a freshly-visited page).
+ */
+interface Reveal {
+  blocks: number;
+  images: number;
+}
+
 // --- 1997 web furniture ------------------------------------------------------
 
 const blinker = keyframes`
@@ -436,14 +470,19 @@ function SearchHoundForm({ onSearch }: { onSearch?: (q: string) => void }) {
 
 function Blocks({
   page,
+  reveal,
   onNavigate,
   onSearch,
 }: {
   page: ItemContent;
+  reveal: Reveal | null;
   onNavigate: (url: string) => void;
   onSearch?: (q: string) => void;
 }) {
   const style = page.body?.style;
+
+  // Stable top-down image ordinals, whether or not a block is on screen yet.
+  let imgSeen = 0;
 
   return (
     <div
@@ -458,15 +497,26 @@ function Blocks({
         fontSize: 16,
       }}
     >
-      {page.body?.blocks?.map((b, i) => (
-        <Block
-          key={i}
-          b={b}
-          linkColor={style?.link ?? '#0000cc'}
-          onNavigate={onNavigate}
-          onSearch={onSearch}
-        />
-      ))}
+      {page.body?.blocks?.map((b, i) => {
+        const imgIdx = b.t === 'img' ? imgSeen++ : -1;
+        if (reveal && i >= reveal.blocks) return null;
+        if (imgIdx >= 0 && reveal && imgIdx >= reveal.images) {
+          return (
+            <ImgPending key={i}>
+              <PendingGlyph />
+            </ImgPending>
+          );
+        }
+        return (
+          <Block
+            key={i}
+            b={b}
+            linkColor={style?.link ?? '#0000cc'}
+            onNavigate={onNavigate}
+            onSearch={onSearch}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -648,8 +698,73 @@ export function Browser({ windowId, props }: AppWindowProps) {
   const [viewState, setViewState] = useState<ViewState>({ kind: 'blank' });
   const [status, setStatus] = useState('Ready.');
   const [loading, setLoading] = useState(false);
+  const [reveal, setReveal] = useState<Reveal | null>(null);
   const [bookmarks, setBookmarks] = useState<ItemSummary[]>([]);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const loadTimers = useRef<number[]>([]);
+
+  const clearLoadTimers = useCallback(() => {
+    for (const t of loadTimers.current) window.clearTimeout(t);
+    loadTimers.current = [];
+  }, []);
+  useEffect(() => clearLoadTimers, [clearLoadTimers]);
+
+  /**
+   * The dial-up page load, 1997-honest: text arrives top-down in a few
+   * chunks, then images fill their frames one at a time. Everything is
+   * stepped (no easing), the whole act stays under ~2.5s, and a click
+   * anywhere on the page finishes it instantly.
+   */
+  const stagePage = useCallback(
+    (page: ItemContent, host: string) => {
+      clearLoadTimers();
+      const blocks = page.body?.blocks ?? [];
+      const n = blocks.length;
+      const imgs = blocks.filter((b) => b.t === 'img').length;
+      if (n === 0) {
+        setReveal(null);
+        setLoading(false);
+        setStatus('Document: Done');
+        return;
+      }
+      setReveal({ blocks: Math.max(1, Math.ceil(n / 3)), images: 0 });
+      setLoading(true);
+      setStatus(`Transferring data from ${host} ...`);
+      const at = (ms: number, fn: () => void) =>
+        loadTimers.current.push(window.setTimeout(fn, ms));
+      at(250, () => setReveal((r) => r && { ...r, blocks: Math.ceil((2 * n) / 3) }));
+      at(500, () => setReveal((r) => r && { ...r, blocks: n }));
+      // Bigger pages take visibly longer, but the last image is in by ~2.2s.
+      const step = imgs > 1 ? Math.min(450, Math.floor(1300 / (imgs - 1))) : 0;
+      for (let i = 0; i < imgs; i++) {
+        at(850 + i * step, () => {
+          setStatus(`Transferring image ${i + 1} of ${imgs} ...`);
+          setReveal((r) => r && { ...r, images: i + 1 });
+        });
+      }
+      at(imgs > 0 ? 850 + (imgs - 1) * step + 200 : 650, () => {
+        setReveal(null);
+        setLoading(false);
+        setStatus('Document: Done');
+      });
+    },
+    [clearLoadTimers],
+  );
+
+  /** A click mid-load completes the page instantly (the period guard). */
+  const completeLoad = useCallback(() => {
+    clearLoadTimers();
+    setReveal(null);
+    setLoading(false);
+    setStatus('Document: Done');
+  }, [clearLoadTimers]);
+
+  /** Stop keeps whatever already arrived — empty frames stay empty. */
+  const stopLoad = useCallback(() => {
+    clearLoadTimers();
+    setLoading(false);
+    setStatus('Stopped.');
+  }, [clearLoadTimers]);
 
   const backStack = useRef<string[]>([]);
   const fwdStack = useRef<string[]>([]);
@@ -678,30 +793,34 @@ export function Browser({ windowId, props }: AppWindowProps) {
         brand('About NetVoyager');
         return;
       }
+      clearLoadTimers();
+      setReveal(null);
       setLoading(true);
       setStatus(`Connecting to ${target} ...`);
       const res = await send({ type: 'visit', url: target });
-      // A moment of dial-up honesty.
-      await new Promise((r) => window.setTimeout(r, 280));
+      // A moment of dial-up honesty before anything appears.
+      await new Promise((r) => window.setTimeout(r, 200));
       if (push && address) backStack.current.push(address);
       if (push) fwdStack.current = [];
       setAddress(target);
-      setLoading(false);
       if (res.type === 'visit' && res.ok && res.page) {
         setViewState({ kind: 'page', page: res.page });
-        setStatus('Document: Done');
         brand(res.page.meta?.siteTitle ?? res.page.name);
+        // Text arrives in chunks, images one at a time (see stagePage).
+        stagePage(res.page, target.split('/')[0]);
       } else if (res.type === 'visit' && res.offline) {
+        setLoading(false);
         setViewState({ kind: 'offline', url: target });
         setStatus('Not connected.');
         brand('Connection Failed');
       } else {
+        setLoading(false);
         setViewState({ kind: 'notfound', url: target });
         setStatus('Unable to locate server.');
         brand('Not Found');
       }
     },
-    [send, address, brand],
+    [send, address, brand, clearLoadTimers, stagePage],
   );
 
   const search = useCallback(
@@ -823,7 +942,7 @@ export function Browser({ windowId, props }: AppWindowProps) {
     { icon: 'guide', label: 'Guide', action: () => void navigate('www.searchhound.net') },
     { icon: 'print', label: 'Print', disabled: true },
     { icon: 'security', label: 'Security', disabled: true },
-    { icon: 'stop', label: 'Stop', disabled: !loading, action: () => setLoading(false) },
+    { icon: 'stop', label: 'Stop', disabled: !loading, action: stopLoad },
   ];
 
   let content: ReactNode;
@@ -832,6 +951,7 @@ export function Browser({ windowId, props }: AppWindowProps) {
       content = (
         <Blocks
           page={viewState.page}
+          reveal={reveal}
           onNavigate={(u) => void navigate(u)}
           onSearch={(q) => void search(q)}
         />
@@ -1010,7 +1130,9 @@ export function Browser({ windowId, props }: AppWindowProps) {
         </form>
       </LocationRow>
 
-      <Page>{content}</Page>
+      <Page onPointerDown={loading && viewState.kind === 'page' ? completeLoad : undefined}>
+        {content}
+      </Page>
 
       <StatusRow>
         <span title="This document is not secure. It is 1997.">🔓</span>

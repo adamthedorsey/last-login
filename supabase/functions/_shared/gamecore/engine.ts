@@ -10,6 +10,7 @@
 import type {
   ActionResult,
   Buddy,
+  WireNotice,
   BuddyStatus,
   BuddyView,
   ChatConversation,
@@ -26,6 +27,7 @@ import type {
   PlayerDocument,
   PlayerFolder,
   PlayerState,
+  RemoteAccessSequence,
   Requirement,
   SeasonContent,
   SearchResult,
@@ -96,6 +98,72 @@ function isUnlocked(state: PlayerState, item: ContentItem): boolean {
   return !item.password || state.unlocked.includes(item.id);
 }
 
+/**
+ * The ambient clock: while the line is up, any scheduled event whose delay
+ * has elapsed in the CURRENT connection and whose requirements are met fires
+ * exactly once per season. Effects are flags (everything downstream gates on
+ * them); each fired event may add a wire notice for the client. Events are
+ * evaluated in authored order, so an earlier event's flags can satisfy a
+ * later one in the same sweep.
+ */
+function sweepSchedule(
+  content: SeasonContent,
+  state: PlayerState,
+  nowMs: number,
+  wire: WireNotice[],
+  events: EngineOutcome['events'],
+): void {
+  if (!state.online || !state.onlineSince) return;
+  const fired = (state.firedEvents ??= []);
+  const elapsed = (nowMs - state.onlineSince) / 1000;
+  for (const ev of content.schedule ?? []) {
+    if (fired.includes(ev.id)) continue;
+    if (elapsed < ev.afterOnlineSeconds) continue;
+    if (!meetsRequirement(state, ev.requires)) continue;
+    fired.push(ev.id);
+    if (ev.setFlags) Object.assign(state.flags, ev.setFlags);
+    if (ev.notice) wire.push(ev.notice);
+    events.push({ type: 'scheduled_event', payload: { eventId: ev.id } });
+  }
+}
+
+/**
+ * Remote-access triggers ride the same clock as scheduled events: while
+ * online, once the delay elapses and the requirements hold, the takeover
+ * triggers (once per season) and stays PENDING until the client has played
+ * it back and acknowledged with remoteSessionDone.
+ */
+function sweepRemote(
+  content: SeasonContent,
+  state: PlayerState,
+  nowMs: number,
+  wire: WireNotice[],
+  events: EngineOutcome['events'],
+): void {
+  if (!state.online || !state.onlineSince) return;
+  const fired = (state.firedEvents ??= []);
+  const elapsed = (nowMs - state.onlineSince) / 1000;
+  for (const seq of content.remoteAccess ?? []) {
+    if (fired.includes(seq.id)) continue;
+    if (elapsed < seq.afterOnlineSeconds) continue;
+    if (!meetsRequirement(state, seq.requires)) continue;
+    fired.push(seq.id);
+    wire.push({ kind: 'remote' });
+    events.push({ type: 'remote_access', payload: { sequenceId: seq.id } });
+  }
+}
+
+/** The takeover that has triggered but not yet been watched, if any. */
+function pendingRemote(
+  content: SeasonContent,
+  state: PlayerState,
+): RemoteAccessSequence | undefined {
+  return (content.remoteAccess ?? []).find(
+    (seq) =>
+      (state.firedEvents ?? []).includes(seq.id) && !(state.remoteSeen ?? []).includes(seq.id),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Redaction: server shapes -> client DTOs
 // ---------------------------------------------------------------------------
@@ -159,6 +227,7 @@ export function toStateView(
     loginLockSeconds: lockSeconds,
     online: state.online === true,
     linePickup: state.flags['line-pickup-done'] === true,
+    remotePending: pendingRemote(content, state) ? true : undefined,
     onlineSeconds:
       state.online && state.onlineSince && nowMs !== undefined
         ? Math.max(0, Math.floor((nowMs - state.onlineSince) / 1000))
@@ -330,9 +399,22 @@ function toChatView(
   const self = content.computer.imScreenname ?? 'me';
   const messages: ImMessage[] = [];
   let minute = 0;
+  // Unprompted lines the buddy has volunteered, keyed to their anchor point.
+  const interjections = (convo.interjections ?? []).filter((x) =>
+    meetsRequirement(state, x.requires),
+  );
+  const interject = (anchor: string | undefined) => {
+    for (const x of interjections) {
+      if (x.afterPromptId !== anchor) continue;
+      for (const text of x.lines) {
+        messages.push({ from: convo.screenname, at: chatClock(content, minute), text });
+      }
+    }
+  };
   for (const text of convo.opener) {
     messages.push({ from: convo.screenname, at: chatClock(content, minute), text });
   }
+  interject(undefined);
   let signedOff = false;
   for (const id of usedPrompts(state, convo.screenname)) {
     const p = convo.prompts.find((x) => x.id === id);
@@ -342,6 +424,7 @@ function toChatView(
     for (const reply of p.replies) {
       messages.push({ from: convo.screenname, at: chatClock(content, minute), text: reply });
     }
+    interject(p.id);
     if (p.signOff) signedOff = true;
   }
   return {
@@ -389,6 +472,36 @@ function docSummary(doc: PlayerDocument, index: number): ItemSummary {
       desktop: { x: 312 + Math.floor(index / 5) * 96, y: 120 + (index % 5) * 96 },
     },
   };
+}
+
+/**
+ * The text a copy of this item carries. Emails keep their envelope, saved
+ * IM logs flatten to lines, documents copy verbatim. Anything without
+ * copyable text (photos, web pages, folders) returns undefined.
+ */
+function snapshotText(item: ContentItem): string | undefined {
+  const b = item.body;
+  if (item.kind === 'email') {
+    const m = item.meta ?? {};
+    const head = [
+      m.from ? `From: ${m.from}` : null,
+      m.to ? `To: ${m.to}` : null,
+      m.date ? `Date: ${m.date.replace('T', ' ')}` : null,
+      `Subject: ${item.name}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+    return `${head}\n\n${b?.text ?? ''}`;
+  }
+  if (b?.messages) {
+    return [`[saved log — ${item.name}]`, '', ...b.messages.map((x) => `${x.from} (${x.at}): ${x.text}`)].join('\n');
+  }
+  if (typeof b?.text === 'string') return b.text;
+  return undefined;
+}
+
+function copyDocName(name: string): string {
+  return sanitizeDocName(`Copy of ${name}`);
 }
 
 function playerDoc(state: PlayerState, id: string): PlayerDocument | undefined {
@@ -466,11 +579,16 @@ export function handleAction(
   const state = clone(prevState);
   const events: EngineOutcome['events'] = [];
   let pickupNotice = false;
+  const wire: WireNotice[] = [];
 
   const done = (result: ActionResult): EngineOutcome => ({
     state,
     changed: JSON.stringify(state) !== JSON.stringify(prevState),
-    result: pickupNotice ? { ...result, linePickup: true } : result,
+    result: {
+      ...result,
+      ...(pickupNotice ? { linePickup: true as const } : {}),
+      ...(wire.length ? { wire } : {}),
+    },
     events,
   });
 
@@ -539,7 +657,10 @@ export function handleAction(
     content.linePickup &&
     !state.flags['line-pickup-done'] &&
     meetsRequirement(state, content.linePickup.requires) &&
-    action.type !== 'connect'
+    action.type !== 'connect' &&
+    // Never yank the line out from under a takeover in progress — the
+    // remote session ends the connection itself.
+    !pendingRemote(content, state)
   ) {
     state.flags['line-pickup-done'] = true;
     state.online = false;
@@ -548,8 +669,12 @@ export function handleAction(
     events.push({ type: 'net_line_pickup' });
   }
 
-  // While the line is up, the outside world can reach the machine: any
-  // newly-eligible wire content arrives before the action is handled.
+  // While the line is up, the machine lives a little: scheduled events whose
+  // time has come fire first (their flags may make more content eligible),
+  // then any newly-eligible wire content arrives — all before the action is
+  // handled.
+  sweepSchedule(content, state, nowMs, wire, events);
+  sweepRemote(content, state, nowMs, wire, events);
   const arrived = state.online ? deliverPending(content, state) : 0;
 
   switch (action.type) {
@@ -559,6 +684,9 @@ export function handleAction(
         state.onlineSince = nowMs;
         events.push({ type: 'net_connect' });
       }
+      // Zero-delay events may fire the moment the line comes up.
+      sweepSchedule(content, state, nowMs, wire, events);
+      sweepRemote(content, state, nowMs, wire, events);
       const newMail = deliverPending(content, state);
       return done({ type: 'net', online: true, newMail });
     }
@@ -814,6 +942,70 @@ export function handleAction(
       return done({ type: 'document', ok: true, item: docSummary(doc, docs.length - 1) });
     }
 
+    case 'copyItem': {
+      // Evidence stays evidence — but the player may take a snapshot into
+      // their own workspace and mark it up. The copy is a player document:
+      // editable, renamable, movable. The original is untouched.
+      const docs = (state.documents ??= []);
+      if (docs.length >= MAX_PLAYER_DOCS) {
+        return done({ type: 'document', ok: false, error: 'too_many' });
+      }
+      const nowDate = content.clock.now.slice(0, 10);
+      const nextDoc = (): number => {
+        const seq = (state.docSeq ?? 0) + 1;
+        state.docSeq = seq;
+        return seq;
+      };
+
+      // Duplicating one of the player's own files.
+      const source = playerDoc(state, action.itemId);
+      if (source) {
+        const copy: PlayerDocument = {
+          id: `playerdoc.${nextDoc()}`,
+          name: copyDocName(source.name),
+          text: source.text,
+          createdAt: nowDate,
+          modifiedAt: nowDate,
+          folderId: source.folderId,
+        };
+        docs.push(copy);
+        events.push({ type: 'copy_item', payload: { source: source.id, docId: copy.id } });
+        return done({ type: 'document', ok: true, item: docSummary(copy, docs.length - 1) });
+      }
+
+      // Snapshotting evidence: only what the player could open right now.
+      const item = itemById(content, action.itemId);
+      if (!item || !isAccessible(content, state, item)) {
+        return done({ type: 'document', ok: false, error: 'not_found' });
+      }
+      if (!isUnlocked(state, item)) {
+        return done({ type: 'document', ok: false, error: 'locked' });
+      }
+      const text = snapshotText(item);
+      if (text === undefined) {
+        return done({ type: 'document', ok: false, error: 'not_supported' });
+      }
+      // Copying serves the content, so it counts as reading the original —
+      // a discovery can never be lost inside an unread copy.
+      const { newDiscoveries, ended } = applyOpenEffects(content, state, item, events);
+      const copy: PlayerDocument = {
+        id: `playerdoc.${nextDoc()}`,
+        name: copyDocName(item.name),
+        text: text.slice(0, MAX_DOC_TEXT),
+        createdAt: nowDate,
+        modifiedAt: nowDate,
+      };
+      docs.push(copy);
+      events.push({ type: 'copy_item', payload: { source: item.id, docId: copy.id } });
+      return done({
+        type: 'document',
+        ok: true,
+        item: docSummary(copy, docs.length - 1),
+        newDiscoveries: newDiscoveries.length ? newDiscoveries : undefined,
+        ended: ended || undefined,
+      });
+    }
+
     case 'createFolder': {
       const folders = (state.folders ??= []);
       if (folders.length >= MAX_PLAYER_FOLDERS) {
@@ -918,6 +1110,58 @@ export function handleAction(
         type: 'chat',
         ok: true,
         chat: toChatView(content, state, convo, buddy),
+        newDiscoveries: newDiscoveries.length ? newDiscoveries : undefined,
+        ended: ended || undefined,
+      });
+    }
+
+    case 'getCaseFile': {
+      // The handler's memos, redacted to what the player has earned. The
+      // Case File app is the sanctioned diegetic frame — every word here is
+      // season content.
+      const handler = content.handler;
+      if (!handler) return done({ type: 'casefile', view: { title: '', messages: [] } });
+      const messages = handler.messages
+        .filter((m) => meetsRequirement(state, m.requires))
+        .map((m) => ({
+          id: m.id,
+          date: m.date,
+          from: m.from,
+          subject: m.subject,
+          text: m.lines.join('\n'),
+        }));
+      return done({ type: 'casefile', view: { title: handler.title, messages } });
+    }
+
+    case 'getRemoteSession': {
+      // The script is served only once the takeover has actually triggered —
+      // until then it does not exist, client-side. Replayable after a reload
+      // until acknowledged.
+      const seq = pendingRemote(content, state);
+      if (!seq) return done({ type: 'remote', ok: false, error: 'not_available' });
+      return done({ type: 'remote', ok: true, script: seq.script });
+    }
+
+    case 'remoteSessionDone': {
+      const seq = pendingRemote(content, state);
+      if (!seq) return done({ type: 'remote', ok: false, error: 'not_available' });
+      (state.remoteSeen ??= []).push(seq.id);
+      if (seq.onDone?.setFlags) Object.assign(state.flags, seq.onDone.setFlags);
+      const { newDiscoveries, ended } = grantDiscoveries(
+        content,
+        state,
+        seq.onDone?.discover ?? [],
+        events,
+      );
+      // The intruder hangs up — and takes the line down with them.
+      if (state.online) {
+        state.online = false;
+        delete state.onlineSince;
+        events.push({ type: 'net_remote_drop', payload: { sequenceId: seq.id } });
+      }
+      return done({
+        type: 'remote',
+        ok: true,
         newDiscoveries: newDiscoveries.length ? newDiscoveries : undefined,
         ended: ended || undefined,
       });

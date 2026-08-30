@@ -33,6 +33,10 @@ const FORBIDDEN = [
   '2141-1011', // DOS volume serial (the finale timestamp, hiding in plain sight)
   '02:17 AM', // the modem log's smoking-gun session
   'First Bank of Humble', // phone-line content (server-authored, canary)
+  'HZLINK', // the remote-access takeover script (served only once triggered)
+  'the-watcher', // its discovery id
+  'buy their own weather', // the sheriff's gated memo (handler content)
+  'CASE 97-0244', // the case-file header (served via getCaseFile)
 ];
 
 function* walk(dir) {
