@@ -131,6 +131,14 @@ export const SEASON1: SeasonContent = {
         'Dr. Sparks writes them. Value-Med fills them. Cash, strangers’ initials, license plates from three counties away. That’s what Casey found — and what somebody needed her not to have found.',
     },
     {
+      // Granted by watching the remote-access set-piece (single-path by
+      // design — it is an event that happens TO the player, not a puzzle).
+      id: 'the-watcher',
+      title: 'The watcher',
+      description:
+        'Someone just dialed into this machine like they’d done it a hundred times — no guessing, no fumbling, straight to her private folder, looking for one file that is no longer there. That is how you know things nobody posted, and quote files that live nowhere else. It was never magic. It was access.',
+    },
+    {
       id: 'who-shaped',
       title: 'A familiar shape',
       description:
@@ -260,6 +268,48 @@ export const SEASON1: SeasonContent = {
       afterOnlineSeconds: 0,
       requires: { discovery: 'the-house' },
       notice: { kind: 'buddy-on' },
+    },
+  ],
+
+  // =========================================================================
+  // REMOTE ACCESS — the Act 3 set-piece. A minute after the player has the
+  // pipeline (someone's whole crime, sitting in a school folder), the GUI
+  // drops and a practiced hand dials in: checks the volume, goes straight
+  // to `personal stuff`, asks for one file that is no longer there, says
+  // goodnight, hangs up. This is HOW GhostBridge always knew — the same
+  // session the modem log has been recording at 11-something every night.
+  // Watching it earns `the-watcher` and costs the connection.
+  // =========================================================================
+  remoteAccess: [
+    {
+      id: 'remote.ghost-checkin',
+      afterOnlineSeconds: 60,
+      requires: { discovery: 'the-pipeline' },
+      script: [
+        { t: 'sys', text: 'HZLINK 1.2 remote console — carrier 28800' },
+        { t: 'sys', text: 'supervisor session (no password required)' },
+        { t: 'sys', text: '' },
+        { t: 'pause', ms: 1100 },
+        { t: 'cmd', text: 'C:\\>vol' },
+        {
+          t: 'out',
+          lines: [' Volume in drive C is CASEY', ' Volume Serial Number is 2141-1011', ''],
+        },
+        { t: 'pause', ms: 700 },
+        { t: 'cmd', text: 'C:\\>cd my documents\\personal stuff' },
+        { t: 'cmd', text: 'C:\\MY DOCUMENTS\\PERSONAL STUFF>dir diary.doc' },
+        { t: 'pause', ms: 500 },
+        { t: 'out', lines: ['File not found', ''] },
+        { t: 'pause', ms: 2000 },
+        { t: 'cmd', text: 'C:\\MY DOCUMENTS\\PERSONAL STUFF>echo goodnight' },
+        { t: 'out', lines: ['goodnight', ''] },
+        { t: 'pause', ms: 900 },
+        { t: 'cmd', text: 'C:\\MY DOCUMENTS\\PERSONAL STUFF>exit' },
+        { t: 'sys', text: '' },
+        { t: 'sys', text: 'NO CARRIER' },
+        { t: 'pause', ms: 1400 },
+      ],
+      onDone: { discover: ['the-watcher'], setFlags: { 'watched-remote': true } },
     },
   ],
 

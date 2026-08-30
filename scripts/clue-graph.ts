@@ -139,6 +139,18 @@ function generate(content: SeasonContent): string {
     }
   }
 
+  // Remote-access set-pieces that grant discoveries.
+  for (const seq of content.remoteAccess ?? []) {
+    if ((seq.onDone?.discover?.length ?? 0) === 0) continue;
+    const rid = nid('r', seq.id);
+    declare(rid, `${rid}["${esc(seq.id)}<br/><i>remote access</i>"]:::item`);
+    for (const d of seq.onDone?.discover ?? []) add(`${rid} ==>|grants| ${nid('d', d)}`);
+    for (const { combinator, leaf } of leaves(seq.requires ?? { all: [] })) {
+      const label = combinator === 'REQ' ? 'requires' : combinator;
+      if ('discovery' in leaf) add(`${nid('d', leaf.discovery)} -->|${label}| ${rid}`);
+    }
+  }
+
   const gated = content.items.filter((i) => i.requires).length;
   const granting = content.items.filter((i) => (i.onOpen?.discover?.length ?? 0) > 0).length;
   const mundane = content.items.length - gated - granting;

@@ -165,7 +165,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
         void refreshView();
       }
       if (res.wire) handleWire(res.wire);
-      if (res.type === 'open' || res.type === 'visit' || res.type === 'chat') {
+      if (
+        res.type === 'open' ||
+        res.type === 'visit' ||
+        res.type === 'chat' ||
+        res.type === 'remote'
+      ) {
         noteDiscoveries(res.newDiscoveries, res.ended);
       }
       if (res.type === 'net') {

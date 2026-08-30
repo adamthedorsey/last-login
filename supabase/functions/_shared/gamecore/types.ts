@@ -255,6 +255,35 @@ export interface ScheduledEvent {
   notice?: WireNotice;
 }
 
+// ---------------------------------------------------------------------------
+// Remote access (the takeover set-piece)
+// ---------------------------------------------------------------------------
+
+/** One beat of a remote-access script, played back by the takeover screen.
+ * `cmd` text is typed character-by-character on a fixed clock and must
+ * include its own prompt (e.g. "C:\\>vol") — the client renders, never
+ * composes. SERVER ONLY until triggered; served whole once earned. */
+export type RemoteScriptLine =
+  | { t: 'sys'; text: string }
+  | { t: 'cmd'; text: string }
+  | { t: 'out'; lines: string[] }
+  | { t: 'pause'; ms: number };
+
+/**
+ * A story set-piece: while the player is online, the GUI drops and someone
+ * dials INTO the machine. Triggers like a scheduled event (delay into the
+ * current connection + requirements), fires once per season, and must then
+ * be watched: the client plays the script and acknowledges, which applies
+ * `onDone` and drops the connection. SERVER ONLY.
+ */
+export interface RemoteAccessSequence {
+  id: string;
+  afterOnlineSeconds: number;
+  requires?: Requirement;
+  script: RemoteScriptLine[];
+  onDone?: { setFlags?: Record<string, boolean>; discover?: string[] };
+}
+
 export interface SeasonContent {
   slug: string;
   title: string;
@@ -302,6 +331,8 @@ export interface SeasonContent {
   phones?: PhoneNumber[];
   /** Timed ambient events, swept while the player is online. SERVER ONLY. */
   schedule?: ScheduledEvent[];
+  /** Remote-access takeover set-pieces (see RemoteAccessSequence). SERVER ONLY. */
+  remoteAccess?: RemoteAccessSequence[];
   maxPasswordAttempts: number;
   lockoutSeconds: number;
 }
@@ -370,6 +401,8 @@ export interface PlayerState {
   delivered?: string[];
   /** Ids of scheduled events that have fired (each fires once per season). */
   firedEvents?: string[];
+  /** Ids of remote-access sequences the player has watched to the end. */
+  remoteSeen?: string[];
 }
 
 export function newPlayerState(): PlayerState {
@@ -412,6 +445,8 @@ export type GameAction =
   | { type: 'getBuddies' }
   | { type: 'getConversation'; screenname: string }
   | { type: 'say'; screenname: string; promptId: string }
+  | { type: 'getRemoteSession' }
+  | { type: 'remoteSessionDone' }
   | { type: 'saveDocument'; docId?: string; name: string; text: string }
   | { type: 'createFolder'; name: string }
   | { type: 'moveDocument'; docId: string; folderId?: string }
@@ -467,6 +502,9 @@ export interface StateView {
   onlineSeconds?: number;
   /** True once the line-pickup beat has fired (client shows it one time). */
   linePickup?: boolean;
+  /** A remote-access takeover has triggered and not yet been watched: the
+   * shell must play it (and replay it after a reload) until acknowledged. */
+  remotePending?: boolean;
   wallpaper: string;
   homeUrl: string;
   loggedIn: boolean;
@@ -574,6 +612,16 @@ export type ActionResult = (
       error?: string;
     }
   | { type: 'document'; ok: boolean; item?: ItemSummary; error?: string }
+  | {
+      type: 'remote';
+      ok: boolean;
+      /** The script to play (getRemoteSession on a pending takeover). */
+      script?: RemoteScriptLine[];
+      /** Set on remoteSessionDone when watching it earned something. */
+      newDiscoveries?: DiscoveryView[];
+      ended?: boolean;
+      error?: string;
+    }
   | { type: 'net'; online: boolean; newMail?: number }
   | { type: 'reset'; view: StateView }
   | { type: 'error'; error: string }

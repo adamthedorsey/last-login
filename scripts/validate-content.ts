@@ -101,8 +101,10 @@ function validate(content: SeasonContent): void {
       for (const f of Object.keys(p.setFlags ?? {})) settableFlags.add(f);
   for (const ev of content.schedule ?? [])
     for (const f of Object.keys(ev.setFlags ?? {})) settableFlags.add(f);
+  for (const seq of content.remoteAccess ?? [])
+    for (const f of Object.keys(seq.onDone?.setFlags ?? {})) settableFlags.add(f);
 
-  // --- Scheduled events: unique ids, valid gates ---
+  // --- Scheduled events / remote sequences: unique ids, valid gates ---
   const eventIds = new Set<string>();
   for (const ev of content.schedule ?? []) {
     const who = `event ${ev.id}`;
@@ -110,6 +112,16 @@ function validate(content: SeasonContent): void {
     eventIds.add(ev.id);
     checkReq(who, ev.requires);
     if (ev.afterOnlineSeconds < 0) errors.push(`${who}: negative afterOnlineSeconds`);
+  }
+  for (const seq of content.remoteAccess ?? []) {
+    const who = `remote ${seq.id}`;
+    if (eventIds.has(seq.id)) errors.push(`${who}: id collides with a scheduled event`);
+    eventIds.add(seq.id);
+    checkReq(who, seq.requires);
+    if (seq.afterOnlineSeconds < 0) errors.push(`${who}: negative afterOnlineSeconds`);
+    if (seq.script.length === 0) errors.push(`${who}: empty script`);
+    for (const d of seq.onDone?.discover ?? [])
+      if (!discoveryIds.has(d)) errors.push(`${who}: grants unknown discovery "${d}"`);
   }
 
   for (const convo of content.conversations ?? []) {
@@ -165,6 +177,9 @@ function validate(content: SeasonContent): void {
     for (const p of convo.prompts)
       for (const d of p.discover ?? [])
         granters.set(d, [...(granters.get(d) ?? []), `chat:${convo.screenname}#${p.id}`]);
+  for (const seq of content.remoteAccess ?? [])
+    for (const d of seq.onDone?.discover ?? [])
+      granters.set(d, [...(granters.get(d) ?? []), `remote:${seq.id}`]);
   for (const d of content.discoveries) {
     const g = granters.get(d.id) ?? [];
     if (g.length === 0) errors.push(`discovery "${d.id}" is granted by nothing`);
@@ -193,6 +208,16 @@ function validate(content: SeasonContent): void {
       if (firedSim.has(ev.id) || !meetsRequirement(state, ev.requires)) continue;
       firedSim.add(ev.id);
       if (ev.setFlags) Object.assign(state.flags, ev.setFlags);
+      changed = true;
+    }
+    // Remote sequences: the omniscient player watches them the moment they
+    // can trigger, earning whatever watching grants.
+    for (const seq of content.remoteAccess ?? []) {
+      if (firedSim.has(seq.id) || !meetsRequirement(state, seq.requires)) continue;
+      firedSim.add(seq.id);
+      if (seq.onDone?.setFlags) Object.assign(state.flags, seq.onDone.setFlags);
+      for (const d of seq.onDone?.discover ?? [])
+        if (!state.discoveries.includes(d)) state.discoveries.push(d);
       changed = true;
     }
     for (const item of content.items) {

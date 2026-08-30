@@ -27,6 +27,7 @@ import type {
   PlayerDocument,
   PlayerFolder,
   PlayerState,
+  RemoteAccessSequence,
   Requirement,
   SeasonContent,
   SearchResult,
@@ -126,6 +127,43 @@ function sweepSchedule(
   }
 }
 
+/**
+ * Remote-access triggers ride the same clock as scheduled events: while
+ * online, once the delay elapses and the requirements hold, the takeover
+ * triggers (once per season) and stays PENDING until the client has played
+ * it back and acknowledged with remoteSessionDone.
+ */
+function sweepRemote(
+  content: SeasonContent,
+  state: PlayerState,
+  nowMs: number,
+  wire: WireNotice[],
+  events: EngineOutcome['events'],
+): void {
+  if (!state.online || !state.onlineSince) return;
+  const fired = (state.firedEvents ??= []);
+  const elapsed = (nowMs - state.onlineSince) / 1000;
+  for (const seq of content.remoteAccess ?? []) {
+    if (fired.includes(seq.id)) continue;
+    if (elapsed < seq.afterOnlineSeconds) continue;
+    if (!meetsRequirement(state, seq.requires)) continue;
+    fired.push(seq.id);
+    wire.push({ kind: 'remote' });
+    events.push({ type: 'remote_access', payload: { sequenceId: seq.id } });
+  }
+}
+
+/** The takeover that has triggered but not yet been watched, if any. */
+function pendingRemote(
+  content: SeasonContent,
+  state: PlayerState,
+): RemoteAccessSequence | undefined {
+  return (content.remoteAccess ?? []).find(
+    (seq) =>
+      (state.firedEvents ?? []).includes(seq.id) && !(state.remoteSeen ?? []).includes(seq.id),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Redaction: server shapes -> client DTOs
 // ---------------------------------------------------------------------------
@@ -189,6 +227,7 @@ export function toStateView(
     loginLockSeconds: lockSeconds,
     online: state.online === true,
     linePickup: state.flags['line-pickup-done'] === true,
+    remotePending: pendingRemote(content, state) ? true : undefined,
     onlineSeconds:
       state.online && state.onlineSince && nowMs !== undefined
         ? Math.max(0, Math.floor((nowMs - state.onlineSince) / 1000))
@@ -588,7 +627,10 @@ export function handleAction(
     content.linePickup &&
     !state.flags['line-pickup-done'] &&
     meetsRequirement(state, content.linePickup.requires) &&
-    action.type !== 'connect'
+    action.type !== 'connect' &&
+    // Never yank the line out from under a takeover in progress — the
+    // remote session ends the connection itself.
+    !pendingRemote(content, state)
   ) {
     state.flags['line-pickup-done'] = true;
     state.online = false;
@@ -602,6 +644,7 @@ export function handleAction(
   // then any newly-eligible wire content arrives — all before the action is
   // handled.
   sweepSchedule(content, state, nowMs, wire, events);
+  sweepRemote(content, state, nowMs, wire, events);
   const arrived = state.online ? deliverPending(content, state) : 0;
 
   switch (action.type) {
@@ -613,6 +656,7 @@ export function handleAction(
       }
       // Zero-delay events may fire the moment the line comes up.
       sweepSchedule(content, state, nowMs, wire, events);
+      sweepRemote(content, state, nowMs, wire, events);
       const newMail = deliverPending(content, state);
       return done({ type: 'net', online: true, newMail });
     }
@@ -972,6 +1016,40 @@ export function handleAction(
         type: 'chat',
         ok: true,
         chat: toChatView(content, state, convo, buddy),
+        newDiscoveries: newDiscoveries.length ? newDiscoveries : undefined,
+        ended: ended || undefined,
+      });
+    }
+
+    case 'getRemoteSession': {
+      // The script is served only once the takeover has actually triggered —
+      // until then it does not exist, client-side. Replayable after a reload
+      // until acknowledged.
+      const seq = pendingRemote(content, state);
+      if (!seq) return done({ type: 'remote', ok: false, error: 'not_available' });
+      return done({ type: 'remote', ok: true, script: seq.script });
+    }
+
+    case 'remoteSessionDone': {
+      const seq = pendingRemote(content, state);
+      if (!seq) return done({ type: 'remote', ok: false, error: 'not_available' });
+      (state.remoteSeen ??= []).push(seq.id);
+      if (seq.onDone?.setFlags) Object.assign(state.flags, seq.onDone.setFlags);
+      const { newDiscoveries, ended } = grantDiscoveries(
+        content,
+        state,
+        seq.onDone?.discover ?? [],
+        events,
+      );
+      // The intruder hangs up — and takes the line down with them.
+      if (state.online) {
+        state.online = false;
+        delete state.onlineSince;
+        events.push({ type: 'net_remote_drop', payload: { sequenceId: seq.id } });
+      }
+      return done({
+        type: 'remote',
+        ok: true,
         newDiscoveries: newDiscoveries.length ? newDiscoveries : undefined,
         ended: ended || undefined,
       });

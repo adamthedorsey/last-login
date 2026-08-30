@@ -724,6 +724,64 @@ describe('email attachments', () => {
   });
 });
 
+describe('remote access', () => {
+  /** Earn the-pipeline while online (linePickup waits for who-shaped). */
+  const reachPipeline = (): PlayerState => {
+    let s = loggedInState();
+    for (const step of CHAIN.slice(0, 5)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    expect(s.discoveries).toContain('the-pipeline');
+    expect(s.online).toBe(true);
+    return s;
+  };
+
+  it('withholds the script until the takeover has triggered', () => {
+    const s = loggedInState();
+    expect(run(s, { type: 'getRemoteSession' }).result).toMatchObject({
+      type: 'remote',
+      ok: false,
+    });
+  });
+
+  it('triggers a minute into a session once the pipeline is known', () => {
+    const s = reachPipeline();
+    const tick = run(s, { type: 'checkMail' }, NOW + 61_000);
+    expect(tick.result.wire?.some((w) => w.kind === 'remote')).toBe(true);
+    const view = run(tick.state, { type: 'getState' }, NOW + 61_000).result;
+    expect(view.type === 'state' && view.view.remotePending).toBe(true);
+    const script = run(tick.state, { type: 'getRemoteSession' }, NOW + 62_000).result;
+    expect(script.type === 'remote' && script.ok && (script.script?.length ?? 0) > 0).toBe(true);
+  });
+
+  it('acknowledging grants the-watcher, drops the line, and never replays', () => {
+    const s = reachPipeline();
+    const triggered = run(s, { type: 'checkMail' }, NOW + 61_000).state;
+    const done = run(triggered, { type: 'remoteSessionDone' }, NOW + 90_000);
+    expect(done.result).toMatchObject({ type: 'remote', ok: true });
+    expect(
+      done.result.type === 'remote' &&
+        done.result.newDiscoveries?.some((d) => d.id === 'the-watcher'),
+    ).toBe(true);
+    expect(done.state.online).toBeFalsy();
+    // Watched once: no longer pending, and it never re-triggers.
+    const view = run(done.state, { type: 'getState' }, NOW + 91_000).result;
+    expect(view.type === 'state' && view.view.remotePending).toBeFalsy();
+    let s2 = run(done.state, { type: 'connect' }, NOW + 100_000).state;
+    s2 = run(s2, { type: 'checkMail' }, NOW + 200_000).state;
+    expect(run(s2, { type: 'getRemoteSession' }, NOW + 201_000).result).toMatchObject({
+      type: 'remote',
+      ok: false,
+    });
+  });
+
+  it('does not trigger for a player who lacks the discovery, however long they idle', () => {
+    const s = loggedInState();
+    const { state } = run(s, { type: 'checkMail' }, NOW + 3_600_000);
+    expect(state.firedEvents ?? []).not.toContain('remote.ghost-checkin');
+  });
+});
+
 describe('phone dialer', () => {
   it('cannot get a dial tone while the modem holds the line', () => {
     const s = loggedInState(); // online

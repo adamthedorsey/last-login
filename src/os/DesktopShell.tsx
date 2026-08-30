@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Radio, Window, WindowContent, WindowHeader } from 'react95';
 import { DosMode } from './DosMode';
+import { RemoteSession } from './RemoteSession';
 import { Bsod } from './Bsod';
 import { Icon } from './icons';
 import { playError } from './sounds';
@@ -158,8 +159,11 @@ export function DesktopShell() {
   // a session), loses nothing, and any key continues.
   const clickBudget = useRef(90 + Math.floor(Math.random() * 210));
   const bsodShown = useRef(0);
+  // The takeover set-piece: server state says a remote session must play.
+  const remoteActive = view?.remotePending === true;
   const overlayRef = useRef(false);
-  overlayRef.current = bsod || saverOn || shutDown || shutDialog || dosMode || showEndCard;
+  overlayRef.current =
+    bsod || saverOn || shutDown || shutDialog || dosMode || showEndCard || remoteActive;
   useEffect(() => {
     const onDown = () => {
       if (overlayRef.current || bsodShown.current >= 2) return;
@@ -215,6 +219,12 @@ export function DesktopShell() {
 
   if (dosMode) {
     return <DosMode onExit={() => setDosMode(false)} />;
+  }
+
+  // The GUI drops out from under the player: someone is dialing in. (If they
+  // were in MS-DOS mode or shutting down, it waits — remotePending persists.)
+  if (remoteActive) {
+    return <RemoteSession />;
   }
 
   return (

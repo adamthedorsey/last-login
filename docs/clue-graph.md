@@ -4,7 +4,7 @@
 >
 > In-world date: 1997-10-18 · 116 items
 > (12 gated · 11 granting · ~93 mundane camouflage) ·
-> 7 discoveries
+> 8 discoveries
 
 ```mermaid
 flowchart TD
@@ -20,6 +20,7 @@ flowchart TD
   d_chads_window(["Chad’s window"]):::discovery
   d_the_clean_truck(["The clean dark truck"]):::discovery
   d_the_pipeline(["The pipeline"]):::discovery
+  d_the_watcher(["The watcher"]):::discovery
   d_who_shaped(["A familiar shape"]):::discovery
   d_the_house(["The house<br/><b>END OF SEASON</b>"]):::finale
   i_file_ledger_copy["wv history extra notes.txt<br/><i>file</i>"]:::item
@@ -68,6 +69,9 @@ flowchart TD
   c_sadiedraws77_vigil["ask sadiedraws77:<br/>“has anyone strange been around since she dis…”<br/><i>live chat</i>"]:::item
   c_sadiedraws77_vigil ==>|grants| d_who_shaped
   d_the_pipeline -->|AND| c_sadiedraws77_vigil
+  r_remote_ghost_checkin["remote.ghost-checkin<br/><i>remote access</i>"]:::item
+  r_remote_ghost_checkin ==>|grants| d_the_watcher
+  d_the_pipeline -->|requires| r_remote_ghost_checkin
 ```
 
 Legend: rectangles are evidence items · stadiums are discoveries · slashed boxes
