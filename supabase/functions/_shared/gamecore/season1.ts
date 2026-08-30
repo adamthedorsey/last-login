@@ -314,6 +314,120 @@ export const SEASON1: SeasonContent = {
   ],
 
   // =========================================================================
+  // CASE HANDLER — the frame. The machine sits in the sheriff's office; the
+  // player is the unofficial pair of eyes Purvis can't spare a deputy for.
+  // His memos establish the rules (originals are evidence, notes are yours,
+  // dialing out is authorized) and react to progress. Whether "keep it on
+  // the machine" is protection or a leash is never resolved in the text —
+  // contradictions are gameplay.
+  // =========================================================================
+  handler: {
+    title: 'CASE 97-0244 — TAYLOR, CASEY A. — MISSING',
+    messages: [
+      {
+        id: 'hm.readfirst',
+        date: '1997-10-18',
+        from: 'D. Purvis, Sheriff',
+        subject: 'READ FIRST',
+        lines: [
+          "The Taylor girl's computer is in this office as of Thursday.",
+          'Officially it has been examined. Officially there was nothing',
+          'on it.',
+          '',
+          'I have one deputy with a bad hip and a state lab that quotes me',
+          'six weeks. You asked to look. So look.',
+          '',
+          'Ground rules, and this software will hold you to them:',
+          '',
+          '  1. Original files are evidence. You can read them. You cannot',
+          '     change them. The software sees to that.',
+          '  2. Keep your own notes in her Notepad. What you save is yours',
+          '     and stays separate from the evidence.',
+          '  3. The WestWind account is paid through November. Dialing in',
+          '     on her line is authorized. Watch who you talk to out there.',
+          '',
+          'Anything that matters, write it down. Everything you open, I',
+          'hear about. Work like somebody is watching.',
+          '',
+          '- D.P.',
+        ],
+      },
+      {
+        id: 'hm.river',
+        date: '1997-10-18',
+        from: 'D. Purvis, Sheriff',
+        subject: 're: the river',
+        requires: { discovery: 'the-meeting' },
+        lines: [
+          'So she was meeting somebody. That much we had from the Thompson',
+          'girl in week one. WHO is the whole case.',
+          '',
+          'Keep to the machine. Do not go interviewing my county.',
+          '',
+          '- D.P.',
+        ],
+      },
+      {
+        id: 'hm.careful',
+        date: '1997-10-18',
+        from: 'D. Purvis, Sheriff',
+        subject: '(no subject)',
+        requires: { discovery: 'the-pipeline' },
+        lines: [
+          'I got your meaning. Stop.',
+          '',
+          'Listen to me now. Do not print that page. Do not speak that',
+          'name to a living soul in this county until I say so. Some names',
+          'here buy their own weather.',
+          '',
+          'Keep it on the machine. I mean it.',
+          '',
+          '- D.P.',
+        ],
+      },
+      {
+        id: 'hm.dialin',
+        date: '1997-10-18',
+        from: 'D. Purvis, Sheriff',
+        subject: 're: the session',
+        requires: { discovery: 'the-watcher' },
+        lines: [
+          'Say that again. Somebody dialed IN?',
+          '',
+          'Nothing in this case file says that machine takes calls. I am',
+          'going to find out who set that up. Until I do, you and I never',
+          'had this conversation.',
+          '',
+          'Log everything. Touch nothing. Keep the line unplugged when you',
+          'are not using it.',
+          '',
+          '- D.P.',
+        ],
+      },
+      {
+        id: 'hm.callme',
+        date: '1997-10-18',
+        from: 'D. Purvis, Sheriff',
+        subject: 'CALL THE OFFICE',
+        requires: { discovery: 'the-house' },
+        lines: [
+          'Enough. Call the office. Ask for me and nobody else.',
+          '',
+          'Do not use the machine again tonight. Do not tell the family',
+          'anything yet.',
+          '',
+          'You did what the six-week lab could not, and I am sorry for',
+          'what it cost you to learn it.',
+          '',
+          'Now call.',
+          '',
+          '- D.P.',
+        ],
+      },
+    ],
+  },
+
+  // =========================================================================
   // LIVE CONVERSATIONS — Oct 18, 9:47 PM. The player is signed on as Casey.
   // Sadie has spent the week investigating on her own (see story docs); her
   // branches are path B for three discoveries. Every prompt is one-shot.
@@ -1887,6 +2001,16 @@ and things go back to nor
       name: 'WestWind Online',
       icon: 'dialup',
       meta: { appId: 'dialup', desktop: { x: 216, y: 216 } },
+    },
+    {
+      // The one anachronism-on-purpose: the sheriff's office installed its
+      // evidence viewer before handing over the keyboard. Chrome-level app;
+      // every word it shows is engine-served handler content.
+      id: 'shortcut.casefile',
+      kind: 'shortcut',
+      name: 'Case File',
+      icon: 'notes',
+      meta: { appId: 'casefile', desktop: { x: 24, y: 312 } },
     },
     {
       id: 'shortcut.recycle',

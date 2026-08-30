@@ -1021,6 +1021,24 @@ export function handleAction(
       });
     }
 
+    case 'getCaseFile': {
+      // The handler's memos, redacted to what the player has earned. The
+      // Case File app is the sanctioned diegetic frame — every word here is
+      // season content.
+      const handler = content.handler;
+      if (!handler) return done({ type: 'casefile', view: { title: '', messages: [] } });
+      const messages = handler.messages
+        .filter((m) => meetsRequirement(state, m.requires))
+        .map((m) => ({
+          id: m.id,
+          date: m.date,
+          from: m.from,
+          subject: m.subject,
+          text: m.lines.join('\n'),
+        }));
+      return done({ type: 'casefile', view: { title: handler.title, messages } });
+    }
+
     case 'getRemoteSession': {
       // The script is served only once the takeover has actually triggered —
       // until then it does not exist, client-side. Replayable after a reload

@@ -782,6 +782,45 @@ describe('remote access', () => {
   });
 });
 
+describe('case file', () => {
+  const memoIds = (s: PlayerState): string[] => {
+    const res = run(s, { type: 'getCaseFile' }).result;
+    return res.type === 'casefile' ? res.view.messages.map((m) => m.id) : [];
+  };
+
+  it('serves the standing orders to a fresh player, and nothing gated', () => {
+    const s = offlineState();
+    const ids = memoIds(s);
+    expect(ids).toContain('hm.readfirst');
+    expect(ids).not.toContain('hm.careful');
+    expect(ids).not.toContain('hm.callme');
+  });
+
+  it('reacts to progress: new memos appear as discoveries land', () => {
+    let s = loggedInState();
+    for (const step of CHAIN.slice(0, 5)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    const ids = memoIds(s);
+    expect(ids).toContain('hm.river');
+    expect(ids).toContain('hm.careful');
+    expect(ids).not.toContain('hm.callme');
+  });
+
+  it('never leaks gates: memos carry only display fields', () => {
+    const s = offlineState();
+    const res = run(s, { type: 'getCaseFile' }).result;
+    expect(res.type).toBe('casefile');
+    if (res.type !== 'casefile') return;
+    for (const m of res.view.messages) {
+      expect(Object.keys(m).sort()).toEqual(
+        expect.not.arrayContaining(['requires', 'lines']),
+      );
+      expect(typeof m.text).toBe('string');
+    }
+  });
+});
+
 describe('phone dialer', () => {
   it('cannot get a dial tone while the modem holds the line', () => {
     const s = loggedInState(); // online

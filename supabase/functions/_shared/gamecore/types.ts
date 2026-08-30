@@ -284,6 +284,29 @@ export interface RemoteAccessSequence {
   onDone?: { setFlags?: Record<string, boolean>; discover?: string[] };
 }
 
+// ---------------------------------------------------------------------------
+// Case handler (the diegetic frame: whose machine is this, and why are we
+// allowed to be here)
+// ---------------------------------------------------------------------------
+
+/** One memo from the case handler. Progress-gated like everything else;
+ * every word is story data — the client app renders, never writes. */
+export interface HandlerMessage {
+  id: string;
+  /** In-world date shown on the memo. */
+  date?: string;
+  from?: string;
+  subject?: string;
+  requires?: Requirement; // SERVER ONLY
+  lines: string[];
+}
+
+export interface CaseHandler {
+  /** The header the Case File app shows (e.g. the case number). */
+  title: string;
+  messages: HandlerMessage[];
+}
+
 export interface SeasonContent {
   slug: string;
   title: string;
@@ -333,6 +356,8 @@ export interface SeasonContent {
   schedule?: ScheduledEvent[];
   /** Remote-access takeover set-pieces (see RemoteAccessSequence). SERVER ONLY. */
   remoteAccess?: RemoteAccessSequence[];
+  /** The case handler's memos (see CaseHandler). SERVER ONLY values. */
+  handler?: CaseHandler;
   maxPasswordAttempts: number;
   lockoutSeconds: number;
 }
@@ -447,6 +472,7 @@ export type GameAction =
   | { type: 'say'; screenname: string; promptId: string }
   | { type: 'getRemoteSession' }
   | { type: 'remoteSessionDone' }
+  | { type: 'getCaseFile' }
   | { type: 'saveDocument'; docId?: string; name: string; text: string }
   | { type: 'createFolder'; name: string }
   | { type: 'moveDocument'; docId: string; folderId?: string }
@@ -553,6 +579,12 @@ export interface FindHit extends ItemSummary {
   path: string;
 }
 
+/** The case handler's memos the player has currently earned. No gates. */
+export interface CaseFileView {
+  title: string;
+  messages: Array<{ id: string; date?: string; from?: string; subject?: string; text: string }>;
+}
+
 export type ActionResult = (
   | { type: 'state'; view: StateView }
   | {
@@ -622,6 +654,7 @@ export type ActionResult = (
       ended?: boolean;
       error?: string;
     }
+  | { type: 'casefile'; view: CaseFileView }
   | { type: 'net'; online: boolean; newMail?: number }
   | { type: 'reset'; view: StateView }
   | { type: 'error'; error: string }

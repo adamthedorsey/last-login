@@ -124,6 +124,16 @@ function validate(content: SeasonContent): void {
       if (!discoveryIds.has(d)) errors.push(`${who}: grants unknown discovery "${d}"`);
   }
 
+  // --- Case handler memos: unique ids, valid gates, non-empty ---
+  const memoIds = new Set<string>();
+  for (const m of content.handler?.messages ?? []) {
+    const who = `handler memo ${m.id}`;
+    if (memoIds.has(m.id)) errors.push(`${who}: duplicate memo id`);
+    memoIds.add(m.id);
+    checkReq(who, m.requires);
+    if (m.lines.length === 0) errors.push(`${who}: empty memo`);
+  }
+
   for (const convo of content.conversations ?? []) {
     const who = `conversation ${convo.screenname}`;
     if (!buddyNames.has(convo.screenname)) errors.push(`${who}: no such buddy on the roster`);
@@ -162,6 +172,8 @@ function validate(content: SeasonContent): void {
     for (const p of convo.prompts) checkFlags(`conversation ${convo.screenname}#${p.id}`, p.requires);
   }
   for (const ev of content.schedule ?? []) checkFlags(`event ${ev.id}`, ev.requires);
+  for (const seq of content.remoteAccess ?? []) checkFlags(`remote ${seq.id}`, seq.requires);
+  for (const m of content.handler?.messages ?? []) checkFlags(`handler memo ${m.id}`, m.requires);
   for (const convo of content.conversations ?? [])
     for (const x of convo.interjections ?? [])
       checkFlags(`conversation ${convo.screenname} interjection ${x.id}`, x.requires);
