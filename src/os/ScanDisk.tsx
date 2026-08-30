@@ -7,7 +7,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { PIXEL_MONO } from '../theme';
-import { useBootCursor } from './bootCursor';
 
 const Screen = styled.div`
   height: 100vh;
@@ -17,6 +16,8 @@ const Screen = styled.div`
   font-size: 16px;
   padding: 48px 64px;
   white-space: pre-wrap;
+  /* DOS surface: no mouse pointer exists here. */
+  cursor: none;
 `;
 
 const Title = styled.div`
@@ -48,7 +49,6 @@ const BAR_CELLS = 40;
 export function ScanDisk({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState(0);
   const [finished, setFinished] = useState(false);
-  const bootCursor = useBootCursor(!finished);
 
   useEffect(() => {
     if (finished) {
@@ -75,7 +75,7 @@ export function ScanDisk({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <Screen style={{ cursor: bootCursor }} onClick={skip}>
+    <Screen onClick={skip}>
       <Title>Microtech ScanDisk</Title>
       {'\n'}
       {'Because this computer was not properly shut down, one or more of\n'}

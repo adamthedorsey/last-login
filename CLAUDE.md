@@ -50,9 +50,13 @@ If not, don't build it that way.
   (constant-velocity linear drift + stepped sprite frames only — no easing,
   ever).
 - Deliberate slowness is flavor (dial-up delays, splash screens) — keep each
-  under ~2.5s and always click-skippable. One exception: the cold-boot POST
-  runs ~6s with uneven, machine-like timing (memory count-up, IDE pause) —
-  it too must stay click-skippable.
+  under ~2.5s and always click-skippable. Boot-chain exceptions: the
+  cold-boot POST runs ~6s with uneven machine-like timing (memory count-up,
+  IDE pause), the GUI splash holds ~3.5s (logo over the horizons,
+  click-skippable), and the post-login desktop "load" holds ~2.2s of bare
+  wallpaper. DOS-era surfaces (POST, ScanDisk) show NO mouse cursor — the
+  driver hasn't loaded; the GUI splash and desktop load flicker the busy
+  cursors instead (src/os/bootCursor.ts).
 
 ### Typography
 - OS chrome: W95F (`src/assets/fonts`), registered under the family name

@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import styled from 'styled-components';
 import { Button, Frame, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
 import { playError, playStartup } from './sounds';
 import { useBootCursor } from './bootCursor';
+import { Icon } from './icons';
+import { CloseGlyph, TitleBarButton } from './glyphs';
+import splashBg from '../assets/images/splash-bg.jpg';
+import splashLogo from '../assets/images/splash-logo.png';
 import { ScanDisk } from './ScanDisk';
 import { PIXEL_MONO } from '../theme';
 
@@ -15,7 +19,21 @@ const BootScreen = styled.div`
   font-size: 16px;
   padding: 28px;
   white-space: pre-wrap;
-  
+  /* No pointer during the POST — the mouse driver has not loaded yet. */
+  cursor: none;
+`;
+
+/** The Horizons 95 GUI splash: hills to the horizon, logo dead center. */
+const SplashScreen = styled.div`
+  height: 100vh;
+  background: url(${splashBg}) center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  img {
+    width: min(56vw, 640px);
+    height: auto;
+  }
 `;
 
 // The one sanctioned blink: a DOS block cursor, snapping — never fading.
@@ -36,22 +54,6 @@ const LoginBackdrop = styled.div`
   justify-content: center;
   flex-direction: column;
   gap: 18px;
-`;
-
-const Brand = styled.div`
-  color: #fff;
-  text-align: center;
-  h1 {
-    font-size: 34px;
-    margin: 0;
-    letter-spacing: 2px;
-    text-shadow: 2px 2px 0 #004040;
-  }
-  p {
-    margin: 4px 0 0;
-    opacity: 0.85;
-    font-style: italic;
-  }
 `;
 
 const HintLine = styled.div`
@@ -123,7 +125,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   const { view, send } = useGame();
   // "Log on as a different user" skips the POST — the machine never turned
   // off. (Read without consuming; cleared once on mount for StrictMode.)
-  const [phase, setPhase] = useState<'boot' | 'scandisk' | 'login'>(() =>
+  const [phase, setPhase] = useState<'boot' | 'scandisk' | 'splash' | 'login'>(() =>
     sessionStorage.getItem('lastlogin.logoff') === '1' ? 'login' : 'boot',
   );
   useEffect(() => {
@@ -182,8 +184,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
         // 1995 did. A warm restart was a CLEAN shutdown, so it skips straight
         // through and resumes the session.
         if (view?.bootWarning?.length && !onResume) setPhase('scandisk');
-        else if (view?.loggedIn && onResume) onResume();
-        else setPhase('login');
+        else setPhase('splash');
       }, 400);
       return () => window.clearTimeout(t);
     }
@@ -192,7 +193,19 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   }, [phase, frameIdx, fontsReady, frames, view, onResume]);
 
   const done = frameIdx >= frames.length;
-  const bootCursor = useBootCursor(phase === 'boot');
+  const bootCursor = useBootCursor(phase === 'splash');
+
+  // The GUI splash: logo over the horizons, pointer flickering busy — the
+  // machine is "loading Horizons 95". Click skips, like everything staged.
+  const leaveSplash = useCallback(() => {
+    if (view?.loggedIn && onResume) onResume();
+    else setPhase('login');
+  }, [view, onResume]);
+  useEffect(() => {
+    if (phase !== 'splash') return;
+    const t = window.setTimeout(leaveSplash, 3500);
+    return () => window.clearTimeout(t);
+  }, [phase, leaveSplash]);
   const bootText = useMemo(
     () => frames[Math.min(frameIdx, frames.length - 1)].text,
     [frames, frameIdx],
@@ -230,7 +243,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
 
   if (phase === 'boot') {
     return (
-      <BootScreen style={{ cursor: bootCursor }} onClick={() => setFrameIdx(frames.length)}>
+      <BootScreen onClick={() => setFrameIdx(frames.length)}>
         {bootText}
         {!done && (
           <>
@@ -242,46 +255,79 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
     );
   }
 
-  if (phase === 'scandisk') {
-    return <ScanDisk onDone={() => setPhase('login')} />;
+  if (phase === 'splash') {
+    return (
+      <SplashScreen style={{ cursor: bootCursor }} onClick={leaveSplash}>
+        <img src={splashLogo} alt="" />
+      </SplashScreen>
+    );
   }
+
+  if (phase === 'scandisk') {
+    return <ScanDisk onDone={() => setPhase('splash')} />;
+  }
+
+  const cancel = () => {
+    setPassword('');
+    setMessage('A password is required to use this computer.');
+  };
 
   return (
     <LoginBackdrop>
-      <Brand>
-        <h1>Microtech Horizons 95</h1>
-        <p>Your world. Your desktop.</p>
-      </Brand>
-      <Window style={{ width: 380 }}>
-        <WindowHeader>Welcome to Horizons 95</WindowHeader>
-        <WindowContent>
-          <div>Type a password to log on to this computer.</div>
+      <Window style={{ width: 500 }}>
+        <WindowHeader
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        >
+          <span>Welcome to Horizons 95</span>
+          <TitleBarButton onClick={cancel} aria-label="Close">
+            <CloseGlyph />
+          </TitleBarButton>
+        </WindowHeader>
+        <WindowContent style={{ fontSize: 13 }}>
           <form onSubmit={submit}>
-            <Row>
-              <label htmlFor="login-user">User name:</label>
-              <TextInput id="login-user" value={view?.loginUser ?? 'casey'} readOnly style={{ flex: 1 }} />
-            </Row>
-            <Row>
-              <label htmlFor="login-pass">Password:</label>
-              <TextInput
-                id="login-pass"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ flex: 1 }}
-                disabled={locked}
-                autoFocus
-              />
-            </Row>
-            {shownHint && (
-              <HintLine>
-                Password hint (typed by {view?.loginUser ?? 'the owner'}): <b>{shownHint}</b>
-              </HintLine>
-            )}
-            <div style={{ display: 'flex', gap: 8, marginTop: 14, justifyContent: 'flex-end' }}>
-              <Button type="submit" disabled={busy || locked} style={{ width: 90 }}>
-                OK
-              </Button>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <span style={{ flexShrink: 0, marginTop: 2 }}>
+                <Icon name="keys" size={40} />
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: '2px 0 12px' }}>
+                  Type a user name and password to log on to Horizons 95.
+                </p>
+                <Row>
+                  <label htmlFor="login-user">User name:</label>
+                  <TextInput
+                    id="login-user"
+                    value={view?.loginUser ?? 'casey'}
+                    readOnly
+                    style={{ flex: 1 }}
+                  />
+                </Row>
+                <Row>
+                  <label htmlFor="login-pass">Password:</label>
+                  <TextInput
+                    id="login-pass"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    style={{ flex: 1 }}
+                    disabled={locked}
+                    autoFocus
+                  />
+                </Row>
+                {shownHint && (
+                  <HintLine>
+                    Password hint (typed by {view?.loginUser ?? 'the owner'}): <b>{shownHint}</b>
+                  </HintLine>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                <Button type="submit" disabled={busy || locked} style={{ width: 84 }}>
+                  OK
+                </Button>
+                <Button type="button" onClick={cancel} style={{ width: 84 }}>
+                  Cancel
+                </Button>
+              </div>
             </div>
           </form>
           {(message || locked) && (

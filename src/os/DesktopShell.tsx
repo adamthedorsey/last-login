@@ -12,6 +12,7 @@ import { WindowFrame } from './WindowFrame';
 import { Taskbar } from './Taskbar';
 import { DesktopIcons } from './DesktopIcons';
 import { AltTabSwitcher } from './AltTabSwitcher';
+import { useBootCursor } from './bootCursor';
 import { useGame } from '../game/gameContext';
 import { PIXEL_MONO } from '../theme';
 import { Screensaver } from './Screensaver';
@@ -85,6 +86,14 @@ export function DesktopShell() {
   // the pickup notice (exactly one result ever carries it).
   const [lineDrop, setLineDrop] = useState(false);
   const [saverOn, setSaverOn] = useState(false);
+  // The desktop "loads": wallpaper alone under flickering busy cursors,
+  // then icons and taskbar appear at once — the Win95 logon rhythm.
+  const [deskLoading, setDeskLoading] = useState(true);
+  const deskCursor = useBootCursor(deskLoading);
+  useEffect(() => {
+    const t = window.setTimeout(() => setDeskLoading(false), 2200);
+    return () => window.clearTimeout(t);
+  }, []);
   const focusedId = topWindowId(windows);
   const wallpaper = useSettingsStore((s) => s.wallpaper);
   const saverMinutes = useSettingsStore((s) => s.saverMinutes);
@@ -224,6 +233,10 @@ export function DesktopShell() {
   // were in MS-DOS mode or shutting down, it waits — remotePending persists.)
   if (remoteActive) {
     return <RemoteSession />;
+  }
+
+  if (deskLoading) {
+    return <Desk style={{ backgroundColor: wallpaper, cursor: deskCursor }} />;
   }
 
   return (
