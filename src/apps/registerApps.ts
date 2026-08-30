@@ -109,10 +109,9 @@ export function registerAllApps(): void {
     name: 'Case Files',
     icon: 'notes',
     component: CaseFile,
-    // Wide enough that the handler's authored lines (<= 56 chars) never
-    // re-wrap in the 15px Courier reading pane. Fixed-size and centered,
-    // like the 1997 setup wizards it imitates.
-    defaultSize: { w: 740, h: 500 },
+    // Roomy by default — the briefing should read like a document, not a
+    // peephole. Fixed-size and centered, like the 1997 wizards it imitates.
+    defaultSize: { w: 880, h: 640 },
     singleton: true,
     center: true,
     resizable: false,

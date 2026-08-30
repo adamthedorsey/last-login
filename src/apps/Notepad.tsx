@@ -2,20 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Frame, MenuList, MenuListItem, Separator, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
-import { DOC_TEXT } from '../theme';
+import { DOC_MONO, DOC_TEXT } from '../theme';
 import { useWindowStore } from '../os/windowStore';
 import { CloseGlyph, TitleBarButton } from '../os/glyphs';
 import { fmtShortStamp } from '../os/fileTypes';
 import type { AppWindowProps } from '../os/appRegistry';
 
-const Paper = styled.textarea`
+const Paper = styled.textarea<{ $mono: boolean }>`
   flex: 1;
   min-height: 0;
   resize: none;
   border: 2px inset #888;
   background: #fff;
   padding: 8px 10px;
-  ${DOC_TEXT}
+  ${(p) => (p.$mono ? DOC_MONO : DOC_TEXT)}
   white-space: pre-wrap;
   user-select: text;
   outline: none;
@@ -94,6 +94,7 @@ export function Notepad({ windowId, props }: AppWindowProps) {
   const [saveAsName, setSaveAsName] = useState('untitled.txt');
   const [error, setError] = useState<string | null>(null);
   const [wordWrap, setWordWrap] = useState(true);
+  const [mono, setMono] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [findText, setFindText] = useState('');
   const [findMiss, setFindMiss] = useState<string | null>(null);
@@ -110,6 +111,7 @@ export function Notepad({ windowId, props }: AppWindowProps) {
       if (cancelled) return;
       if (res.type === 'open' && res.ok && res.item) {
         setText(res.item.body?.text ?? '');
+        setMono(res.item.meta?.mono === true);
         if (res.item.editable) {
           setDocId(res.item.id);
           setDocName(res.item.name);
@@ -318,6 +320,7 @@ export function Notepad({ windowId, props }: AppWindowProps) {
         )}
       </MenuRow>
       <Paper
+        $mono={mono}
         ref={paperRef}
         value={text}
         readOnly={readOnly}

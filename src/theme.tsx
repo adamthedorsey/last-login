@@ -20,16 +20,25 @@ import type { ReactNode } from 'react';
 export const PIXEL_MONO = "'Fixedsys', 'Courier New', monospace";
 
 /**
- * Long-form document text (Notepad files, recovered logs): Courier New at a
- * comfortable size. Monospace is load-bearing — story documents contain
- * column-aligned ASCII (the ledger, file-properties blocks) that a
- * proportional face would shred. Aliased like every other surface (owner
- * call: no smoothing exceptions anywhere) — legibility comes from the
- * 15px size and generous leading instead.
+ * Long-form document text (Notepad files, memos, logs): Arial — aliased
+ * Courier is too thin to read at length (owner call; Arial/Georgia-era
+ * faces are fair game, they shipped by 1997).
  */
 export const DOC_TEXT = `
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+`;
+
+/**
+ * Column-aligned evidence (items authored with meta.mono: the ledger,
+ * modem.log): monospace is load-bearing there, and BOLD Courier keeps its
+ * strokes readable aliased where the regular weight goes spindly.
+ */
+export const DOC_MONO = `
   font-family: 'Courier New', monospace;
   font-size: 15px;
+  font-weight: bold;
   line-height: 1.55;
 `;
 

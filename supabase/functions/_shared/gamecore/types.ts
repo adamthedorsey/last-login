@@ -100,6 +100,9 @@ export interface ItemMeta {
   originalPath?: string;
   // desktop placement
   desktop?: { x: number; y: number };
+  /** Render this document in monospace (column-aligned evidence: the
+   * ledger, modem.log). Everything else reads proportionally. */
+  mono?: boolean;
   // shortcuts
   appId?: string;
 }

@@ -62,17 +62,19 @@ If not, don't build it that way.
 - TERMINAL surfaces (boot/POST, MS-DOS mode, blue screen, shutdown): Fixedsys
   — use `PIXEL_MONO` from `src/theme.tsx`, at 16px (its crisp native size;
   multiples of 16 only). Short, large, atmospheric text only.
-- LONG-FORM machine text is deliberately easier on modern eyes (creative
-  license, owner-approved): Notepad documents and recovered logs use
-  `DOC_TEXT` from `src/theme.tsx` (Courier New 15px/1.55 — monospace is
-  load-bearing: story documents contain column-aligned ASCII like the
-  ledger). Every OTHER reading surface is Arial: email bodies (14/1.6),
-  chat transcripts, the Case Files wizard body (its Times serif titles are
-  authentic Win95 Setup style), phone-call responses, discovery toasts,
-  the end card. Rule of thumb: chrome text (buttons, menus, labels, lists,
-  titles, status bars) stays bitmap W95F; anything a player READS at
-  length is Arial — or Courier when columns matter. Do not put Fixedsys
-  or scaled ms_sans_serif back on reading surfaces.
+- READING surfaces are Arial (owner call — fonts that shipped by 1997,
+  like Arial/Georgia, are fair game): Notepad documents, handler memos,
+  email bodies, chat transcripts, the Case Files wizard body (its Times
+  serif titles are authentic Win95 Setup style), phone-call responses,
+  discovery toasts, the end card — via `DOC_TEXT` (Arial 15/1.55) or
+  per-surface Arial. EXCEPTION: documents authored with `meta.mono`
+  (the ledger, modem.log — column-aligned evidence a proportional face
+  would shred) render `DOC_MONO` (Courier New BOLD 15px; bold keeps the
+  strokes readable aliased). Flag mono on any new column-aligned doc.
+  Rule of thumb: chrome text (buttons, menus, labels, lists, titles,
+  status bars) stays bitmap W95F; anything a player READS at length is
+  Arial — Courier bold only when columns matter. Do not put Fixedsys or
+  scaled ms_sans_serif back on reading surfaces.
 - In-game web pages: Times New Roman / Arial / Courier New via the `PageBlock`
   style system — that's what the 1997 web actually used.
 - Font smoothing (owner call): EVERYTHING renders aliased — body-level

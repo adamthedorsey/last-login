@@ -843,7 +843,7 @@ nature thing going. easy A.)`,
       name: 'wv history extra notes.txt',
       icon: 'doc',
       parentId: 'folder.school',
-      meta: { createdAt: '1997-10-05', modifiedAt: '1997-10-05', sizeKb: 2 },
+      meta: { mono: true, createdAt: '1997-10-05', modifiedAt: '1997-10-05', sizeKb: 2 },
       requires: { discovery: 'the-clean-truck' },
       onOpen: { discover: ['the-pipeline'] },
       body: {
@@ -1027,7 +1027,7 @@ evidence against her)`,
       name: 'modem.log',
       icon: 'doc',
       parentId: 'folder.c',
-      meta: { createdAt: '1997-06-30', modifiedAt: '1997-10-17', sizeKb: 2 },
+      meta: { mono: true, createdAt: '1997-06-30', modifiedAt: '1997-10-17', sizeKb: 2 },
       requires: { discovery: 'who-shaped' },
       onOpen: { discover: ['the-house'] },
       body: {
@@ -1061,7 +1061,7 @@ evidence against her)`,
       name: 'FILE0001.CHK',
       icon: 'doc',
       parentId: 'folder.c',
-      meta: { createdAt: '1997-10-18', modifiedAt: '1997-10-18', sizeKb: 16 },
+      meta: { mono: true, createdAt: '1997-10-18', modifiedAt: '1997-10-18', sizeKb: 16 },
       body: {
         text: `±±°°ÌÍÌÍ0ÿØÿî±²Û²±ÍÌÍÌ°°±±
 LH /L:D /M:12 C:\\MTDOS\\MTCDEX.EXE
