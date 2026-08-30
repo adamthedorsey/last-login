@@ -11,6 +11,16 @@ export function fmtShortStamp(iso?: string): string {
   return out;
 }
 
+import type { ItemSummary } from '@gamecore/types.ts';
+
+/** Menu enablement for "Copy to Desktop" — the engine is the real judge
+ * (copyItem refuses anything without copyable text), this only predicts it. */
+export function canCopyItem(item: ItemSummary): boolean {
+  if (item.editable) return item.kind === 'document';
+  if (item.meta?.photoSrc) return false;
+  return ['document', 'email', 'im_conversation', 'trash_item'].includes(item.kind);
+}
+
 /** Win95 "Type" column / Properties names for each item kind. */
 export const TYPE_NAMES: Record<string, string> = {
   folder: 'File Folder',

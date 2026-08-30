@@ -821,6 +821,67 @@ describe('case file', () => {
   });
 });
 
+describe('workspace copies', () => {
+  it('snapshots an email with its envelope; the copy is a normal player doc', () => {
+    const s = offlineState();
+    const { state, result } = run(s, { type: 'copyItem', itemId: 'email.chad.sorry' });
+    expect(result).toMatchObject({ type: 'document', ok: true });
+    const doc = (state.documents ?? [])[0];
+    expect(doc?.name).toBe('Copy of im sorry ok.txt');
+    expect(doc?.text).toContain('From: chad daniels');
+    expect(doc?.text).toContain('Subject: im sorry ok');
+    const renamed = run(state, { type: 'renameItem', itemId: doc!.id, name: 'chad alibi.txt' });
+    expect(renamed.result).toMatchObject({ type: 'document', ok: true });
+  });
+
+  it('copying an unread original counts as reading it', () => {
+    let s = loggedInState();
+    for (const step of CHAIN.slice(0, 4)) {
+      s = run(s, { type: 'open', itemId: step.open }).state;
+    }
+    const { state, result } = run(s, { type: 'copyItem', itemId: 'file.ledger-copy' });
+    expect(
+      result.type === 'document' && result.newDiscoveries?.some((d) => d.id === 'the-pipeline'),
+    ).toBe(true);
+    expect(state.discoveries).toContain('the-pipeline');
+  });
+
+  it('refuses items the player cannot reach, and items without text', () => {
+    const s = offlineState();
+    expect(run(s, { type: 'copyItem', itemId: 'file.ledger-copy' }).result).toMatchObject({
+      type: 'document',
+      ok: false,
+      error: 'not_found',
+    });
+    expect(run(s, { type: 'copyItem', itemId: 'photo.fair' }).result).toMatchObject({
+      type: 'document',
+      ok: false,
+      error: 'not_supported',
+    });
+  });
+
+  it('duplicates a player document beside the original', () => {
+    let s = offlineState();
+    s = run(s, { type: 'saveDocument', name: 'notes.txt', text: 'junebug?' }).state;
+    const docId = (s.documents ?? [])[0].id;
+    const { state, result } = run(s, { type: 'copyItem', itemId: docId });
+    expect(result).toMatchObject({ type: 'document', ok: true });
+    expect(state.documents?.map((d) => d.name)).toContain('Copy of notes.txt');
+  });
+
+  it('enforces the workspace document cap', () => {
+    let s = offlineState();
+    for (let i = 0; i < 24; i++) {
+      s = run(s, { type: 'saveDocument', name: `n${i}.txt`, text: 'x' }).state;
+    }
+    expect(run(s, { type: 'copyItem', itemId: 'email.chad.sorry' }).result).toMatchObject({
+      type: 'document',
+      ok: false,
+      error: 'too_many',
+    });
+  });
+});
+
 describe('phone dialer', () => {
   it('cannot get a dial tone while the modem holds the line', () => {
     const s = loggedInState(); // online

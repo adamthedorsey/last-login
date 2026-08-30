@@ -208,6 +208,22 @@ export function MailApp() {
         <Button onClick={() => void checkMail()}>Check Mail</Button>
         <Button disabled>Compose</Button>
         <Button disabled>Reply</Button>
+        <Button
+          disabled={!openMsg}
+          title="Save a copy of this message with your own files"
+          onClick={() => {
+            if (!openMsg) return;
+            void send({ type: 'copyItem', itemId: openMsg.id }).then((res) => {
+              setStatus(
+                res.type === 'document' && res.ok && res.item
+                  ? `Copied to Desktop as "${res.item.name}"`
+                  : 'This message cannot be copied.',
+              );
+            });
+          }}
+        >
+          Copy to Desktop
+        </Button>
         <span style={{ fontSize: 12, marginLeft: 'auto', color: '#444' }}>
           casey_t@westwind.net
         </span>

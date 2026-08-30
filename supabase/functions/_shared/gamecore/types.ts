@@ -474,6 +474,9 @@ export type GameAction =
   | { type: 'remoteSessionDone' }
   | { type: 'getCaseFile' }
   | { type: 'saveDocument'; docId?: string; name: string; text: string }
+  /** Copy a readable text-bearing item into the player workspace as an
+   * editable snapshot ("Copy of ..."), or duplicate a player document. */
+  | { type: 'copyItem'; itemId: string }
   | { type: 'createFolder'; name: string }
   | { type: 'moveDocument'; docId: string; folderId?: string }
   | { type: 'renameItem'; itemId: string; name: string }
@@ -643,7 +646,15 @@ export type ActionResult = (
       ended?: boolean;
       error?: string;
     }
-  | { type: 'document'; ok: boolean; item?: ItemSummary; error?: string }
+  | {
+      type: 'document';
+      ok: boolean;
+      item?: ItemSummary;
+      error?: string;
+      /** Copying an unread original counts as reading it (copyItem). */
+      newDiscoveries?: DiscoveryView[];
+      ended?: boolean;
+    }
   | {
       type: 'remote';
       ok: boolean;

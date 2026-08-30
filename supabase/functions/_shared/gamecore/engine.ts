@@ -474,6 +474,36 @@ function docSummary(doc: PlayerDocument, index: number): ItemSummary {
   };
 }
 
+/**
+ * The text a copy of this item carries. Emails keep their envelope, saved
+ * IM logs flatten to lines, documents copy verbatim. Anything without
+ * copyable text (photos, web pages, folders) returns undefined.
+ */
+function snapshotText(item: ContentItem): string | undefined {
+  const b = item.body;
+  if (item.kind === 'email') {
+    const m = item.meta ?? {};
+    const head = [
+      m.from ? `From: ${m.from}` : null,
+      m.to ? `To: ${m.to}` : null,
+      m.date ? `Date: ${m.date.replace('T', ' ')}` : null,
+      `Subject: ${item.name}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+    return `${head}\n\n${b?.text ?? ''}`;
+  }
+  if (b?.messages) {
+    return [`[saved log — ${item.name}]`, '', ...b.messages.map((x) => `${x.from} (${x.at}): ${x.text}`)].join('\n');
+  }
+  if (typeof b?.text === 'string') return b.text;
+  return undefined;
+}
+
+function copyDocName(name: string): string {
+  return sanitizeDocName(`Copy of ${name}`);
+}
+
 function playerDoc(state: PlayerState, id: string): PlayerDocument | undefined {
   return (state.documents ?? []).find((d) => d.id === id);
 }
@@ -910,6 +940,70 @@ export function handleAction(
       docs.push(doc);
       events.push({ type: 'save_document', payload: { docId: doc.id } });
       return done({ type: 'document', ok: true, item: docSummary(doc, docs.length - 1) });
+    }
+
+    case 'copyItem': {
+      // Evidence stays evidence — but the player may take a snapshot into
+      // their own workspace and mark it up. The copy is a player document:
+      // editable, renamable, movable. The original is untouched.
+      const docs = (state.documents ??= []);
+      if (docs.length >= MAX_PLAYER_DOCS) {
+        return done({ type: 'document', ok: false, error: 'too_many' });
+      }
+      const nowDate = content.clock.now.slice(0, 10);
+      const nextDoc = (): number => {
+        const seq = (state.docSeq ?? 0) + 1;
+        state.docSeq = seq;
+        return seq;
+      };
+
+      // Duplicating one of the player's own files.
+      const source = playerDoc(state, action.itemId);
+      if (source) {
+        const copy: PlayerDocument = {
+          id: `playerdoc.${nextDoc()}`,
+          name: copyDocName(source.name),
+          text: source.text,
+          createdAt: nowDate,
+          modifiedAt: nowDate,
+          folderId: source.folderId,
+        };
+        docs.push(copy);
+        events.push({ type: 'copy_item', payload: { source: source.id, docId: copy.id } });
+        return done({ type: 'document', ok: true, item: docSummary(copy, docs.length - 1) });
+      }
+
+      // Snapshotting evidence: only what the player could open right now.
+      const item = itemById(content, action.itemId);
+      if (!item || !isAccessible(content, state, item)) {
+        return done({ type: 'document', ok: false, error: 'not_found' });
+      }
+      if (!isUnlocked(state, item)) {
+        return done({ type: 'document', ok: false, error: 'locked' });
+      }
+      const text = snapshotText(item);
+      if (text === undefined) {
+        return done({ type: 'document', ok: false, error: 'not_supported' });
+      }
+      // Copying serves the content, so it counts as reading the original —
+      // a discovery can never be lost inside an unread copy.
+      const { newDiscoveries, ended } = applyOpenEffects(content, state, item, events);
+      const copy: PlayerDocument = {
+        id: `playerdoc.${nextDoc()}`,
+        name: copyDocName(item.name),
+        text: text.slice(0, MAX_DOC_TEXT),
+        createdAt: nowDate,
+        modifiedAt: nowDate,
+      };
+      docs.push(copy);
+      events.push({ type: 'copy_item', payload: { source: item.id, docId: copy.id } });
+      return done({
+        type: 'document',
+        ok: true,
+        item: docSummary(copy, docs.length - 1),
+        newDiscoveries: newDiscoveries.length ? newDiscoveries : undefined,
+        ended: ended || undefined,
+      });
     }
 
     case 'createFolder': {

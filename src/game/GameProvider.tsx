@@ -169,7 +169,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         res.type === 'open' ||
         res.type === 'visit' ||
         res.type === 'chat' ||
-        res.type === 'remote'
+        res.type === 'remote' ||
+        res.type === 'document'
       ) {
         noteDiscoveries(res.newDiscoveries, res.ended);
       }
