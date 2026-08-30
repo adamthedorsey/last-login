@@ -123,13 +123,16 @@ If not, don't build it that way.
 ### Sound
 - Synthesized chip-style tones only (`src/os/sounds.ts`). Short, quiet,
   mutable. No sampled audio, no music beds, no modern notification sounds.
-  TWO owner-approved exceptions: (1) the dial-up handshake plays a real
+  THREE owner-approved exceptions: (1) the dial-up handshake plays a real
   sampled modem recording (`src/assets/sounds/dial-up-modem.mp3`) IN FULL
   (~26s, the staging is paced to it — anticipation is the point). A click
   skips and stops it cleanly; the chip-tone version is the fallback if
   playback is blocked. (2) Case Files handler messages may attach a voice
   recording (`audioSrc`, served from `public/audio/`) — reserved for
   important case moments, always with the transcript in the message lines.
+  (3) Mail arrival plays the machine's own greeting sample
+  (`youve_got_mail.mp3`) QUIET (~0.22 volume) — it is a computer sound,
+  so it stays clean, no degradation; the chip chirp is its fallback.
   No other samples.
 
 ### Language & content

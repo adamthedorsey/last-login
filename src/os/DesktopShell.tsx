@@ -240,9 +240,21 @@ export function DesktopShell() {
           <ToastCard key={t.id} onClick={() => dismissToast(t.id)}>
             <WindowHeader style={{ fontSize: 13 }}>{t.title}</WindowHeader>
             <WindowContent
-              style={{ padding: 8, fontFamily: 'Arial, Helvetica, sans-serif', lineHeight: 1.45 }}
+              style={{
+                padding: 8,
+                fontFamily: 'Arial, Helvetica, sans-serif',
+                lineHeight: 1.45,
+                display: 'flex',
+                gap: 8,
+                alignItems: 'flex-start',
+              }}
             >
-              {t.description}
+              {t.icon && (
+                <span style={{ flexShrink: 0 }}>
+                  <Icon name={t.icon} size={26} />
+                </span>
+              )}
+              <span>{t.description}</span>
             </WindowContent>
           </ToastCard>
         ))}

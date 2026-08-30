@@ -6,6 +6,8 @@ export interface Toast {
   id: number;
   title: string;
   description: string;
+  /** Icon name (src/os/icons.tsx) shown beside the description. */
+  icon?: string;
 }
 
 export interface GameContextValue {

@@ -2,17 +2,19 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { ActionResult, DiscoveryView, GameAction, StateView, WireNotice } from '@gamecore/types.ts';
 import { createGameClient, type GameClient } from './client';
 import { GameContext, type GameContextValue, type Toast } from './gameContext';
-import { playBuddyOff, playBuddyOn, playImMsg, playNotify } from '../os/sounds';
+import { playBuddyOff, playBuddyOn, playImMsg, playMailSound, playNotify } from '../os/sounds';
 import { useWindowStore } from '../os/windowStore';
 
 /** Generic per-kind toast copy — deliberately spoiler-free client strings.
  * Anything specific (names, subjects) must arrive IN the notice, server-sent. */
-const WIRE_FALLBACK: Partial<Record<WireNotice['kind'], { title: string; text: string }>> = {
-  mail: { title: 'Mail', text: 'You have new mail.' },
-  im: { title: 'Chat', text: 'New instant message.' },
-  'buddy-on': { title: 'Chat', text: 'Someone just signed on.' },
-  'buddy-off': { title: 'Chat', text: 'Someone just signed off.' },
-  system: { title: 'System', text: '' },
+const WIRE_FALLBACK: Partial<
+  Record<WireNotice['kind'], { title: string; text: string; icon: string }>
+> = {
+  mail: { title: 'Mail', text: 'You have new mail.', icon: 'mail-app' },
+  im: { title: 'Chat', text: 'New instant message.', icon: 'im-app' },
+  'buddy-on': { title: 'Chat', text: 'Someone just signed on.', icon: 'im-app' },
+  'buddy-off': { title: 'Chat', text: 'Someone just signed off.', icon: 'im-app' },
+  system: { title: 'System', text: '', icon: 'warning' },
 };
 
 /** How often the client asks "anything on the wire?" while connected. Pure
@@ -72,7 +74,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
         playNotify();
         setToasts((prev) => [
           ...prev,
-          ...discoveries.map((d) => ({ id: ++toastId, title: d.title, description: d.description })),
+          ...discoveries.map((d) => ({
+            id: ++toastId,
+            title: d.title,
+            description: d.description,
+            icon: 'notes',
+          })),
         ]);
         setContentEpoch((e) => e + 1);
         void refreshView();
@@ -98,7 +105,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       for (const n of notices) {
         switch (n.kind) {
           case 'mail':
-            playNotify();
+            playMailSound();
             break;
           case 'im':
             playImMsg();
@@ -119,7 +126,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         if (fb) {
           setToasts((prev) => [
             ...prev,
-            { id: ++toastId, title: n.title ?? fb.title, description: n.text ?? fb.text },
+            { id: ++toastId, title: n.title ?? fb.title, description: n.text ?? fb.text, icon: fb.icon },
           ]);
         }
         if (n.kind === 'im' && n.screenname) {
@@ -186,10 +193,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         // Mail that arrived silently (no authored notice) still gets the
         // generic chime — arrival IS the ambient event.
         if (newMail > 0 && !res.wire?.some((w) => w.kind === 'mail')) {
-          playNotify();
+          playMailSound();
           setToasts((prev) => [
             ...prev,
-            { id: ++toastId, title: 'Mail', description: 'You have new mail.' },
+            { id: ++toastId, title: 'Mail', description: 'You have new mail.', icon: 'mail-app' },
           ]);
         }
       }

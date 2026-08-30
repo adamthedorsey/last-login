@@ -4,6 +4,7 @@
  */
 
 import dialupMp3 from '../assets/sounds/dial-up-modem.mp3';
+import mailMp3 from '../assets/sounds/youve_got_mail.mp3';
 
 const MUTE_KEY = 'lastlogin.muted';
 
@@ -56,6 +57,20 @@ function tone(freq: number, startMs: number, durMs: number, type: OscillatorType
 export function playNotify(): void {
   tone(660, 0, 90, 'square', 0.025);
   tone(880, 100, 130, 'square', 0.02);
+}
+
+/** Mail arrival: the machine's own greeting sample (owner-approved
+ * exception #3), played QUIET — it punctuates, never startles. The chip
+ * chirp is the fallback if playback is blocked. */
+export function playMailSound(): void {
+  if (isMuted()) return;
+  try {
+    const a = new Audio(mailMp3);
+    a.volume = 0.22;
+    void a.play().catch(() => playNotify());
+  } catch {
+    playNotify();
+  }
 }
 
 export function playError(): void {
