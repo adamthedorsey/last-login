@@ -6,6 +6,7 @@ import { useGame } from '../game/gameContext';
 import { launchItem } from '../os/launch';
 import { Icon } from '../os/icons';
 import { PropertiesDialog } from '../os/PropertiesDialog';
+import { TYPE_NAMES, fmtShortStamp } from '../os/fileTypes';
 import { useWindowStore } from '../os/windowStore';
 import { placeIcon, snapToGrid, ORIGIN } from '../os/desktopLayout';
 import { TASKBAR_HEIGHT } from '../os/windowStore';
@@ -49,6 +50,129 @@ const StatusBar = styled(Frame).attrs({ variant: 'well' })`
   margin-top: 4px;
 `;
 
+const MenuRow = styled.div`
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  position: relative;
+  padding-bottom: 2px;
+`;
+
+const MenuButton = styled.button<{ $open: boolean }>`
+  border: none;
+  background: ${(p) => (p.$open ? '#000080' : 'transparent')};
+  color: ${(p) => (p.$open ? '#fff' : 'inherit')};
+  padding: 2px 8px;
+  font-size: 13px;
+  cursor: default;
+`;
+
+const Drop = styled(MenuList)`
+  position: absolute;
+  top: 20px;
+  z-index: 5000;
+  min-width: 170px;
+  font-size: 13px;
+`;
+
+/** Win95 List view: small icons flowing in columns. */
+const ListGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 0 8px;
+  padding: 6px;
+`;
+
+const ListCell = styled.button<{ $selected: boolean }>`
+  border: none;
+  background: ${(p) => (p.$selected ? '#000080' : 'transparent')};
+  color: ${(p) => (p.$selected ? '#fff' : 'inherit')};
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  cursor: default;
+  font-size: 13px;
+  text-align: left;
+  span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+`;
+
+/** Win95 Details view: the sortable column table. */
+const DETAIL_COLS = '1.5fr 70px 1.1fr 120px';
+
+const DetailHead = styled.div`
+  display: grid;
+  grid-template-columns: ${DETAIL_COLS};
+  position: sticky;
+  top: 0;
+`;
+
+const HeadCell = styled.button`
+  border: 2px outset #dfdfdf;
+  background: #d4d0c8;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: left;
+  padding: 1px 6px;
+  cursor: default;
+  overflow: hidden;
+  white-space: nowrap;
+`;
+
+const DetailRow = styled.button<{ $selected: boolean }>`
+  display: grid;
+  grid-template-columns: ${DETAIL_COLS};
+  align-items: center;
+  width: 100%;
+  border: none;
+  background: ${(p) => (p.$selected ? '#000080' : 'transparent')};
+  color: ${(p) => (p.$selected ? '#fff' : 'inherit')};
+  padding: 2px 0;
+  cursor: default;
+  font-size: 13px;
+  text-align: left;
+  span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0 6px;
+  }
+`;
+
+type ViewMode = 'icons' | 'list' | 'details';
+type SortKey = 'name' | 'size' | 'type' | 'modified';
+
+function itemStamp(i: ItemSummary): string {
+  return i.meta?.modifiedAt ?? i.meta?.createdAt ?? i.meta?.deletedAt ?? i.meta?.date ?? '';
+}
+
+function sortItems(items: ItemSummary[], key: SortKey, asc: boolean): ItemSummary[] {
+  const cmp = (a: ItemSummary, b: ItemSummary): number => {
+    switch (key) {
+      case 'size':
+        return (a.meta?.sizeKb ?? 0) - (b.meta?.sizeKb ?? 0);
+      case 'type':
+        return (TYPE_NAMES[a.kind] ?? a.kind).localeCompare(TYPE_NAMES[b.kind] ?? b.kind);
+      case 'modified':
+        return itemStamp(a).localeCompare(itemStamp(b));
+      default:
+        return a.name.localeCompare(b.name);
+    }
+  };
+  // Folders sort above files, whatever the column — pure Win95.
+  return [...items].sort((a, b) => {
+    const af = a.kind === 'folder' ? 0 : 1;
+    const bf = b.kind === 'folder' ? 0 : 1;
+    if (af !== bf) return af - bf;
+    const c = cmp(a, b) || a.name.localeCompare(b.name);
+    return asc ? c : -c;
+  });
+}
+
 const ItemMenu = styled(MenuList)`
   position: fixed;
   z-index: 100007;
@@ -85,10 +209,28 @@ interface Crumb {
   path?: string;
 }
 
+type BarMenu = 'file' | 'edit' | 'view' | 'help' | null;
+
 export function FileExplorer({ windowId, props }: AppWindowProps) {
-  const { send, contentEpoch } = useGame();
+  const { send, contentEpoch, view: gameView } = useGame();
   const setTitle = useWindowStore((s) => s.setTitle);
+  const closeWindow = useWindowStore((s) => s.close);
   const initialFolder = (props.folderId as string) ?? 'folder.c';
+  const [menuOpen, setMenuOpen] = useState<BarMenu>(null);
+  const [view, setView] = useState<ViewMode>('icons');
+  const [sortKey, setSortKey] = useState<SortKey>('name');
+  const [sortAsc, setSortAsc] = useState(true);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!barRef.current?.contains(e.target as Node)) setMenuOpen(null);
+    };
+    window.addEventListener('pointerdown', onDown);
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, [menuOpen]);
 
   const [stack, setStack] = useState<Crumb[]>([]);
   const [current, setCurrent] = useState<Crumb>({ id: initialFolder, name: '...' });
@@ -271,10 +413,133 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
     void loadFolder(prev.id);
   };
 
+  const selectedItems = items.filter((i) => selected.includes(i.id));
+  const displayed = view === 'details' ? sortItems(items, sortKey, sortAsc) : items;
+
+  /** The one selection/drag/menu contract, shared by all three views. */
+  const cellProps = (item: ItemSummary) => ({
+    'data-item-id': item.id,
+    $selected: selected.includes(item.id),
+    onClick: (e: React.MouseEvent) => clickSelect(item, e),
+    onDoubleClick: () => {
+      const sel =
+        selected.includes(item.id) && selected.length > 1
+          ? items.filter((i) => selected.includes(i.id))
+          : [item];
+      openMany(sel);
+    },
+    onPointerDown: onItemPointerDown(item),
+    onPointerMove: onItemPointerMove,
+    onPointerUp: onItemPointerUp,
+    onContextMenu: (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!selected.includes(item.id)) {
+        setSelected([item.id]);
+        anchorRef.current = item.id;
+      }
+      setCtxMenu({ x: e.clientX, y: e.clientY, item });
+    },
+    style: canDragOut(item) ? ({ touchAction: 'none' } as React.CSSProperties) : undefined,
+  });
+
+  const sortBy = (key: SortKey) => {
+    if (sortKey === key) setSortAsc((a) => !a);
+    else {
+      setSortKey(key);
+      setSortAsc(true);
+    }
+  };
+
+  const menuItem = (label: string, onClick?: () => void, disabled = false, bold = false) => (
+    <MenuListItem
+      size="sm"
+      disabled={disabled}
+      onClick={
+        disabled || !onClick
+          ? undefined
+          : () => {
+              setMenuOpen(null);
+              onClick();
+            }
+      }
+    >
+      {bold ? <b>{label}</b> : label}
+    </MenuListItem>
+  );
+
+  const viewItem = (label: string, mode: ViewMode) => (
+    <MenuListItem
+      size="sm"
+      onClick={() => {
+        setMenuOpen(null);
+        setView(mode);
+      }}
+    >
+      <span>{view === mode ? '• ' : '   '}{label}</span>
+    </MenuListItem>
+  );
+
+  const barButton = (name: Exclude<BarMenu, null>, label: string) => (
+    <MenuButton
+      $open={menuOpen === name}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={() => setMenuOpen((v) => (v === name ? null : name))}
+      onMouseEnter={() => setMenuOpen((v) => (v ? name : v))}
+    >
+      {label}
+    </MenuButton>
+  );
+
   return (
     <>
+      <MenuRow ref={barRef}>
+        {barButton('file', 'File')}
+        {barButton('edit', 'Edit')}
+        {barButton('view', 'View')}
+        {barButton('help', 'Help')}
+        {menuOpen === 'file' && (
+          <Drop style={{ left: 0 }}>
+            {menuItem('Open', () => openMany(selectedItems), selectedItems.length === 0, true)}
+            <Separator />
+            {menuItem(
+              'Properties',
+              () => setPropsItem(selectedItems[0]),
+              selectedItems.length !== 1,
+            )}
+            <Separator />
+            {menuItem('Close', () => closeWindow(windowId))}
+          </Drop>
+        )}
+        {menuOpen === 'edit' && (
+          <Drop style={{ left: 36 }}>
+            {menuItem('Cut', undefined, true)}
+            {menuItem('Copy', undefined, true)}
+            {menuItem('Paste', undefined, true)}
+            <Separator />
+            {menuItem('Select All', () => setSelected(items.map((i) => i.id)))}
+            {menuItem('Invert Selection', () =>
+              setSelected(items.filter((i) => !selected.includes(i.id)).map((i) => i.id)),
+            )}
+          </Drop>
+        )}
+        {menuOpen === 'view' && (
+          <Drop style={{ left: 72 }}>
+            {viewItem('Large Icons', 'icons')}
+            {viewItem('List', 'list')}
+            {viewItem('Details', 'details')}
+            <Separator />
+            {menuItem('Refresh', () => void loadFolder(current.id))}
+          </Drop>
+        )}
+        {menuOpen === 'help' && (
+          <Drop style={{ left: 110 }}>
+            {menuItem('About Horizons 95...', () => setAboutOpen(true))}
+          </Drop>
+        )}
+      </MenuRow>
       <Toolbar style={{ gap: 6, flexShrink: 0 }}>
-        <Button onClick={goUp} disabled={stack.length === 0}>
+        <Button onClick={goUp} disabled={stack.length === 0} title="Up One Level">
           Up
         </Button>
         <Address>{current.path ?? current.name}</Address>
@@ -289,46 +554,62 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
           onPointerUp={onGridPointerUp}
           style={{ minHeight: '100%', outline: 'none' }}
         >
-          <Grid>
-            {items.map((item) => (
-              <Cell
-                key={item.id}
-                data-item-id={item.id}
-                $selected={selected.includes(item.id)}
-                onClick={(e: React.MouseEvent) => clickSelect(item, e)}
-                onDoubleClick={() => {
-                  const sel =
-                    selected.includes(item.id) && selected.length > 1
-                      ? items.filter((i) => selected.includes(i.id))
-                      : [item];
-                  openMany(sel);
-                }}
-                onPointerDown={onItemPointerDown(item)}
-                onPointerMove={onItemPointerMove}
-                onPointerUp={onItemPointerUp}
-                onContextMenu={(e: React.MouseEvent) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (!selected.includes(item.id)) {
-                    setSelected([item.id]);
-                    anchorRef.current = item.id;
-                  }
-                  setCtxMenu({ x: e.clientX, y: e.clientY, item });
-                }}
-                style={canDragOut(item) ? { touchAction: 'none' } : undefined}
-              >
-                <Icon
-                  name={item.icon ?? 'doc'}
-                  size={32}
-                  shortcut={item.kind === 'shortcut' && item.meta?.appId !== 'recycle'}
-                />
-                <span>{item.name}</span>
-              </Cell>
-            ))}
-            {items.length === 0 && (
-              <div style={{ gridColumn: '1/-1', padding: 12, color: '#666' }}>(empty folder)</div>
-            )}
-          </Grid>
+          {view === 'icons' && (
+            <Grid>
+              {displayed.map((item) => (
+                <Cell key={item.id} {...cellProps(item)}>
+                  <Icon
+                    name={item.icon ?? 'doc'}
+                    size={32}
+                    shortcut={item.kind === 'shortcut' && item.meta?.appId !== 'recycle'}
+                  />
+                  <span>{item.name}</span>
+                </Cell>
+              ))}
+            </Grid>
+          )}
+          {view === 'list' && (
+            <ListGrid>
+              {displayed.map((item) => (
+                <ListCell key={item.id} {...cellProps(item)}>
+                  <Icon
+                    name={item.icon ?? 'doc'}
+                    size={16}
+                    shortcut={item.kind === 'shortcut' && item.meta?.appId !== 'recycle'}
+                  />
+                  <span>{item.name}</span>
+                </ListCell>
+              ))}
+            </ListGrid>
+          )}
+          {view === 'details' && (
+            <div>
+              <DetailHead>
+                <HeadCell onClick={() => sortBy('name')}>Name</HeadCell>
+                <HeadCell onClick={() => sortBy('size')}>Size</HeadCell>
+                <HeadCell onClick={() => sortBy('type')}>Type</HeadCell>
+                <HeadCell onClick={() => sortBy('modified')}>Modified</HeadCell>
+              </DetailHead>
+              {displayed.map((item) => (
+                <DetailRow key={item.id} {...cellProps(item)}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Icon
+                      name={item.icon ?? 'doc'}
+                      size={16}
+                      shortcut={item.kind === 'shortcut' && item.meta?.appId !== 'recycle'}
+                    />
+                    {item.name}
+                  </span>
+                  <span>{item.kind === 'folder' ? '' : `${item.meta?.sizeKb ?? 1}KB`}</span>
+                  <span>{TYPE_NAMES[item.kind] ?? item.kind}</span>
+                  <span>{fmtShortStamp(itemStamp(item))}</span>
+                </DetailRow>
+              ))}
+            </div>
+          )}
+          {items.length === 0 && (
+            <div style={{ padding: 12, color: '#666' }}>(empty folder)</div>
+          )}
         </div>
       </ScrollView>
       {marquee && (
@@ -409,6 +690,45 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
           <span>{ghost.item.name}</span>
         </DragGhost>
       )}
+      {aboutOpen && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100007,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.2)',
+          }}
+          data-no-deskmenu
+        >
+          <Window shadow style={{ width: 360 }}>
+            <WindowHeader style={{ fontSize: 13 }}>About Horizons 95</WindowHeader>
+            <WindowContent style={{ fontSize: 13 }}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <Icon name="computer" size={32} />
+                <div>
+                  <b>Microtech Horizons 95</b>
+                  <br />
+                  Version 4.00.950
+                  <br />
+                  Copyright © 1988-1995 Microtech Systems
+                  <br />
+                  <br />
+                  This product is licensed to:
+                  <br />
+                  {gameView?.owner ?? 'the registered owner'}
+                  <br />
+                  <br />
+                  Physical memory available: 32,752 KB
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14 }}>
+                <Button onClick={() => setAboutOpen(false)} style={{ width: 80 }}>
+                  OK
+                </Button>
+              </div>
+            </WindowContent>
+          </Window>
+        </div>
+      )}
       <StatusBar>
         {selected.length > 1
           ? `${selected.length} object(s) selected`
@@ -416,7 +736,7 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
             ? `${items.length} object(s) — ${
                 items.find((i) => i.id === selected[0])?.meta?.sizeKb ?? '?'
               } KB, modified ${
-                items.find((i) => i.id === selected[0])?.meta?.modifiedAt ?? 'unknown'
+                fmtShortStamp(itemStamp(items.find((i) => i.id === selected[0])!)) || 'unknown'
               }`
             : `${items.length} object(s)`}
       </StatusBar>

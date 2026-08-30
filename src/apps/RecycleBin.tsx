@@ -6,19 +6,7 @@ import { useGame } from '../game/gameContext';
 import { launchItem } from '../os/launch';
 import { Icon } from '../os/icons';
 import { PropertiesDialog } from '../os/PropertiesDialog';
-
-/** Win95 "Date Deleted" column: 10/11/97 2:14 AM. Formatted straight from
- * the ISO string — these stamps are evidence, no Date() timezone drift. */
-function fmtDeleted(iso?: string): string {
-  if (!iso || iso.length < 10) return '';
-  const [y, m, d] = iso.slice(0, 10).split('-');
-  let out = `${Number(m)}/${Number(d)}/${y.slice(2)}`;
-  if (iso.length >= 16) {
-    const hh = Number(iso.slice(11, 13));
-    out += ` ${hh % 12 || 12}:${iso.slice(14, 16)} ${hh >= 12 ? 'PM' : 'AM'}`;
-  }
-  return out;
-}
+import { fmtShortStamp } from '../os/fileTypes';
 
 const Row = styled.button<{ $selected: boolean }>`
   display: grid;
@@ -117,7 +105,7 @@ export function RecycleBin() {
             <Icon name={item.icon ?? 'doc'} size={18} />
             <span>{item.name}</span>
             <span>{item.meta?.originalPath}</span>
-            <span>{fmtDeleted(item.meta?.deletedAt)}</span>
+            <span>{fmtShortStamp(item.meta?.deletedAt)}</span>
           </Row>
         ))}
         {items.length === 0 && <div style={{ padding: 10, color: '#777' }}>(the bin is empty)</div>}
