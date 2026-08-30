@@ -42,22 +42,6 @@ const Content = styled(WindowContent)`
   overflow: hidden;
 `;
 
-/** Classic ribbed corner grip (visual only — the SE handle does the work). */
-const CornerGrip = styled.div`
-  position: absolute;
-  right: 2px;
-  bottom: 2px;
-  width: 14px;
-  height: 14px;
-  background: repeating-linear-gradient(
-    135deg,
-    transparent 0 2px,
-    #808080 2px 3px,
-    #ffffff 3px 4px
-  );
-  pointer-events: none;
-`;
-
 /** The control-box (system) menu behind the title-bar icon. */
 const SysMenu = styled(MenuList)`
   position: fixed;
@@ -318,7 +302,6 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
       )}
       {!win.maximized && (
         <>
-          <CornerGrip />
           {HANDLES.map((h) => (
             <div
               key={h.dir}
