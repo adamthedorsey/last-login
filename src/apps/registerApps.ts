@@ -114,7 +114,6 @@ export function registerAllApps(): void {
     defaultSize: { w: 880, h: 640 },
     singleton: true,
     center: true,
-    resizable: false,
   });
   // --- Accessories (the Win95-style default apps) ---
   registerApp({

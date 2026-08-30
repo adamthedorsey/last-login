@@ -22,6 +22,30 @@ import { DOC_TEXT } from '../theme';
 
 const SEEN_KEY = 'lastlogin.casefile.seen';
 
+/**
+ * Handler lines are authored with hard breaks (typewriter width). In the
+ * proportional reading pane, prose should fill the width — so join lines
+ * within a paragraph, but keep blank-line breaks and any indented or
+ * list-marker lines exactly as authored.
+ */
+function unwrapProse(text: string): string {
+  const out: string[] = [];
+  for (const line of text.split('\n')) {
+    const prev = out[out.length - 1];
+    const keepBreak =
+      out.length === 0 ||
+      prev === '' ||
+      line === '' ||
+      /^[\s]/.test(line) ||
+      /^[-•\d]/.test(line.trim().slice(0, 1)) ||
+      /^\[/.test(line) ||
+      /^[—-] /.test(line);
+    if (keepBreak) out.push(line);
+    else out[out.length - 1] = `${prev} ${line}`;
+  }
+  return out.join('\n');
+}
+
 function loadSeen(): string[] {
   try {
     return JSON.parse(localStorage.getItem(SEEN_KEY) ?? '[]') as string[];
@@ -84,6 +108,22 @@ const Reading = styled(Frame).attrs({ variant: 'field' })`
   user-select: text;
   ${DOC_TEXT}
   white-space: pre-wrap;
+`;
+
+/** The ribbed size grip, drawn where Win95 drew it: in the status bar. */
+const StatusGrip = styled.div`
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 13px;
+  height: 13px;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 2px,
+    #808080 2px 3px,
+    #ffffff 3px 4px
+  );
+  pointer-events: none;
 `;
 
 const MemoHead = styled.div`
@@ -350,7 +390,7 @@ export function CaseFile() {
             ) : (
               <>
                 <WizTitle>{current?.title}</WizTitle>
-                <WizText>{current?.lines.join('\n')}</WizText>
+                <WizText>{unwrapProse(current?.lines.join('\n') ?? '')}</WizText>
               </>
             )}
           </div>
@@ -463,15 +503,25 @@ export function CaseFile() {
                   </span>
                 </Frame>
               )}
-              {open.text}
+              {unwrapProse(open.text)}
             </>
           ) : (
             <span style={{ color: '#777' }}>Select a message.</span>
           )}
         </Reading>
       </Layout>
-      <Frame variant="well" style={{ marginTop: 4, padding: '2px 8px', fontSize: 12, flexShrink: 0 }}>
+      <Frame
+        variant="well"
+        style={{
+          marginTop: 4,
+          padding: '2px 8px',
+          fontSize: 12,
+          flexShrink: 0,
+          position: 'relative',
+        }}
+      >
         {`${file.messages.length} message(s) on file`}
+        <StatusGrip />
       </Frame>
     </>
   );
