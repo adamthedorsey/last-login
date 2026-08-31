@@ -235,7 +235,9 @@ If not, don't build it that way.
   (or Send Instant Message) opens an IM. IMs are their OWN windows, one per
   buddy (`im` app, `MessengerIM.tsx`, with Send/Close), deduped in
   `src/os/messenger.ts` (`openIm`). Setup holds the away message and Add
-  Buddy — both PER-DEVICE cosmetic localStorage (`os/messengerLocal.ts`),
+  Buddy — both PER-DEVICE cosmetic localStorage (`os/messengerLocal.ts`);
+  while an away message is set, each IM you open posts it once as the AIM
+  auto-response, cleared for that buddy the moment you reply. Both are
   like the desktop layout: they never touch the engine and player-added
   buddies are plain offline stubs. The server-authored roster still does
   the story telling; no client string names a story buddy. Never revive

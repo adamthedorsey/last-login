@@ -12,6 +12,7 @@ import type { ChatView, ItemContent } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { useWindowStore } from '../os/windowStore';
 import { playImMsg } from '../os/sounds';
+import { loadAway } from '../os/messengerLocal';
 import type { AppWindowProps } from '../os/appRegistry';
 
 const Wrap = styled.div`
@@ -50,6 +51,17 @@ const SystemLine = styled.div`
   color: #777;
   font-style: italic;
   margin-top: 4px;
+`;
+
+/** The AIM away auto-response: what a buddy sees when they message you
+ * while you're away. Rendered per-conversation, once. */
+const AutoResponse = styled.div`
+  margin: 2px 0 6px;
+  color: #a06000;
+  font-style: italic;
+  b {
+    font-style: normal;
+  }
 `;
 
 /** The prompt tray: the lines the player may say right now. AIM had a
@@ -112,6 +124,10 @@ export function MessengerIM({ windowId, props }: AppWindowProps) {
 
   const self = view?.imScreenname ?? 'me';
   const fromWire = props.fromWire === true;
+  // Your away message, if set, is what this buddy sees the moment the
+  // conversation opens — the AIM auto-response. Cosmetic, read on open;
+  // sending a line while away clears your own away (you're clearly back).
+  const [away, setAway] = useState<string | null>(loadAway);
 
   const trailingIncoming = (msgs: ChatView['messages']): number => {
     let n = 0;
@@ -199,6 +215,7 @@ export function MessengerIM({ windowId, props }: AppWindowProps) {
     if (res.type === 'chat' && res.ok && res.chat) {
       setChat(res.chat);
       setVisible(prevLen + 1); // your line lands instantly; replies step in
+      setAway(null); // you replied — you're back, the auto-response is done
     }
   };
 
@@ -215,6 +232,11 @@ export function MessengerIM({ windowId, props }: AppWindowProps) {
             <small>{m.at}</small>
           </Line>
         ))}
+        {away && chat && fullyRevealed && (
+          <AutoResponse>
+            <b>Auto response from {self}:</b> {away}
+          </AutoResponse>
+        )}
         {chat?.signedOff && fullyRevealed && (
           <SystemLine>{chat.screenname} has signed off.</SystemLine>
         )}
