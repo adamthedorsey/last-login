@@ -79,6 +79,18 @@ const SoundToggle = styled.button`
   padding: 4px 6px;
 `;
 
+const FullscreenToggle = styled.button`
+  position: fixed;
+  right: 16px;
+  bottom: 40px;
+  background: none;
+  border: none;
+  font-family: ${PIXEL_MONO};
+  font-size: 16px;
+  color: #55524a;
+  padding: 4px 6px;
+`;
+
 /** The player-account line (out of fiction, like the whole evidence room):
  * who is signed in, and a way out. Fixed top-right, away from the machine. */
 const AccountBar = styled.div`
@@ -132,8 +144,22 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
   const [zoomIdx, setZoomIdx] = useState(() => (takeZoomOut() ? ZOOM_STEPS.length - 1 : -1));
   const [muted, setMutedState] = useState(isMuted);
   const playerEmail = usePlayerEmail();
+  const [isFull, setIsFull] = useState(
+    () => typeof document !== 'undefined' && !!document.fullscreenElement,
+  );
   // Blocks power-on while the reverse zoom is still settling.
   const fired = useRef(takeZoomOut());
+
+  useEffect(() => {
+    const onFs = () => setIsFull(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) void document.exitFullscreen?.();
+    else void document.documentElement.requestFullscreen?.();
+  };
 
   const press = () => {
     if (fired.current) return;
@@ -235,6 +261,15 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
         </AccountBar>
       )}
       <Copyright style={hidden}>© Adam Dorsey. All rights reserved.</Copyright>
+      <FullscreenToggle
+        style={hidden}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleFullscreen();
+        }}
+      >
+        {isFull ? 'WINDOWED' : 'FULL SCREEN'}
+      </FullscreenToggle>
       <SoundToggle
         style={hidden}
         onClick={(e) => {
