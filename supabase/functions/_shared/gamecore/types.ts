@@ -457,6 +457,8 @@ export interface PlayerState {
   lockedUntil: Record<string, number>;
   /** Player-authored files. Older saved states may lack these fields. */
   documents?: PlayerDocument[];
+  /** Microphone notes recorded through Sound Recorder / Case Files. */
+  audioNotes?: PlayerAudioNote[];
   docSeq?: number;
   folders?: PlayerFolder[];
   folderSeq?: number;
