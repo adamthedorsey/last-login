@@ -1491,6 +1491,7 @@ for me.
         from: 'Sadie Thompson <sadiedraws77@westwind.net>',
         to: 'casey_t@westwind.net',
         date: '1997-10-11T16:22:00',
+        unread: true,
       },
       body: {
         text: `casey.
@@ -1527,6 +1528,7 @@ back.
         from: 'Grace Fellowship Hall <fellowship@gracewv.net>',
         to: 'congregation@gracewv.net',
         date: '1997-10-13T08:15:00',
+        unread: true,
       },
       body: {
         text: `Dear friends,
@@ -1554,6 +1556,7 @@ Grace Fellowship Hall`,
         from: 'angel jackson <angeljx@westwind.net>',
         to: 'casey_t@westwind.net',
         date: '1997-10-14T23:40:00',
+        unread: true,
       },
       body: {
         text: `i told them the truth today. the real one. i know it looks bad that
@@ -1588,6 +1591,7 @@ warm anyway.
         from: 'angel jackson <angeljx@westwind.net>',
         to: 'casey_t@westwind.net',
         date: '1997-10-18T21:55:00',
+        unread: true,
       },
       body: {
         text: `>>> SEND TO 10 FRIENDS IN 24 HOURS OR ELSE <<<
@@ -1618,6 +1622,7 @@ do NOT break the chain. not this one. please.
         from: 'Sadie Thompson <sadiedraws77@westwind.net>',
         to: 'casey_t@westwind.net',
         date: '1997-10-15T21:03:00',
+        unread: true,
       },
       body: {
         text: `they took chad in again today. third time. half the school has him
@@ -1658,6 +1663,7 @@ girl with a sketchbook. watch me.
         from: 'Ruth Taylor Combs <rcombs@westwind.net>',
         to: 'casey_t@westwind.net',
         date: '1997-10-16T19:20:00',
+        unread: true,
       },
       body: {
         text: `Casey honey, it's your Aunt Ruth. I don't know who reads this now.
@@ -1697,6 +1703,7 @@ Aunt Ruth`,
         from: 'Samuel Reed <sreed@reedsdrug.westwind.net>',
         to: 'casey_t@westwind.net',
         date: '1997-10-17T08:05:00',
+        unread: true,
       },
       body: {
         text: `Dear Casey,
@@ -1739,6 +1746,7 @@ If anyone reads this who loves her: look after what she was carrying.
         from: 'Samuel Reed <sreed@reedsdrug.westwind.net>',
         to: 'casey_t@westwind.net',
         date: '1997-10-18T07:12:00',
+        unread: true,
       },
       body: {
         text: `Dear Casey,
@@ -1837,6 +1845,7 @@ Reed's Drug Store, Humble`,
         from: 'R. Wright <rwright@mailhouse.net>',
         to: 'casey_t@westwind.net',
         date: '1997-10-16T23:55:00',
+        unread: true,
       },
       body: {
         text: `I don't know who reads a missing girl's mail. Her mother, maybe.

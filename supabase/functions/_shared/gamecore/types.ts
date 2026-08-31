@@ -105,6 +105,10 @@ export interface ItemMeta {
   // recycle bin
   deletedAt?: string;
   originalPath?: string;
+  /** Mail: true = sitting unread when the machine was seized (or arrived
+   * new during play). Everything else Casey already read — the player's
+   * first open un-bolds it (tracked via state.opened, client-side). */
+  unread?: boolean;
   // desktop placement: absolute master-grid pixels by default. With an
   // anchor, x/y become GRID-SLOT OFFSETS resolved client-side against the
   // viewport (and snapped to the same master grid): 'bottom-right' counts

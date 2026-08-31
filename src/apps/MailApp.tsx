@@ -258,7 +258,7 @@ export function MailApp() {
               <MsgRow
                 key={m.id}
                 $active={openMsg?.id === m.id}
-                $unread={!openedSet.has(m.id) && mailbox === 'mailbox.inbox'}
+                $unread={m.meta?.unread === true && !openedSet.has(m.id)}
                 onClick={() => void openMessage(m.id)}
               >
                 <span>{(m.meta?.from ?? '').replace(/<.*>/, '').trim() || m.meta?.from}</span>

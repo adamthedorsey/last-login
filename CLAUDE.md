@@ -251,6 +251,11 @@ If not, don't build it that way.
   online flag, and flipping anything client-side must never reveal content
   (the web, live chat, buddy presence, and mail delivery are all gated in
   the engine).
+- Mail READ STATE is authored, Outlook-Express style: `meta.unread: true`
+  marks what sat unread when the machine was seized (anything dated after
+  Casey's last session) and every `arrivesOnline` delivery; the rest she
+  already read and renders regular. The player's first open un-bolds an
+  unread row (client checks the engine's `opened` list — no client state).
 - Mail that "arrives" is authored with `arrivesOnline: true`: invisible
   until a delivery sweep runs while online AND its requires are met; once
   delivered it lives on the disk and reads fine offline. Sweeps run on
