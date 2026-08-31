@@ -707,9 +707,10 @@ export const SEASON1: SeasonContent = {
       meta: { path: 'C:\\' },
     },
     {
-      // The burned disc in the drive: a friend's mix — the Solar Flare
+      // The disc in the drive: one of Casey's own disguised CD-Rs
+      // (story/canon.md, "Casey's Offline Backup") — the Solar Flare
       // album on the audio session (that's what CD Player plays), traded
-      // mp3s and one quiet folder on the data session.
+      // mp3s in plain sight, and her hidden backup on the data session.
       id: 'drive.d',
       kind: 'folder',
       name: 'Summer_97 (D:)',
@@ -1014,53 +1015,58 @@ voice: "again. i wasn't ready."`,
       meta: { path: 'D:\\drivers', at: { x: 736, y: 452 } },
     },
     {
-      id: 'cd.nfo',
+      // One downloaded Purdont fragment — deliberately mundane corporate
+      // paper (canon: the truth emerges from many ordinary documents,
+      // never one absurd confession).
+      id: 'cd.q3',
       kind: 'document',
-      name: 'nfo.txt',
+      name: 'q3_terr_sum.txt',
       icon: 'doc',
       parentId: 'cd.drivers',
-      meta: { createdAt: '1997-07-19', sizeKb: 2, mono: true },
+      meta: { createdAt: '1997-09-14', sizeKb: 4, mono: true },
       body: {
-        text: `      .  p o r c h l i g h t  .
-      ----------------------------
-      leave a light on
+        text: `PURDONT PHARMACEUTICAL - FIELD SALES
+Q3 1997 TERRITORY SUMMARY (EXCERPT)      INTERNAL USE ONLY
 
-      junebug    reverb    castor    stray
+RANK  TERRITORY            RX GROWTH   NOTE
+----  ------------------   ---------   -------------------
+  1   APPALACHIA-SOUTH       +214%     4th consec qtr at #1
+  2   APPALACHIA-NORTH       +187%
+  3   GULF COAST             +112%
+  4   OHIO VALLEY            +104%
 
-      we look. we do not break.
-      we copy. we do not burn.
-      we tell the people who ought to know.
+ACTION ITEMS (REGIONAL)
+- Expand lunch program to remaining Tier 2 clinics
+- Address physician hesitancy re: dependence with
+  approved talking points (see PT-9 rev C)
+- Identify additional high-volume prescribers for
+  speaker dinners, APPALACHIA-SOUTH priority
 
-      no names. no bragging. no shortcuts
-      through anybody's life.
-
-      - r.`,
+[end of excerpt - pg 2 of 14 not saved]`,
       },
     },
     {
-      id: 'cd.averline',
+      id: 'cd.oxytera',
       kind: 'document',
-      name: 'averline notes.txt',
+      name: 'oxytera notes.txt',
       icon: 'doc',
       parentId: 'cd.drivers',
-      meta: { createdAt: '1997-09-14', sizeKb: 3 },
+      meta: { createdAt: '1997-09-21', sizeKb: 3 },
       body: {
-        text: `averline pharmaceutical. the duracet people.
+        text: `purdont. the oxytera people.
 
 what i can prove from the library alone:
-- humble co filled more duracet scrips last year than
+- humble co filled more oxytera scrips last year than
   charleston. charleston has 12x the people.
-- the sales rep hits every clinic on route 9 twice a month.
+- the rep hits every clinic on route 9 twice a month.
   mrs. keener says he brings lunch for the whole office.
 - they sponsored the fair. the FAIR.
 
-what r. says we need: something internal. a memo, a training
-doc, anything that shows they KNOW what it does and push it
-anyway. not to keep. to send to the paper in charleston.
+nobody is going to print any of that. its all "legal."
+you need something INTERNAL. something that shows they
+know what it does and push it anyway.
 
-the dial-in number on their invoice footer answers with a
-carrier tone. not going near it until castor checks it out.
-we look, we don't break. but somebody should look.`,
+so. about that.`,
       },
     },
     {
@@ -1071,9 +1077,9 @@ we look, we don't break. but somebody should look.`,
       parentId: 'cd.drivers',
       meta: { createdAt: '1997-09-28', sizeKb: 1 },
       body: {
-        text: `- give reverb his discman back
+        text: `- give sadie her discman back
 - library thursday. bring dimes for the copier
-- ask s. about the sept numbers. i think i read them wrong.
+- the sept numbers. i think i read them wrong.
   i hope i read them wrong.
 - stop leaving this stuff on discs. (after this one)`,
       },

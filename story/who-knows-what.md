@@ -151,37 +151,16 @@ the matrix first and the graph second.
   live in the items.
 
 
-## The porchlight thread (canon direction, seeded 2026-08-31)
+## The Purdont thread -> see story/canon.md
 
-Casey was GOOD with computers — better than anyone around her knew. She
-ran with a small online circle, "porchlight" (handles: **junebug** —
-Casey; her screensaver word was hiding in plain sight all along —
-**reverb**, **castor**, **stray**). Low-key hacktivists: look don't
-break, copy don't burn, tell the people who ought to know.
-
-Their mission: **Averline Pharmaceutical**, makers of **Duracet** — the
-painkiller ruining Humble (modeled on Purdue/OxyContin). They wanted
-internal proof Averline knew what the drug did, to send to the
-Charleston paper. Casey worked the public-records side (library,
-pharmacy counts, the route 9 sales rep).
-
-**And somewhere in there she stumbled into something** — the thread that
-connects to the ledger/pipeline chain already in the game. Her to-do:
-"ask s. about the sept numbers. i think i read them wrong. i hope i
-read them wrong."
-
-**The planned twist**: the "suspect" who deleted files from this machine
-and later hacks INTO it (the remote-access set-piece) is actually one of
-her porchlight friends — frightened, covering the circle's tracks,
-watching over her machine. The player is meant to read them as the
-predator for most of the season; the recontextualization is the gut
-punch. (NOT yet implemented in the clue graph — the current chain still
-reads GhostBridge as the watcher. Rewiring that identity is future
-content work.)
-
-First surfacing: the burned disc in the drive — `Summer_97 (D:)`, six
-traded mp3s (mp3s in 1997 = the scene), and the `drivers` folder parked
-past the window's edge with `nfo.txt`, `averline notes.txt`, and
-`to do.txt`. Awaited assets if we ever want the songs playable: six
-short fictional tracks at `/audio/` paths (currently unauthored —
-Sound Recorder politely refuses).
+The authoritative story bible for the pharma arc now lives in
+**story/canon.md** (Purdont Pharmaceutical / Oxytera CR, the defacement
+-> accidental intrusion -> downloads -> disguised CD-R backups -> IRC ->
+the hacker/future-ally). Superseded improvisations from the first disc
+draft: the "porchlight" circle with its creed and handle roster, the
+Averline/Duracet naming, and the friend-burned disc (the CD-R is
+Casey's own). The Summer_97 (D:) disc now carries: six traded mp3s, a
+mundane internal Purdont territory-summary fragment, her
+oxytera notes.txt, and to do.txt. Open canon conflicts (mom alive in
+shipped content, GhostBridge chain interleave, the junebug handle
+proposal) are listed at the bottom of canon.md.
