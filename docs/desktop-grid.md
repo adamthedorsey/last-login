@@ -21,7 +21,7 @@ player-moved icons always agree.)
 | A3   | 0,2     |  24,216   | Pictures          | `folder.pictures`   |
 | B1   | 1,0     | 120,24    | NetVoyager        | `shortcut.browser`  |
 | B2   | 1,1     | 120,120   | Mail              | `shortcut.mail`     |
-| B3   | 1,2     | 120,216   | Chat              | `shortcut.buddyline` |
+| B3   | 1,2     | 120,216   | Messenger         | `shortcut.buddyline` |
 | C1   | 2,0     | 216,24    | Notepad           | `shortcut.notepad`  |
 | C2   | 2,1     | 216,120   | Solitaire         | `shortcut.solitaire` |
 | C3   | 2,2     | 216,216   | WestWind Online   | `shortcut.dialup`   |

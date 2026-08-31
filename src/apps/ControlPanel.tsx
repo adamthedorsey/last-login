@@ -216,7 +216,7 @@ export function MouseApplet() {
 // --- Add/Remove Programs ---------------------------------------------------
 
 const INSTALLED = [
-  'Messenger 2.4 (BuddyLine)',
+  'Messenger 2.4',
   'Kava Runtime 1.1',
   'Minefield',
   'NetVoyager 3.0',

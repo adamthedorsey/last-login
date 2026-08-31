@@ -1,13 +1,13 @@
 /**
  * A Messenger IM window — one per buddy, like AIM. It shows a live
- * BuddyLine conversation (server-authored prompt tree; the player never
+ * Messenger conversation (server-authored prompt tree; the player never
  * types free text, they pick a line) or a saved log read from disk. All
  * content and gating stays server-side; this is just the AIM-shaped
  * conversation surface.
  */
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Frame } from 'react95';
+import { Button, Frame } from 'react95';
 import type { ChatView, ItemContent } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { useWindowStore } from '../os/windowStore';
@@ -62,20 +62,28 @@ const PromptWell = styled(Frame).attrs({ variant: 'well' })`
   overflow: auto;
 `;
 
-const PromptBtn = styled.button`
+const PromptBtn = styled.button<{ $picked: boolean }>`
   display: block;
   width: 100%;
   text-align: left;
   border: none;
-  background: transparent;
   padding: 4px 6px;
   font-size: 13px;
   cursor: var(--cursor-arrow);
-  color: #000080;
+  background: ${(p) => (p.$picked ? '#000080' : 'transparent')};
+  color: ${(p) => (p.$picked ? '#fff' : '#000080')};
   &:hover {
     background: #000080;
     color: #fff;
   }
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 4px;
+  flex-shrink: 0;
 `;
 
 const DeadBox = styled(Frame).attrs({ variant: 'well' })`
@@ -91,6 +99,8 @@ const REVEAL_MS = 550; // constant step between incoming lines — no easing
 export function MessengerIM({ windowId, props }: AppWindowProps) {
   const { send, view, contentEpoch, setShowEndCard } = useGame();
   const setTitle = useWindowStore((s) => s.setTitle);
+  const closeWin = useWindowStore((s) => s.close);
+  const [picked, setPicked] = useState<string | null>(null);
   const screenname = props.screenname as string | undefined;
   const logItemId = props.logItemId as string | undefined;
 
@@ -214,7 +224,12 @@ export function MessengerIM({ windowId, props }: AppWindowProps) {
       {chat && !chat.signedOff && fullyRevealed && chat.prompts.length > 0 ? (
         <PromptWell>
           {chat.prompts.map((p) => (
-            <PromptBtn key={p.id} onClick={() => void say(p.id)}>
+            <PromptBtn
+              key={p.id}
+              $picked={picked === p.id}
+              onClick={() => setPicked(p.id)}
+              onDoubleClick={() => void say(p.id)}
+            >
               {p.text}
             </PromptBtn>
           ))}
@@ -230,6 +245,23 @@ export function MessengerIM({ windowId, props }: AppWindowProps) {
                 : 'Nothing more to say right now.'}
         </DeadBox>
       )}
+      <ButtonRow>
+        <Button
+          disabled={!picked}
+          onClick={() => {
+            if (picked) {
+              void say(picked);
+              setPicked(null);
+            }
+          }}
+          style={{ width: 90 }}
+        >
+          Send
+        </Button>
+        <Button onClick={() => closeWin(windowId)} style={{ width: 90 }}>
+          Close
+        </Button>
+      </ButtonRow>
     </Wrap>
   );
 }

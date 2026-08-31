@@ -227,15 +227,19 @@ If not, don't build it that way.
   under-construction energy, table-era layouts, blue/underlined links.
 
 ### Live chat (in-game) — Messenger
-- The chat client is **Messenger** (`src/apps/Messenger.tsx`), styled like
-  1997 AIM: a tall, narrow buddy-list window (`buddyline` app id, kept for
-  wire compat) of collapsible groups with online counts and our own
-  BuddyIcon status art (online/away/idle/offline). SINGLE-click selects a
-  buddy; DOUBLE-click opens an IM. IMs are their OWN windows, one per buddy
-  (`im` app, `MessengerIM.tsx`), deduped in `src/os/messenger.ts`
-  (`openIm`) so re-opening focuses the existing window. The client only
-  ever names the fictional network (BuddyLine); a live buddy list comes
-  from the server. Never revive the old single-window combined roster+chat.
+- The chat client is **Messenger** (`src/apps/Messenger.tsx`), full 1997-AIM
+  chrome: a banner (our OWN person glyph + wordmark, never AOL's running
+  man), collapsible groups with online counts and BuddyIcon status art
+  (online/away/idle/offline), a Sign Off / Setup... / Help button row, and
+  a Send Instant Message button. SINGLE-click selects a buddy; DOUBLE-click
+  (or Send Instant Message) opens an IM. IMs are their OWN windows, one per
+  buddy (`im` app, `MessengerIM.tsx`, with Send/Close), deduped in
+  `src/os/messenger.ts` (`openIm`). Setup holds the away message and Add
+  Buddy — both PER-DEVICE cosmetic localStorage (`os/messengerLocal.ts`),
+  like the desktop layout: they never touch the engine and player-added
+  buddies are plain offline stubs. The server-authored roster still does
+  the story telling; no client string names a story buddy. Never revive
+  the old single-window combined roster+chat.
 - Conversations are server-authored prompt trees (`ChatConversation` in
   season content). The player never types free text; the client only ever
   receives the prompts currently on offer, and the full transcript is

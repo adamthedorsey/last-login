@@ -786,7 +786,7 @@ export const SEASON1: SeasonContent = {
     },
     // --- Installed programs (launchable from C:\Program Files) ---
     { id: 'pf.netvoyager', kind: 'shortcut', name: 'NetVoyager 3.0', icon: 'browser', parentId: 'folder.programs', meta: { appId: 'browser', modifiedAt: '1997-06-02' } },
-    { id: 'pf.chat', kind: 'shortcut', name: 'Chat', icon: 'im-app', parentId: 'folder.programs', meta: { appId: 'buddyline', modifiedAt: '1997-05-11' } },
+    { id: 'pf.chat', kind: 'shortcut', name: 'Messenger', icon: 'im-app', parentId: 'folder.programs', meta: { appId: 'buddyline', modifiedAt: '1997-05-11' } },
     { id: 'pf.mail', kind: 'shortcut', name: 'Mail', icon: 'mail-app', parentId: 'folder.programs', meta: { appId: 'mail', modifiedAt: '1997-03-28' } },
     { id: 'pf.notepad', kind: 'shortcut', name: 'Notepad', icon: 'notepad', parentId: 'folder.programs', meta: { appId: 'notepad', modifiedAt: '1996-11-20' } },
     { id: 'pf.pictures', kind: 'shortcut', name: 'Picture Viewer', icon: 'photo', parentId: 'folder.programs', meta: { appId: 'photos', modifiedAt: '1996-11-20' } },
@@ -2093,7 +2093,7 @@ Practically Giving It Away (Legal: we are not giving it away.)`,
     },
 
     // =====================================================================
-    // INSTANT MESSENGER — BuddyLine network, screen name SunflwrC81
+    // INSTANT MESSENGER — Messenger network, screen name SunflwrC81
     // =====================================================================
     {
       id: 'im.sadie',
@@ -2193,11 +2193,11 @@ The Mine Wars were a series of wars that happened in the mines
         // She deleted it herself, minutes after the 9:31 PM session — like
         // he told her to. Half-obeyed: it went to the bin, not away.
         deletedAt: '1997-10-10T21:44:00',
-        originalPath: 'C:\\Program Files\\Chat\\logs',
+        originalPath: 'C:\\Program Files\\Messenger\\logs',
         sizeKb: 2,
       },
       body: {
-        text: `[BuddyLine saved log — nightshift — 10/10/97]
+        text: `[Messenger saved log — nightshift — 10/10/97]
 
 nightshift: is the page somewhere safe
 SunflwrC81: yes. ok my turn. you say you've been building a case on
@@ -2286,7 +2286,7 @@ and things go back to nor
     {
       id: 'shortcut.buddyline',
       kind: 'shortcut',
-      name: 'Chat',
+      name: 'Messenger',
       icon: 'im-app',
       meta: { appId: 'buddyline', desktop: { x: 120, y: 216 } },
     },

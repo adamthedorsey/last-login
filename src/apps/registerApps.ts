@@ -71,8 +71,8 @@ export function registerAllApps(): void {
     name: 'Messenger',
     icon: 'im-app',
     component: Messenger,
-    // The AIM-style buddy list: tall and narrow, roster only.
-    defaultSize: { w: 250, h: 460 },
+    // The AIM-style buddy list: tall and narrow, banner + roster + tools.
+    defaultSize: { w: 260, h: 520 },
     singleton: true,
   });
   registerApp({
