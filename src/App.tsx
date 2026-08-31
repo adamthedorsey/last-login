@@ -38,7 +38,13 @@ function Screen() {
   );
   // A power-on with a session still on disk (tab closed mid-play, reopened
   // later) still runs the POST, then resumes — same as a warm restart.
+  // With NO live session the flag must clear at once: the ordinary boot
+  // handles login, and a lingering flag would trap the post-login render
+  // back inside BootSequence (the login dialog would never hand off).
   const [powerBoot, setPowerBoot] = useState(false);
+  useEffect(() => {
+    if (powerBoot && ready && view && !view.loggedIn) setPowerBoot(false);
+  }, [powerBoot, ready, view]);
 
   const screen = !powered ? (
     <MainMenu
