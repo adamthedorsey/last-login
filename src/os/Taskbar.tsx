@@ -95,6 +95,24 @@ const TrayClock = styled.button`
 `;
 
 /** The Date/Time popup sits above the tray, like the Start menu does. */
+/** react95's stock DatePicker header is an emoji jammed against the
+ * word "Date" — hide it, space the header, and overlay our icon art. */
+const DatePicker95 = styled(DatePicker)`
+  > div:first-child {
+    padding-left: 26px;
+  }
+  > div:first-child > span[role='img'] {
+    display: none;
+  }
+`;
+
+const PickerIconOverlay = styled.span`
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  pointer-events: none;
+`;
+
 const DatePopup = styled.div`
   position: absolute;
   right: 4px;
@@ -629,7 +647,11 @@ export function Taskbar({
                 </WindowContent>
               </Window>
             ) : (
-              <DatePicker
+              <>
+                <PickerIconOverlay style={{ top: 28, left: 29 }}>
+                  <Icon name="clock" size={16} />
+                </PickerIconOverlay>
+                <DatePicker95
                 shadow
                 // The picker reads its date with getUTC*; anchor the frozen
                 // in-world day to UTC noon so it shows the same calendar day
@@ -637,7 +659,8 @@ export function Taskbar({
                 date={`${view.clockNow.slice(0, 10)}T12:00:00Z`}
                 onCancel={closeDate}
                 onAccept={acceptDate}
-              />
+                />
+              </>
             )}
           </DatePopup>
         </div>
