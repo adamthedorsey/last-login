@@ -40,14 +40,18 @@ const Scope = styled(Frame).attrs({ variant: 'well' })`
 
 /** The seek slider: a plain Win95 track + thumb, no react95 Slider
  * (it crashes under React 19). Click or drag to seek. */
+/** The rail sits inside a taller strip so the thumb never clips. */
+const TrackStrip = styled.div`
+  padding: 12px 4px 10px;
+  flex-shrink: 0;
+`;
+
 const Track = styled.div`
   position: relative;
-  height: 22px;
-  margin: 8px 4px 6px;
+  height: 6px;
   border-top: 2px solid #808080;
   border-bottom: 2px solid #fff;
   background: #c8c4bc;
-  height: 6px;
 `;
 
 const Thumb = styled.div`
@@ -335,9 +339,11 @@ export function SoundRecorder({ windowId, props }: AppWindowProps) {
         </SideWell>
       </Wells>
 
-      <Track ref={trackRef} onPointerDown={(e) => seek(e.clientX)}>
-        <Thumb style={{ left: `calc(${(frac * 100).toFixed(2)}% - 5px)` }} />
-      </Track>
+      <TrackStrip>
+        <Track ref={trackRef} onPointerDown={(e) => seek(e.clientX)}>
+          <Thumb style={{ left: `calc(${(frac * 100).toFixed(2)}% - 5px)` }} />
+        </Track>
+      </TrackStrip>
 
       <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
         <Button

@@ -181,7 +181,7 @@ export function registerAllApps(): void {
     icon: 'audio',
     component: SoundRecorder,
     // The little fixed accessory, faithful to the original's footprint.
-    defaultSize: { w: 340, h: 220 },
+    defaultSize: { w: 360, h: 252 },
     resizable: false,
   });
   registerApp({
