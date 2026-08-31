@@ -101,7 +101,7 @@ export const SEASON1: SeasonContent = {
     },
   ],
   maxPasswordAttempts: 6,
-  lockoutSeconds: 90,
+  lockoutSeconds: 15,
 
   // The Start menu's Documents list — the files Casey opened in her final
   // sessions, frozen the night the machine was seized. Mostly homework and

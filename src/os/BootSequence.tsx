@@ -131,6 +131,8 @@ function buildBootFrames(warning?: string[]): BootFrame[] {
     frames.push({ text: cur, ms: 0, waitEnter: true });
   }
   line('', 300);
+  line('Copyright (C) 1997 Microtech Systems, Inc.', 700);
+  line('', 250);
   line('Starting Microtech Horizons 95 ...', 1700);
   return frames;
 }
@@ -287,7 +289,7 @@ export function BootSequence({
       setPassword('');
       if (res.hint) setHint(res.hint);
       if (res.lockedOut) {
-        setLockSeconds(res.retryAfterSeconds ?? 90);
+        setLockSeconds(res.retryAfterSeconds ?? 15);
         setMessage('Too many incorrect attempts.');
       } else {
         setMessage('The password is incorrect. Please try again.');
