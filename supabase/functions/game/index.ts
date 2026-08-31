@@ -33,27 +33,53 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+// MUST mirror the engine's handleAction dispatch — every action the client
+// can send. A missing entry makes parseAction reject the call as bad_request,
+// which never surfaces in dev mode (the in-browser engine handles everything)
+// but silently breaks that whole feature in hosted mode (e.g. Case Files
+// hangs on "opening…" when getCaseFile/caseFileSync aren't listed).
 const VALID_ACTIONS = new Set([
+  // session / state
   'getState',
   'login',
   'logout',
+  'resetSeason',
+  // connectivity
   'connect',
   'disconnect',
   'checkMail',
+  // files / desktop / navigation / search
   'getDesktop',
   'listChildren',
   'open',
   'attemptPassword',
   'visit',
   'search',
-  'getBuddies',
-  'getConversation',
-  'say',
+  'findFiles',
+  'recentDocs',
+  // player workspace (mutations on player-created docs only)
   'saveDocument',
   'createFolder',
   'moveDocument',
   'renameItem',
-  'resetSeason',
+  'deleteDocument',
+  'copyItem',
+  // case files
+  'getCaseFile',
+  'caseFileSync',
+  // player audio notes
+  'saveAudioNote',
+  'deleteAudioNote',
+  // messenger
+  'getBuddies',
+  'getConversation',
+  'say',
+  // phone dialer
+  'dial',
+  'getSpeedDial',
+  // remote-access set-piece
+  'getRemoteSession',
+  'remoteSessionDone',
 ]);
 
 // Per-field length caps; `text` is the player's own Notepad document.
@@ -66,10 +92,17 @@ const FIELD_LIMITS: Record<string, number> = {
   query: 500,
   docId: 100,
   folderId: 100,
+  noteId: 100,
   name: 100,
   screenname: 100,
   promptId: 100,
+  number: 50,
   text: 20000,
+  // A base64 audio data URL for a player voice note. The engine caps the
+  // real size at MAX_AUDIO_DATAURL (~1.2 MB); allow a hair more here so a
+  // valid recording reaches the engine's own limit check rather than being
+  // bounced as bad_request.
+  dataUrl: 1_300_000,
 };
 
 function parseAction(raw: unknown): GameAction | null {
