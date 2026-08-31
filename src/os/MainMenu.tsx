@@ -83,7 +83,7 @@ const SoundToggle = styled.button`
 const AccountBar = styled.div`
   position: fixed;
   top: 12px;
-  right: 16px;
+  left: 16px;
   display: flex;
   align-items: center;
   gap: 10px;
