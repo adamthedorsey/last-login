@@ -31,6 +31,10 @@ If not, don't build it that way.
   NO soft drop shadows (hard offset shadows like `6px 6px 0 rgba(0,0,0,.4)` are
   fine), NO blur, NO glassmorphism/translucency, NO CSS gradients as decoration
   (a banner-image gradient inside artwork is fine; a gradient button is not).
+  ONE gradient exception (owner call): a window may declare a custom FOCUSED
+  title-bar color via its registry `titleBar` param — solid, or a hard
+  left-to-right two-stop gradient (Case Files runs black -> #14636a, its
+  banner teal). Inactive bars always stay standard gray.
 - Hard edges everywhere: 1px solid borders, `outset`/`inset` bevels, dotted
   focus/selection rectangles.
 - Selection highlight is solid `#000080` with white text. Period.

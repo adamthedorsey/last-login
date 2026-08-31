@@ -16,6 +16,8 @@ export interface OSWindow {
   maximized: boolean;
   /** false = fixed-size Win95 dialog (no handles, no maximize). */
   resizable: boolean;
+  /** Custom focused-title-bar color (solid or L->R gradient). */
+  titleBar?: { from: string; to?: string };
 }
 
 interface LaunchOpts {
@@ -126,6 +128,7 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       minimized: false,
       maximized: false,
       resizable: def.resizable !== false,
+      titleBar: def.titleBar,
     };
     set({ windows: [...get().windows, win], nextZ: get().nextZ + 1 });
   },

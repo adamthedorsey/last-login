@@ -19,6 +19,10 @@ export interface AppDefinition {
   /** false = fixed-size, Win95-dialog style: no resize handles, no
    * maximize. Defaults to true. */
   resizable?: boolean;
+  /** Custom title-bar color for the FOCUSED window: solid (`from` only)
+   * or a left-to-right gradient (`from` -> `to`). Inactive windows keep
+   * the standard gray. */
+  titleBar?: { from: string; to?: string };
   /**
    * Startup splash shown BEFORE the window opens (a fresh launch only —
    * refocusing an existing singleton window skips it). Call onDone to

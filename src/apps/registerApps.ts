@@ -114,6 +114,8 @@ export function registerAllApps(): void {
     defaultSize: { w: 880, h: 640 },
     singleton: true,
     center: true,
+    // The office's own livery: black into the banner teal.
+    titleBar: { from: '#000000', to: '#14636a' },
   });
   // --- Accessories (the Win95-style default apps) ---
   registerApp({

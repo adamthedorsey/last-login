@@ -201,6 +201,15 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
     >
       <Header
         active={focused}
+        style={
+          focused && win.titleBar
+            ? {
+                background: win.titleBar.to
+                  ? `linear-gradient(90deg, ${win.titleBar.from}, ${win.titleBar.to})`
+                  : win.titleBar.from,
+              }
+            : undefined
+        }
         onPointerDown={onHeaderPointerDown}
         onPointerMove={onHeaderPointerMove}
         onPointerUp={onHeaderPointerUp}
