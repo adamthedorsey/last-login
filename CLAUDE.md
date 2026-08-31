@@ -152,6 +152,12 @@ If not, don't build it that way.
   transcript/description in the body, and open in Sound Recorder.
   (6) Player audio notes: microphone recordings saved server-side via
   `saveAudioNote` (size-capped), listed and played in Case Files.
+  (7) The Horizons 95 voice lines (clean, ~0.4): the welcome
+  (`mt_welcome_to_microtech_horizons_95.mp3`) plays as the desktop
+  reveals after logon (queued behind the fanfare if a blocked-autoplay
+  retry is still playing), and "Goodbye" (`mt_goodbye.mp3`) plays over
+  the it-is-now-safe shutdown screen. System sounds — no degradation,
+  no fallback, silence is fine.
   No other samples. Sound Recorder is a stock Win95 accessory (1995) —
   no story-year change needed for any of this.
 

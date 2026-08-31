@@ -905,16 +905,16 @@ because nobody ever looks at homework.`,
       meta: {
         createdAt: '1997-04-12',
         modifiedAt: '1997-04-12',
-        sizeKb: 418,
+        sizeKb: 129,
         audioSrc: '/audio/band-practice.m4a',
-        audioSeconds: 39,
+        audioSeconds: 12,
       },
       body: {
         text: `[sound recording — band practice 4-12.wav]
 
 Garage recording. Somebody counts off, a Solar Flare cover
-starts and falls apart around the second verse. Laughing.
-A girl's voice: "again. i wasn't ready."`,
+gets a few bars in and falls apart. Laughing. A girl's
+voice: "again. i wasn't ready."`,
       },
     },
     {

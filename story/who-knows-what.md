@@ -144,7 +144,7 @@ the matrix first and the graph second.
   important moments. The old READ FIRST ground rules now live in the setup
   wizard pages.
 - **Audio assets to supply** (graceful "Cannot play this file." until then):
-  `public/audio/band-practice.m4a` (~39s, garage Solar Flare cover falling
+  `public/audio/band-practice.m4a` (~12s, garage Solar Flare cover falling
   apart, laughter) and `public/audio/dont-listen-to-this.m4a` (~42s,
   Casey's one spoken diary entry, in her personal stuff folder — "it's
   not mine to tell"; recontextualizes hard after the finale). Transcripts
