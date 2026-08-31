@@ -2,8 +2,8 @@
 
 > GENERATED — do not edit. Source of truth: `season1.ts`. Regenerate: `npm run graph`
 >
-> In-world date: 1997-10-18 · 120 items
-> (12 gated · 11 granting · ~97 mundane camouflage) ·
+> In-world date: 1997-10-18 · 131 items
+> (12 gated · 11 granting · ~108 mundane camouflage) ·
 > 8 discoveries
 
 ```mermaid

@@ -8,6 +8,9 @@ export function launchItem(item: ItemSummary): void {
     case 'folder':
       if (item.id === 'folder.recycle') {
         os.open('recycle');
+      } else if (item.meta?.path === 'D:\\') {
+        // The disc gets its spatial window, not the list view.
+        os.open('cdrom', { title: item.name });
       } else {
         os.open('explorer', { props: { folderId: item.id }, title: item.name });
       }

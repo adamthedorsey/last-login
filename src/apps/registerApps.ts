@@ -28,6 +28,7 @@ import {
 import { SystemMonitor } from './SystemMonitor';
 import { SoundRecorder } from './SoundRecorder';
 import { DosPrompt } from './DosPrompt';
+import { CdRom } from './CdRom';
 import { CaseFile } from './CaseFile';
 
 export function registerAllApps(): void {
@@ -184,6 +185,17 @@ export function registerAllApps(): void {
     // The little fixed accessory, faithful to the original's footprint.
     defaultSize: { w: 360, h: 214 },
     resizable: false,
+  });
+  registerApp({
+    id: 'cdrom',
+    name: 'Summer_97 (D:)',
+    icon: 'cd',
+    component: CdRom,
+    // Sized to show exactly the six songs; the rest of the disc lives
+    // past the scrollbars.
+    defaultSize: { w: 430, h: 340 },
+    singleton: true,
+    hidden: true,
   });
   registerApp({
     id: 'dosprompt',

@@ -149,3 +149,39 @@ the matrix first and the graph second.
   Casey's one spoken diary entry, in her personal stuff folder — "it's
   not mine to tell"; recontextualizes hard after the finale). Transcripts
   live in the items.
+
+
+## The porchlight thread (canon direction, seeded 2026-08-31)
+
+Casey was GOOD with computers — better than anyone around her knew. She
+ran with a small online circle, "porchlight" (handles: **junebug** —
+Casey; her screensaver word was hiding in plain sight all along —
+**reverb**, **castor**, **stray**). Low-key hacktivists: look don't
+break, copy don't burn, tell the people who ought to know.
+
+Their mission: **Averline Pharmaceutical**, makers of **Duracet** — the
+painkiller ruining Humble (modeled on Purdue/OxyContin). They wanted
+internal proof Averline knew what the drug did, to send to the
+Charleston paper. Casey worked the public-records side (library,
+pharmacy counts, the route 9 sales rep).
+
+**And somewhere in there she stumbled into something** — the thread that
+connects to the ledger/pipeline chain already in the game. Her to-do:
+"ask s. about the sept numbers. i think i read them wrong. i hope i
+read them wrong."
+
+**The planned twist**: the "suspect" who deleted files from this machine
+and later hacks INTO it (the remote-access set-piece) is actually one of
+her porchlight friends — frightened, covering the circle's tracks,
+watching over her machine. The player is meant to read them as the
+predator for most of the season; the recontextualization is the gut
+punch. (NOT yet implemented in the clue graph — the current chain still
+reads GhostBridge as the watcher. Rewiring that identity is future
+content work.)
+
+First surfacing: the burned disc in the drive — `Summer_97 (D:)`, six
+traded mp3s (mp3s in 1997 = the scene), and the `drivers` folder parked
+past the window's edge with `nfo.txt`, `averline notes.txt`, and
+`to do.txt`. Awaited assets if we ever want the songs playable: six
+short fictional tracks at `/audio/` paths (currently unauthored —
+Sound Recorder politely refuses).

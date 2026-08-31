@@ -432,6 +432,10 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
       setFloppyError(true);
       return;
     }
+    if (item.meta?.path === 'D:\\') {
+      launchItem(item); // the disc opens its spatial window
+      return;
+    }
     if (item.kind === 'folder' && item.id !== 'folder.recycle') {
       setStack((s) => [...s, current]);
       void loadFolder(item.id);

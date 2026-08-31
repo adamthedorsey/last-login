@@ -707,6 +707,17 @@ export const SEASON1: SeasonContent = {
       meta: { path: 'C:\\' },
     },
     {
+      // The burned disc in the drive: a friend's mix — the Solar Flare
+      // album on the audio session (that's what CD Player plays), traded
+      // mp3s and one quiet folder on the data session.
+      id: 'drive.d',
+      kind: 'folder',
+      name: 'Summer_97 (D:)',
+      icon: 'cd',
+      parentId: 'folder.computer',
+      meta: { path: 'D:\\' },
+    },
+    {
       id: 'cpl.dialup',
       kind: 'shortcut',
       name: 'Dial-Up Networking',
@@ -934,6 +945,137 @@ because nobody ever looks at homework.`,
 Garage recording. Somebody counts off, a Solar Flare cover
 gets a few bars in and falls apart. Laughing. A girl's
 voice: "again. i wasn't ready."`,
+      },
+    },
+    // --- The D: disc: six traded mp3s in plain sight... -----------------
+    {
+      id: 'cd.mp3-1',
+      kind: 'audio',
+      name: 'jawbreak - july.mp3',
+      icon: 'audio',
+      parentId: 'drive.d',
+      meta: { createdAt: '1997-08-02', sizeKb: 3211, at: { x: 24, y: 18 }, audioSeconds: 0 },
+      body: { text: '[mp3 audio — traded on the boards, 128 kbps]' },
+    },
+    {
+      id: 'cd.mp3-2',
+      kind: 'audio',
+      name: 'the null set - dialtone.mp3',
+      icon: 'audio',
+      parentId: 'drive.d',
+      meta: { createdAt: '1997-08-02', sizeKb: 2874, at: { x: 144, y: 18 }, audioSeconds: 0 },
+      body: { text: '[mp3 audio — traded on the boards, 128 kbps]' },
+    },
+    {
+      id: 'cd.mp3-3',
+      kind: 'audio',
+      name: 'carbon glow - undertow.mp3',
+      icon: 'audio',
+      parentId: 'drive.d',
+      meta: { createdAt: '1997-08-02', sizeKb: 3705, at: { x: 264, y: 18 }, audioSeconds: 0 },
+      body: { text: '[mp3 audio — traded on the boards, 128 kbps]' },
+    },
+    {
+      id: 'cd.mp3-4',
+      kind: 'audio',
+      name: 'furnace room - colder.mp3',
+      icon: 'audio',
+      parentId: 'drive.d',
+      meta: { createdAt: '1997-08-02', sizeKb: 3390, at: { x: 24, y: 130 }, audioSeconds: 0 },
+      body: { text: '[mp3 audio — traded on the boards, 128 kbps]' },
+    },
+    {
+      id: 'cd.mp3-5',
+      kind: 'audio',
+      name: 'the marcy sisters - long distance.mp3',
+      icon: 'audio',
+      parentId: 'drive.d',
+      meta: { createdAt: '1997-08-02', sizeKb: 3068, at: { x: 144, y: 130 }, audioSeconds: 0 },
+      body: { text: '[mp3 audio — traded on the boards, 128 kbps]' },
+    },
+    {
+      id: 'cd.mp3-6',
+      kind: 'audio',
+      name: 'signal 30 - late again.mp3',
+      icon: 'audio',
+      parentId: 'drive.d',
+      meta: { createdAt: '1997-08-02', sizeKb: 3542, at: { x: 264, y: 130 }, audioSeconds: 0 },
+      body: { text: '[mp3 audio — traded on the boards, 128 kbps]' },
+    },
+    {
+      // ...and one folder parked far off the window's default view: you
+      // find it by resizing or scrolling. A folder named "drivers" on a
+      // mix CD — who would ever look.
+      id: 'cd.drivers',
+      kind: 'folder',
+      name: 'drivers',
+      icon: 'folder',
+      parentId: 'drive.d',
+      meta: { path: 'D:\\drivers', at: { x: 736, y: 452 } },
+    },
+    {
+      id: 'cd.nfo',
+      kind: 'document',
+      name: 'nfo.txt',
+      icon: 'doc',
+      parentId: 'cd.drivers',
+      meta: { createdAt: '1997-07-19', sizeKb: 2, mono: true },
+      body: {
+        text: `      .  p o r c h l i g h t  .
+      ----------------------------
+      leave a light on
+
+      junebug    reverb    castor    stray
+
+      we look. we do not break.
+      we copy. we do not burn.
+      we tell the people who ought to know.
+
+      no names. no bragging. no shortcuts
+      through anybody's life.
+
+      - r.`,
+      },
+    },
+    {
+      id: 'cd.averline',
+      kind: 'document',
+      name: 'averline notes.txt',
+      icon: 'doc',
+      parentId: 'cd.drivers',
+      meta: { createdAt: '1997-09-14', sizeKb: 3 },
+      body: {
+        text: `averline pharmaceutical. the duracet people.
+
+what i can prove from the library alone:
+- humble co filled more duracet scrips last year than
+  charleston. charleston has 12x the people.
+- the sales rep hits every clinic on route 9 twice a month.
+  mrs. keener says he brings lunch for the whole office.
+- they sponsored the fair. the FAIR.
+
+what r. says we need: something internal. a memo, a training
+doc, anything that shows they KNOW what it does and push it
+anyway. not to keep. to send to the paper in charleston.
+
+the dial-in number on their invoice footer answers with a
+carrier tone. not going near it until castor checks it out.
+we look, we don't break. but somebody should look.`,
+      },
+    },
+    {
+      id: 'cd.todo',
+      kind: 'document',
+      name: 'to do.txt',
+      icon: 'doc',
+      parentId: 'cd.drivers',
+      meta: { createdAt: '1997-09-28', sizeKb: 1 },
+      body: {
+        text: `- give reverb his discman back
+- library thursday. bring dimes for the copier
+- ask s. about the sept numbers. i think i read them wrong.
+  i hope i read them wrong.
+- stop leaving this stuff on discs. (after this one)`,
       },
     },
     {
