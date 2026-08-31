@@ -62,7 +62,14 @@ type ShutChoice = 'shutdown' | 'restart' | 'dos' | 'logoff';
 
 export function DesktopShell() {
   const { windows, pendingLaunch, completeLaunch, closeAll } = useWindowStore();
-  const { toasts, dismissToast, showEndCard, setShowEndCard, view, send, refreshView, lineDropSignal } = useGame();
+  const { toasts, dismissToast, showEndCard, setShowEndCard, view, send, refreshView, lineDropSignal, setInGame } = useGame();
+
+  // The desktop is the only surface that counts as "in the game" — mail and
+  // chat notifications hold until we're here, past the menu/boot/login.
+  useEffect(() => {
+    setInGame(true);
+    return () => setInGame(false);
+  }, [setInGame]);
   const [shutDown, setShutDown] = useState(false);
   const [shutDialog, setShutDialog] = useState(false);
   const [shutChoice, setShutChoice] = useState<ShutChoice>('shutdown');

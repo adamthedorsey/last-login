@@ -27,6 +27,10 @@ export interface GameContextValue {
   lineDropSignal: number;
   showEndCard: boolean;
   setShowEndCard(v: boolean): void;
+  /** The desktop shell reports whether the player is actually in the game
+   * (past the menu/boot/login). Ambient mail & chat notifications — and the
+   * wire heartbeat — hold until then. */
+  setInGame(active: boolean): void;
   client: GameClient | null;
 }
 

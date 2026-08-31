@@ -34,6 +34,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [netActivity, setNetActivity] = useState(0);
   const [lineDropSignal, setLineDropSignal] = useState(0);
   const [showEndCard, setShowEndCard] = useState(false);
+  // Whether the player is actually at the desktop (set by DesktopShell). Until
+  // then — evidence-room menu, boot, login — ambient mail/chat notifications
+  // stay silent and the wire heartbeat doesn't tick.
+  const [inGame, setInGameState] = useState(false);
+  const inGameRef = useRef(false);
+  const setInGame = useCallback((active: boolean) => {
+    inGameRef.current = active;
+    setInGameState(active);
+  }, []);
   const viewRef = useRef<StateView | null>(null);
   useEffect(() => {
     viewRef.current = view;
@@ -102,7 +111,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
    * renders what the server sent — it has no idea what any event MEANS. */
   const handleWire = useCallback(
     (notices: WireNotice[]) => {
+      // The state still updates (mail lands on disk, roster shifts) — but the
+      // chirp, toast, and auto-opening IM hold until the player is in-game.
       for (const n of notices) {
+        if (!inGameRef.current) break;
         switch (n.kind) {
           case 'mail':
             playMailSound();
@@ -191,7 +203,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
         // Mail that arrived silently (no authored notice) still gets the
         // generic chime — arrival IS the ambient event.
-        if (newMail > 0 && !res.wire?.some((w) => w.kind === 'mail')) {
+        if (inGameRef.current && newMail > 0 && !res.wire?.some((w) => w.kind === 'mail')) {
           playMailSound();
           setToasts((prev) => [
             ...prev,
@@ -225,12 +237,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
   // Offline, the machine is a sealed box and nothing ticks.
   const online = view?.online === true;
   useEffect(() => {
-    if (!online) return;
+    if (!online || !inGame) return;
     const t = window.setInterval(() => {
       void send({ type: 'checkMail' });
     }, HEARTBEAT_MS);
     return () => window.clearInterval(t);
-  }, [online, send]);
+  }, [online, inGame, send]);
 
   const dismissToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -250,9 +262,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       lineDropSignal,
       showEndCard,
       setShowEndCard,
+      setInGame,
       client: clientRef.current,
     }),
-    [ready, view, send, refreshView, toasts, dismissToast, contentEpoch, netActivity, lineDropSignal, showEndCard],
+    [ready, view, send, refreshView, toasts, dismissToast, contentEpoch, netActivity, lineDropSignal, showEndCard, setInGame],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
