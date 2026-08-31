@@ -4,7 +4,7 @@ import { Button, Frame, MenuList, MenuListItem, Separator, TextInput, Window, Wi
 import { useGame } from '../game/gameContext';
 import { StatusGrip } from '../os/StatusGrip';
 import { DOC_MONO, DOC_TEXT } from '../theme';
-import { useWindowStore } from '../os/windowStore';
+import { setCloseGuard, useWindowStore } from '../os/windowStore';
 import { CloseGlyph, TitleBarButton } from '../os/glyphs';
 import { fmtShortStamp } from '../os/fileTypes';
 import type { AppWindowProps } from '../os/appRegistry';
@@ -100,8 +100,29 @@ export function Notepad({ windowId, props }: AppWindowProps) {
   const [findOpen, setFindOpen] = useState(false);
   const [findText, setFindText] = useState('');
   const [findMiss, setFindMiss] = useState<string | null>(null);
+  const [confirmClose, setConfirmClose] = useState(false);
   const paperRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // The Win95 unsaved-changes prompt: a close request with typed, unsaved
+  // text is intercepted (see windowStore close guards) and the app asks.
+  const dirtyRef = useRef(false);
+  const readOnlyRef = useRef(false);
+  dirtyRef.current = dirty;
+  readOnlyRef.current = readOnly;
+  const pendingCloseRef = useRef(false);
+  const closeNow = () => {
+    setCloseGuard(windowId, null);
+    useWindowStore.getState().close(windowId);
+  };
+  useEffect(() => {
+    setCloseGuard(windowId, () => {
+      if (!dirtyRef.current || readOnlyRef.current) return false;
+      setConfirmClose(true);
+      return true;
+    });
+    return () => setCloseGuard(windowId, null);
+  }, [windowId]);
 
   useEffect(() => {
     if (!itemId) {
@@ -178,7 +199,7 @@ export function Notepad({ windowId, props }: AppWindowProps) {
     });
   };
 
-  const doSave = async (name: string, id: string | null) => {
+  const doSave = async (name: string, id: string | null): Promise<boolean> => {
     const res = await send({ type: 'saveDocument', docId: id ?? undefined, name, text });
     if (res.type === 'document' && res.ok && res.item) {
       setDocId(res.item.id);
@@ -186,13 +207,16 @@ export function Notepad({ windowId, props }: AppWindowProps) {
       setDirty(false);
       setStatus(`Saved to Desktop — ${res.item.name}`);
       setTitle(windowId, `${res.item.name} - Notepad`);
-    } else {
-      setStatus(
-        res.type === 'document' && res.error === 'too_many'
-          ? 'Cannot save: too many files on the desktop.'
-          : 'Save failed.',
-      );
+      if (pendingCloseRef.current) closeNow();
+      return true;
     }
+    pendingCloseRef.current = false;
+    setStatus(
+      res.type === 'document' && res.error === 'too_many'
+        ? 'Cannot save: too many files on the desktop.'
+        : 'Save failed.',
+    );
+    return false;
   };
 
   const onSave = () => {
@@ -415,7 +439,14 @@ export function Notepad({ windowId, props }: AppWindowProps) {
                 }}
               />
               <div style={{ display: 'flex', gap: 6, marginTop: 10, justifyContent: 'flex-end' }}>
-                <Button onClick={() => setSaveAsOpen(false)}>Cancel</Button>
+                <Button
+                  onClick={() => {
+                    pendingCloseRef.current = false;
+                    setSaveAsOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
                 <Button
                   disabled={!saveAsName.trim()}
                   onClick={() => {
@@ -424,6 +455,49 @@ export function Notepad({ windowId, props }: AppWindowProps) {
                   }}
                 >
                   Save
+                </Button>
+              </div>
+            </WindowContent>
+          </Window>
+        </DialogOverlay>
+      )}
+
+      {confirmClose && (
+        <DialogOverlay>
+          <Window style={{ width: 340 }}>
+            <WindowHeader style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between' }}>
+              <span>Notepad</span>
+              <TitleBarButton onClick={() => setConfirmClose(false)} aria-label="Close">
+                <CloseGlyph />
+              </TitleBarButton>
+            </WindowHeader>
+            <WindowContent style={{ fontSize: 13 }}>
+              <p style={{ margin: '2px 0 14px' }}>
+                The text in the {docName} file has changed.
+                <br />
+                <br />
+                Do you want to save the changes?
+              </p>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <Button
+                  style={{ width: 80 }}
+                  onClick={() => {
+                    setConfirmClose(false);
+                    pendingCloseRef.current = true;
+                    if (docId) void doSave(docName, docId);
+                    else {
+                      setSaveAsName(docName);
+                      setSaveAsOpen(true);
+                    }
+                  }}
+                >
+                  Yes
+                </Button>
+                <Button style={{ width: 80 }} onClick={closeNow}>
+                  No
+                </Button>
+                <Button style={{ width: 80 }} onClick={() => setConfirmClose(false)}>
+                  Cancel
                 </Button>
               </div>
             </WindowContent>

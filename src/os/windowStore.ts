@@ -55,6 +55,19 @@ let idCounter = 0;
  * must not spawn a twin. (Non-singletons duplicate, exactly like Win95.) */
 const pendingSingletons = new Set<string>();
 
+/**
+ * Close guards: an app may veto a close request (Notepad's unsaved-changes
+ * prompt). The guard returns true when it HANDLED the request — the close
+ * is blocked and the app shows its own dialog. closeAll (shutdown/logoff)
+ * bypasses guards, like Win95 ending the session.
+ */
+const closeGuards = new Map<string, () => boolean>();
+
+export function setCloseGuard(id: string, guard: (() => boolean) | null): void {
+  if (guard) closeGuards.set(id, guard);
+  else closeGuards.delete(id);
+}
+
 export const TASKBAR_HEIGHT = 40;
 
 export const useWindowStore = create<WindowStore>((set, get) => ({
@@ -170,10 +183,14 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
   },
 
   close(id) {
+    const guard = closeGuards.get(id);
+    if (guard?.()) return; // the app took over (e.g. a save prompt)
+    closeGuards.delete(id);
     set((s) => ({ windows: s.windows.filter((w) => w.id !== id) }));
   },
 
   closeAll() {
+    closeGuards.clear();
     set({ windows: [] });
   },
 
