@@ -236,8 +236,10 @@ export function DesktopShell() {
     return (
       <ShutdownScreen
         onClick={() => {
-          // The click IS the power switch: back to the evidence room.
+          // The click IS the power switch: back to the evidence room, entered
+          // with the power-on zoom played in reverse (pulling out of the glass).
           sessionStorage.removeItem('lastlogin.power');
+          sessionStorage.setItem('lastlogin.zoomout', '1');
           window.location.reload();
         }}
       >

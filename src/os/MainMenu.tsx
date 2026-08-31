@@ -10,7 +10,7 @@ import styled from 'styled-components';
 import { isMuted, playPowerOn, setMuted } from './sounds';
 import { PIXEL_MONO } from '../theme';
 import { usePlayerEmail, signOutPlayer } from '../game/playerAuth';
-import pcImage from '../assets/images/main-menu-pc.png';
+import pcImage from '../assets/images/main-menu-pc-v2.png';
 
 const Room = styled.div`
   height: 100vh;
@@ -107,12 +107,32 @@ const SignOut = styled.button`
 const ZOOM_STEPS = [1.12, 1.28, 1.5, 1.8, 2.2, 2.8, 3.6, 4.8, 6.4];
 const ZOOM_TICK_MS = 45;
 
+// Shut Down hands the room back with a REVERSE zoom: the shutdown screen sets
+// `lastlogin.zoomout` and reloads, and the freshly-mounted menu reads it here
+// once — module-cached so React StrictMode's double-mount can't lose it — to
+// start pulled all the way into the dead glass, then step back out to rest.
+let pendingZoomOut: boolean | null = null;
+function takeZoomOut(): boolean {
+  if (pendingZoomOut === null) {
+    try {
+      pendingZoomOut = sessionStorage.getItem('lastlogin.zoomout') === '1';
+      sessionStorage.removeItem('lastlogin.zoomout');
+    } catch {
+      pendingZoomOut = false;
+    }
+  }
+  return pendingZoomOut;
+}
+
 export function MainMenu({ onPower }: { onPower: () => void }) {
-  const [stage, setStage] = useState<'off' | 'zoom' | 'black'>('off');
-  const [zoomIdx, setZoomIdx] = useState(-1);
+  const [stage, setStage] = useState<'off' | 'zoom' | 'black' | 'zoomout'>(() =>
+    takeZoomOut() ? 'zoomout' : 'off',
+  );
+  const [zoomIdx, setZoomIdx] = useState(() => (takeZoomOut() ? ZOOM_STEPS.length - 1 : -1));
   const [muted, setMutedState] = useState(isMuted);
   const playerEmail = usePlayerEmail();
-  const fired = useRef(false);
+  // Blocks power-on while the reverse zoom is still settling.
+  const fired = useRef(takeZoomOut());
 
   const press = () => {
     if (fired.current) return;
@@ -130,6 +150,19 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
       return;
     }
     const t = window.setTimeout(() => setZoomIdx((i) => i + 1), ZOOM_TICK_MS);
+    return () => window.clearTimeout(t);
+  }, [stage, zoomIdx]);
+
+  // Reverse zoom: Shut Down pulls the camera back OUT of the glass — the
+  // power-on zoom played backward — settling on the resting room.
+  useEffect(() => {
+    if (stage !== 'zoomout') return;
+    if (zoomIdx < 0) {
+      setStage('off');
+      fired.current = false; // the menu is live again
+      return;
+    }
+    const t = window.setTimeout(() => setZoomIdx((i) => i - 1), ZOOM_TICK_MS);
     return () => window.clearTimeout(t);
   }, [stage, zoomIdx]);
 
@@ -158,14 +191,22 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
   }
 
   const zooming = stage === 'zoom';
-  const scale = zooming && zoomIdx > 0 ? ZOOM_STEPS[Math.min(zoomIdx, ZOOM_STEPS.length) - 1] : 1;
+  const zoomingOut = stage === 'zoomout';
+  const busy = zooming || zoomingOut;
+  const scale = zooming
+    ? zoomIdx > 0
+      ? ZOOM_STEPS[Math.min(zoomIdx, ZOOM_STEPS.length) - 1]
+      : 1
+    : zoomingOut && zoomIdx >= 0
+      ? ZOOM_STEPS[zoomIdx]
+      : 1;
 
-  // The text snaps off at zoom start but keeps its layout space, so the
+  // The text snaps off during any zoom but keeps its layout space, so the
   // photo never jumps.
-  const hidden = zooming ? { visibility: 'hidden' as const } : undefined;
+  const hidden = busy ? { visibility: 'hidden' as const } : undefined;
 
   return (
-    <Room onClick={press} style={zooming ? { cursor: 'none' } : undefined}>
+    <Room onClick={press} style={busy ? { cursor: 'none' } : undefined}>
       <Title style={hidden}>LAST LOGIN</Title>
       <Tagline style={hidden}>A DESKTOP MYSTERY GAME</Tagline>
       <Photo
