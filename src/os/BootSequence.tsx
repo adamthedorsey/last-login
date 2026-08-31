@@ -14,6 +14,7 @@ import { CloseGlyph, TitleBarButton } from './glyphs';
 import splashBg from '../assets/images/splash-bg.jpg';
 import splashLogo from '../assets/images/splash-logo.png';
 import { ScanDisk } from './ScanDisk';
+import { PowerOff } from './PowerOff';
 import { PIXEL_MONO } from '../theme';
 
 const BootScreen = styled.div`
@@ -343,18 +344,17 @@ export function BootSequence({
   };
 
   // The logon dialog's Shut Down — an NT-style affordance (1996, so
-  // period-fair): the screen cuts to black for a beat, then the machine
-  // is off, back in the evidence room.
+  // period-fair): the same power-off as the desktop's — a DOS screen with a
+  // blinking cursor for a couple of beats, then the reverse zoom back to the
+  // evidence room. PowerOff owns the flag + reload.
   const shutDownFromLogin = () => {
     stopSystemStartup();
     stopMachineSounds();
     setPoweringOff(true);
-    sessionStorage.removeItem('lastlogin.power');
-    window.setTimeout(() => window.location.reload(), 700);
   };
 
   if (poweringOff) {
-    return <div style={{ height: '100vh', background: '#000', cursor: 'none' }} />;
+    return <PowerOff />;
   }
 
   return (

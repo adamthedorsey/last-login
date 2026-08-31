@@ -15,7 +15,7 @@ import { AltTabSwitcher } from './AltTabSwitcher';
 import { useBootCursor } from './bootCursor';
 import { rebootFromCrash } from './crash';
 import { useGame } from '../game/gameContext';
-import { PIXEL_MONO } from '../theme';
+import { PowerOff } from './PowerOff';
 import { Screensaver } from './Screensaver';
 import { useSettingsStore } from './settingsStore';
 
@@ -56,21 +56,6 @@ const CenterOverlay = styled.div`
   justify-content: center;
   background: rgba(0, 0, 0, 0.25);
   z-index: 100003;
-`;
-
-const ShutdownScreen = styled.div`
-  position: fixed;
-  inset: 0;
-  background: #000;
-  color: #ff9a3c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  font-family: ${PIXEL_MONO};
-  text-align: center;
-  z-index: 100005;
-  cursor: var(--cursor-arrow);
 `;
 
 type ShutChoice = 'shutdown' | 'restart' | 'dos' | 'logoff';
@@ -233,21 +218,10 @@ export function DesktopShell() {
   }, [toasts, dismissToast]);
 
   if (shutDown) {
-    return (
-      <ShutdownScreen
-        onClick={() => {
-          // The click IS the power switch: back to the evidence room, entered
-          // with the power-on zoom played in reverse (pulling out of the glass).
-          sessionStorage.removeItem('lastlogin.power');
-          sessionStorage.setItem('lastlogin.zoomout', '1');
-          window.location.reload();
-        }}
-      >
-        It is now safe to turn off
-        <br />
-        this computer.
-      </ShutdownScreen>
-    );
+    // The GUI drops to a bare DOS screen (blinking cursor) for a couple of
+    // beats, then powers off — back to the evidence room with the power-on
+    // zoom reversed.
+    return <PowerOff />;
   }
 
   if (dosMode) {
