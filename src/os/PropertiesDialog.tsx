@@ -122,7 +122,7 @@ export function PropertiesDialog({
           )}
           <Rule />
           <Row>
-            <span>MS-DOS name:</span>
+            <span>MT-DOS name:</span>
             <span>{dosShortName(item.name, isDir)}</span>
           </Row>
           {created && (

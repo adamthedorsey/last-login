@@ -8,6 +8,7 @@
  * eventual replacement target.
  */
 import {
+  BatExec2,
   Appwiz1500,
   Calculator,
   Dialer1,
@@ -72,6 +73,7 @@ const R95 = {
   audio: { C: MediaAudio, v16: true },
   computer: { C: Computer, v16: true },
   display: { C: Desk100, v16: true },
+  dos: { C: BatExec2, v16: true },
   doc: { C: FileText, v16: true },
   drive: { C: Shell329, v16: true },
   mycomputer: { C: Explorer100, v16: true },
@@ -182,20 +184,6 @@ const ICONS: Record<string, Px[]> = {
     [3, 20, 26, 2, GR],
     [22, 14, 4, 2, '#00a000'],
     [6, 14, 12, 2, GR],
-  ],
-  // A DOS prompt: gray bezel, black screen, the C:\> and a block cursor.
-  // (Hand-drawn on purpose — the package's MS-DOS art prints Microsoft's
-  // wordmark, which never ships here.)
-  dos: [
-    [3, 3, 26, 20, '#d4d0c8'],
-    [5, 5, 22, 16, '#000'],
-    [7, 7, 2, 2, '#c0c0c0'],
-    [10, 7, 1, 2, '#c0c0c0'],
-    [12, 7, 2, 2, '#c0c0c0'],
-    [15, 8, 2, 1, '#c0c0c0'],
-    [18, 7, 3, 2, '#c0c0c0'],
-    [12, 23, 8, 2, GR],
-    [9, 25, 14, 2, '#d4d0c8'],
   ],
   computer: [
     [4, 4, 24, 16, '#d4d0c8'],

@@ -1,5 +1,5 @@
 /**
- * "Restart in MS-DOS mode" — a real, typeable DOS prompt.
+ * "Restart in MT-DOS mode" — a real, typeable DOS prompt.
  *
  * Everything it shows comes from the ENGINE (listChildren/open), so all
  * content gating carries over automatically: files the player hasn't earned
@@ -97,7 +97,7 @@ export function DosMode({ onExit }: { onExit: () => void }) {
     if (bannerPrinted.current) return; // StrictMode double-mounts effects
     bannerPrinted.current = true;
     print([
-      'Microtech Horizons 95 is restarting in MS-DOS mode.',
+      'Microtech Horizons 95 is restarting in MT-DOS mode.',
       '',
       'MT-DOS Version 7.10',
       '(C)Copyright Microtech Systems 1988-1995.',

@@ -73,7 +73,7 @@ If not, don't build it that way.
   `ms_sans_serif` so react95 components pick it up; bold weight still comes
   from react95's bold face (the two recreate the same original UI font and
   pair cleanly). Don't introduce other UI fonts.
-- TERMINAL surfaces (boot/POST, MS-DOS mode, blue screen, shutdown): Fixedsys
+- TERMINAL surfaces (boot/POST, MT-DOS mode, blue screen, shutdown): Fixedsys
   — use `PIXEL_MONO` from `src/theme.tsx`, at 16px (its crisp native size;
   multiples of 16 only). Short, large, atmospheric text only.
 - READING surfaces are Arial (owner call — fonts that shipped by 1997,
@@ -165,7 +165,7 @@ If not, don't build it that way.
   fanfare) and trailing into the login screen, where it dies on its
   own — the shipped m4a has a 2s fade baked into its tail, and nothing
   cuts it at runtime (Shut Down from the login dialog excepted); entering
-  MS-DOS mode plays beep -> boot chatter, then the fan holds a
+  MT-DOS mode plays beep -> boot chatter, then the fan holds a
   SEAMLESS WebAudio loop (HTMLAudio's loop gap was audible — never go
   back to it) with the disk reading layered on top, stopped on exit;
   and every program launch plays the disk seek under the flickering
@@ -276,8 +276,8 @@ If not, don't build it that way.
   season content (`phones`) — never client data. DTMF/ring sounds are
   chip-synth like everything else.
 
-### MS-DOS mode & system mortality
-- MS-DOS mode (Shut Down → "Restart in MS-DOS mode") is a real prompt whose
+### MT-DOS mode & system mortality
+- MT-DOS mode (Shut Down → "Restart in MT-DOS mode") is a real prompt whose
   every listing and TYPE goes through the ENGINE — content gating carries
   over automatically and no story text may live in DosMode.tsx. DOS-only
   clues are authored as content (e.g. `computer.dosVolume`), served via

@@ -223,7 +223,7 @@ function stopFanLoop(): void {
 }
 
 /**
- * Entering MS-DOS mode: the BIOS beep, then the boot chatter — and once
+ * Entering MT-DOS mode: the BIOS beep, then the boot chatter — and once
  * the machine settles, the fan holds a seamless loop with the disk
  * reading layered over it. stopMachineSounds() on the way out kills it.
  */

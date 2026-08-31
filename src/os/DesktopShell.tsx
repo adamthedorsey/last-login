@@ -239,7 +239,7 @@ export function DesktopShell() {
   }
 
   // The GUI drops out from under the player: someone is dialing in. (If they
-  // were in MS-DOS mode or shutting down, it waits — remotePending persists.)
+  // were in MT-DOS mode or shutting down, it waits — remotePending persists.)
   if (remoteActive) {
     return <RemoteSession />;
   }
@@ -337,7 +337,7 @@ export function DesktopShell() {
                     <Radio
                       checked={shutChoice === 'dos'}
                       onChange={() => setShutChoice('dos')}
-                      label="Restart the computer in MS-DOS mode?"
+                      label="Restart the computer in MT-DOS mode?"
                       name="shutchoice"
                     />
                     <Radio

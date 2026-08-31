@@ -476,7 +476,7 @@ export function Taskbar({
                 ))}
               <Separator />
               <MenuListItem size="sm" onMouseEnter={() => setSub2(null)} onClick={() => { closeStart(); onDosMode(); }}>
-                <ItemRow icon="dos" size={18}><span>MS-DOS Prompt</span></ItemRow>
+                <ItemRow icon="dos" size={18}><span>MT-DOS Prompt</span></ItemRow>
               </MenuListItem>
             </SubMenu>
           )}
