@@ -13,6 +13,7 @@ const DIST = new URL('../dist', import.meta.url).pathname;
 const FORBIDDEN = [
   'sunflower97', // login password
   'nightshift', // the watcher's screen name
+  'lowtide', // the Solitaire backdoor password
   'junebug', // the code word (served via StateView, never client code)
   'stolen-intimacy', // discovery id
   'the-house', // final discovery id

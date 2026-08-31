@@ -29,6 +29,7 @@ import { SystemMonitor } from './SystemMonitor';
 import { SoundRecorder } from './SoundRecorder';
 import { DosPrompt } from './DosPrompt';
 import { CdRom } from './CdRom';
+import { SolBackdoor } from './SolBackdoor';
 import { CaseFile } from './CaseFile';
 
 export function registerAllApps(): void {
@@ -194,6 +195,16 @@ export function registerAllApps(): void {
     // Sized to show exactly the six songs; the rest of the disc lives
     // past the scrollbars.
     defaultSize: { w: 430, h: 340 },
+    singleton: true,
+    hidden: true,
+  });
+  registerApp({
+    id: 'solbackdoor',
+    name: 'porthole',
+    icon: 'dos',
+    component: SolBackdoor,
+    // Opened only by the Solitaire knock; never in any menu.
+    defaultSize: { w: 460, h: 300 },
     singleton: true,
     hidden: true,
   });

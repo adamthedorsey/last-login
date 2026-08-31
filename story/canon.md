@@ -502,3 +502,35 @@ The eventual reveal that the apparent intruder is an ally should recontextualize
    Casey WAS junebug to nightshift all along, and in her fear she
    never connected the two worlds. That line is the reveal's hinge —
    future content must protect its ambiguity.
+
+
+## Solitaire as a front (seeded 2026-08-31)
+
+The Solitaire on Casey's machine is a real, working game — and a front.
+
+Sending cards of rank **7, 3, 5, 6 to the foundations (the top row), in
+that order** — a sequence that cannot occur in normal ascending play, so
+you only ever reach it on purpose — opens a hidden login: a bare
+green-on-black terminal titled **porthole**. It asks for a username and
+password.
+
+Someone taught Casey to hide it this way. The working theory (soft
+canon, to be developed): this is how nightshift had her move
+files/stay reachable — a dead-drop channel disguised inside the most
+innocuous program on the machine, so that even someone sitting at her
+desk would see only a card game. "porthole" = a small window into
+somewhere else; "a light on" for the night shift.
+
+Current state / open threads (do NOT hard-canonize yet):
+- The knock (7356) and the fact of the backdoor are built.
+- Credentials: placeholder password only (SERVER-side, story/engine).
+  Who set the username, what it is, and whether the player is meant to
+  RECOVER it from elsewhere on the machine is unresolved.
+- Past a correct login is a holding screen ("no channel is configured")
+  — real content is future authoring: this is presumably where
+  downloaded Purdont material was staged, or where nightshift reached
+  in. Tie-in to the remote-access set-piece and the CD-R backups is
+  intended but unwritten.
+- How the player LEARNS the knock is unresolved (an IM hint from
+  nightshift, a margin note, a diary line — authored later, never a
+  glowing tutorial).

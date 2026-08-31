@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Frame, Toolbar, Window, WindowContent, WindowHeader } from 'react95';
+import { useWindowStore } from '../os/windowStore';
 
 // Klondike, draw-one. Click a card to pick it up, click where it should go.
 // Double-click sends a card to its foundation.
@@ -155,10 +156,19 @@ function CardView({
 
 // ---------------------------------------------------------------------------
 
+// The knock: send cards of these ranks up to the foundations, in this
+// exact order, to open what Solitaire is really a front for. The sequence
+// can't occur in normal ascending play — you only reach it on purpose.
+const KNOCK = [7, 3, 5, 6];
+
 export function Solitaire() {
   const [game, setGame] = useState<GameState>(newDeal);
   const [sel, setSel] = useState<Sel>(null);
   const [moves, setMoves] = useState(0);
+  // A rolling record of the ranks sent to the foundations; the tail is
+  // matched against KNOCK.
+  const knockRef = useRef<number[]>([]);
+  const openWindow = useWindowStore((st) => st.open);
 
   const won = game.foundations.every((f) => f.length === 13);
 
@@ -225,6 +235,15 @@ export function Solitaire() {
     return true;
   };
 
+  const registerKnock = (rank: number) => {
+    const buf = [...knockRef.current, rank].slice(-KNOCK.length);
+    knockRef.current = buf;
+    if (buf.length === KNOCK.length && buf.every((r, i) => r === KNOCK[i])) {
+      knockRef.current = [];
+      openWindow('solbackdoor');
+    }
+  };
+
   const tryFoundation = (target: number, source?: Sel) => {
     const s = source ?? sel;
     if (!s) return false;
@@ -238,6 +257,7 @@ export function Solitaire() {
     const taken = removeSelected(g, s);
     g.foundations[target].push(...taken);
     commit(g);
+    registerKnock(card.rank);
     return true;
   };
 

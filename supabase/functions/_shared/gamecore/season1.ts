@@ -67,6 +67,10 @@ export const SEASON1: SeasonContent = {
   },
   passwords: {
     'login.casey': { password: 'sunflower97' },
+    // The Solitaire backdoor ("porthole"). Reached by the in-game knock;
+    // credentials are a placeholder until the channel content is authored
+    // (story/canon.md, "Solitaire as a front"). SERVER ONLY.
+    'backdoor.sol': { password: 'lowtide' },
   },
   wallpaper: 'teal',
   homeUrl: 'www.searchhound.net',

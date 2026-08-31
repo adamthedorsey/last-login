@@ -285,6 +285,17 @@ If not, don't build it that way.
   season content (`phones`) — never client data. DTMF/ring sounds are
   chip-synth like everything else.
 
+### Hidden surfaces
+- Solitaire is a working game AND a front: sending ranks 7,3,5,6 to the
+  foundations in order (impossible in normal ascending play) opens the
+  `solbackdoor` window ("porthole") — a login whose credentials the
+  ENGINE checks (standalone password target `backdoor.sol`), so no
+  secret ships client-side. Past a correct login is a generic
+  "no channel configured" holding screen for now; real content is
+  server-authored later (story/canon.md, "Solitaire as a front"). The
+  knock lives in Solitaire.tsx; keep any future hidden-knock the same
+  shape — client detects a pattern, engine holds the secret.
+
 ### MT-DOS mode & system mortality
 - The MT-DOS Prompt (Start → Programs, or COMMAND in Run) opens WINDOWED
   like the real thing — the same engine-backed terminal (DosTerminal in
