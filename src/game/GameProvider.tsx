@@ -200,6 +200,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
           ]);
         }
       }
+      if (
+        (action.type === 'saveAudioNote' || action.type === 'deleteAudioNote') &&
+        res.type === 'casefile'
+      ) {
+        setContentEpoch((e) => e + 1);
+      }
       if (res.type === 'document' && res.ok) {
         // A player file was created/renamed — desktop views should refetch.
         setContentEpoch((e) => e + 1);

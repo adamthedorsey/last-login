@@ -33,7 +33,10 @@ export type ItemKind =
   | 'email'
   | 'im_conversation'
   | 'webpage'
-  | 'trash_item';
+  | 'trash_item'
+  /** A sound file (opens in Sound Recorder). meta.audioSrc points at the
+   * authorized asset; body.text carries the transcript/description. */
+  | 'audio';
 
 export interface ImMessage {
   from: string; // screen name
@@ -95,6 +98,10 @@ export interface ItemMeta {
   // photos
   caption?: string;
   photoSrc?: string;
+  // audio files (kind 'audio'): the authorized recording asset
+  audioSrc?: string;
+  /** Recording length, seconds — shown by Sound Recorder. */
+  audioSeconds?: number;
   // recycle bin
   deletedAt?: string;
   originalPath?: string;
@@ -410,6 +417,15 @@ export interface PhoneNumber {
 // ---------------------------------------------------------------------------
 
 /** A document the PLAYER wrote (via Notepad) — their own notes, saved to the desktop. */
+/** A microphone note the player recorded (Case Files / Sound Recorder). */
+export interface PlayerAudioNote {
+  id: string;
+  name: string;
+  createdAt: string;
+  /** data: URL of the recording (webm/opus). Size-capped by the engine. */
+  dataUrl: string;
+}
+
 export interface PlayerDocument {
   id: string;
   name: string;
@@ -515,6 +531,9 @@ export type GameAction =
   /** Delete one of the player's OWN documents (notes/copies). Story items
    * are evidence and can never be deleted. */
   | { type: 'deleteDocument'; docId: string }
+  /** Save a microphone recording as a Case Files audio note. */
+  | { type: 'saveAudioNote'; name?: string; dataUrl: string }
+  | { type: 'deleteAudioNote'; noteId: string }
   | { type: 'resetSeason' };
 
 // ---------------------------------------------------------------------------
@@ -634,6 +653,8 @@ export interface CaseFileView {
   guide?: HandlerSetupPage[];
   /** The Case Summary lines (official background, server-authored). */
   summary?: string[];
+  /** The player's recorded audio notes. */
+  audioNotes?: PlayerAudioNote[];
 }
 
 export type ActionResult = (

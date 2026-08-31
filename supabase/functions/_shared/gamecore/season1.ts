@@ -895,6 +895,51 @@ because nobody ever looks at homework.`,
       },
     },
 
+    // --- sound files (open in Sound Recorder; assets in public/audio) ---
+    {
+      id: 'audio.band-practice',
+      kind: 'audio',
+      name: 'band practice 4-12.wav',
+      icon: 'audio',
+      parentId: 'folder.my-documents',
+      meta: {
+        createdAt: '1997-04-12',
+        modifiedAt: '1997-04-12',
+        sizeKb: 418,
+        audioSrc: '/audio/band-practice.m4a',
+        audioSeconds: 39,
+      },
+      body: {
+        text: `[sound recording — band practice 4-12.wav]
+
+Garage recording. Somebody counts off, a Solar Flare cover
+starts and falls apart around the second verse. Laughing.
+A girl's voice: "again. i wasn't ready."`,
+      },
+    },
+    {
+      id: 'audio.greeting',
+      kind: 'audio',
+      name: 'greeting2.wav',
+      icon: 'audio',
+      parentId: 'folder.my-documents',
+      meta: {
+        createdAt: '1996-08-30',
+        modifiedAt: '1996-08-30',
+        sizeKb: 156,
+        audioSrc: '/audio/greeting2.m4a',
+        audioSeconds: 14,
+      },
+      body: {
+        text: `[sound recording — greeting2.wav]
+
+The family answering machine greeting, take two. Casey,
+bright and bored: "You've reached the Taylors. We're not
+home. You know what to do." A dog barks; she laughs
+through the beep instruction.`,
+      },
+    },
+
     // --- personal stuff ---
     {
       id: 'file.lists',

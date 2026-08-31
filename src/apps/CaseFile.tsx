@@ -550,6 +550,32 @@ export function CaseFile({ windowId }: { windowId: string }) {
     setNotice('Deleted.');
   };
 
+  const [playingNoteId, setPlayingNoteId] = useState<string | null>(null);
+  const playNote = (id: string, dataUrl: string) => {
+    stopAudio();
+    if (playingNoteId === id) {
+      setPlayingNoteId(null);
+      return;
+    }
+    try {
+      const a = new Audio(dataUrl);
+      a.onended = () => setPlayingNoteId(null);
+      audioRef.current = a;
+      void a.play().then(
+        () => setPlayingNoteId(id),
+        () => setNotice('The note could not be played.'),
+      );
+    } catch {
+      setNotice('The note could not be played.');
+    }
+  };
+  const deleteNote = async (id: string) => {
+    stopAudio();
+    setPlayingNoteId(null);
+    await send({ type: 'deleteAudioNote', noteId: id });
+    setNotice('Deleted.');
+  };
+
   /** Jump to where the copied original lives on the frozen machine. */
   const locateOriginal = async (sourceId: string) => {
     const res = await send({ type: 'open', itemId: sourceId });
@@ -968,6 +994,15 @@ export function CaseFile({ windowId }: { windowId: string }) {
           <Icon name="notepad" size={22} />
           New Note
         </RibbonButton>
+        <RibbonButton
+          onClick={() => {
+            setMenuOpen(null);
+            useWindowStore.getState().open('soundrec', { props: { record: true } });
+          }}
+        >
+          <Icon name="audio" size={22} />
+          Record Note
+        </RibbonButton>
         <RibbonButton disabled>
           <Icon name="printer" size={22} />
           Print
@@ -1060,6 +1095,29 @@ export function CaseFile({ windowId }: { windowId: string }) {
             )}
           </Reading>
         </Layout>
+      )}
+
+      {section === 'notes' && (file.audioNotes?.length ?? 0) > 0 && (
+        <Frame variant="well" style={{ marginTop: 4, padding: 4, flexShrink: 0 }}>
+          {(file.audioNotes ?? []).map((n) => (
+            <div
+              key={n.id}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 4px', fontSize: 13 }}
+            >
+              <Icon name="audio" size={18} />
+              <span style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                {n.name}
+              </span>
+              <span style={{ color: '#666', fontSize: 12 }}>{n.createdAt}</span>
+              <Button size="sm" onClick={() => playNote(n.id, n.dataUrl)} style={{ width: 56 }}>
+                {playingNoteId === n.id ? 'Stop' : 'Play'}
+              </Button>
+              <Button size="sm" onClick={() => void deleteNote(n.id)} style={{ width: 56 }}>
+                Delete
+              </Button>
+            </div>
+          ))}
+        </Frame>
       )}
 
       {(section === 'notes' || section === 'evidence') && docsPane}

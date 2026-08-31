@@ -22,6 +22,9 @@ export function launchItem(item: ItemSummary): void {
         os.open('notepad', { props: { itemId: item.id }, title: `${item.name} - Notepad` });
       }
       return;
+    case 'audio':
+      os.open('soundrec', { props: { itemId: item.id }, title: `${item.name} - Sound Recorder` });
+      return;
     case 'photo':
       os.open('photos', {
         props: { folderId: item.parentId, itemId: item.id },

@@ -143,3 +143,8 @@ the matrix first and the graph second.
   phone-band quality from `src/assets/sounds/tom_mercer_humble_county_sheriff.mp3`). Routine Mercer traffic is text; audio is reserved for
   important moments. The old READ FIRST ground rules now live in the setup
   wizard pages.
+- **Audio assets to supply** (graceful "Cannot play this file." until then):
+  `public/audio/band-practice.m4a` (~39s, garage Solar Flare cover falling
+  apart, laughter) and `public/audio/greeting2.m4a` (~14s, the Taylors'
+  answering-machine greeting in Casey's voice). Authored as mundane
+  texture, not clues; transcripts live in the items.

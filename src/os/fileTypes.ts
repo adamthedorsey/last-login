@@ -17,9 +17,15 @@ import type { ItemSummary } from '@gamecore/types.ts';
  * (copyItem refuses anything without copyable text), this only predicts it. */
 export function canCopyItem(item: ItemSummary): boolean {
   if (item.editable) return item.kind === 'document';
-  return ['document', 'email', 'im_conversation', 'trash_item', 'photo', 'webpage'].includes(
-    item.kind,
-  );
+  return [
+    'document',
+    'email',
+    'im_conversation',
+    'trash_item',
+    'photo',
+    'webpage',
+    'audio',
+  ].includes(item.kind);
 }
 
 /** Win95 "Type" column / Properties names for each item kind. */
@@ -33,5 +39,6 @@ export const TYPE_NAMES: Record<string, string> = {
   email: 'E-mail Message',
   im_conversation: 'Saved Conversation',
   trash_item: 'Deleted File',
+  audio: 'Wave Sound',
   webpage: 'Internet Document',
 };

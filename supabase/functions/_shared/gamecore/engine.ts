@@ -217,6 +217,10 @@ export const CASE_SETUP_FLAG = 'case-setup-done';
  * evidence copies — "Save to Case Files" lands here, off the desktop. */
 export const CASE_DOCS_FOLDER = 'casefile';
 
+/** Audio-note guardrails: a note is a short memo, not a podcast. */
+const MAX_AUDIO_NOTES = 12;
+const MAX_AUDIO_DATAURL = 1_200_000; // ~90s of webm/opus, base64
+
 /** The handler's memos, redacted to what the player has earned — plus the
  * setup wizard pages until first-run setup completes. */
 function caseFileView(content: SeasonContent, state: PlayerState): CaseFileView {
@@ -238,6 +242,7 @@ function caseFileView(content: SeasonContent, state: PlayerState): CaseFileView 
   if (handler.setup && !state.flags[CASE_SETUP_FLAG]) view.setup = handler.setup;
   if (handler.setup) view.guide = handler.setup;
   if (handler.summary) view.summary = handler.summary;
+  if (state.audioNotes?.length) view.audioNotes = state.audioNotes;
   return view;
 }
 
@@ -1198,6 +1203,46 @@ export function handleAction(
       state.documents = docs.filter((d) => d.id !== action.docId);
       events.push({ type: 'doc_deleted', payload: { docId: action.docId } });
       return done({ type: 'document', ok: true });
+    }
+
+    case 'saveAudioNote': {
+      const notes = (state.audioNotes ??= []);
+      if (notes.length >= MAX_AUDIO_NOTES) {
+        return done({ type: 'document', ok: false, error: 'too_many' });
+      }
+      if (
+        typeof action.dataUrl !== 'string' ||
+        !action.dataUrl.startsWith('data:audio/') ||
+        action.dataUrl.length > MAX_AUDIO_DATAURL
+      ) {
+        return done({ type: 'document', ok: false, error: 'not_supported' });
+      }
+      const seq = (state.docSeq ?? 0) + 1;
+      state.docSeq = seq;
+      const taken = new Set(notes.map((n) => n.name));
+      let name = sanitizeDocName(action.name ?? 'Audio Note.wav');
+      for (let n = 2; taken.has(name) && n < 99; n++) {
+        name = sanitizeDocName(`${(action.name ?? 'Audio Note.wav').replace(/\.\w+$/, '')} (${n}).wav`);
+      }
+      const note = {
+        id: `audionote.${seq}`,
+        name,
+        createdAt: content.clock.now.slice(0, 10),
+        dataUrl: action.dataUrl,
+      };
+      notes.push(note);
+      events.push({ type: 'audio_note_saved', payload: { noteId: note.id } });
+      return done({ type: 'casefile', view: caseFileView(content, state) });
+    }
+
+    case 'deleteAudioNote': {
+      const notes = state.audioNotes ?? [];
+      if (!notes.some((n) => n.id === action.noteId)) {
+        return done({ type: 'document', ok: false, error: 'not_found' });
+      }
+      state.audioNotes = notes.filter((n) => n.id !== action.noteId);
+      events.push({ type: 'audio_note_deleted', payload: { noteId: action.noteId } });
+      return done({ type: 'casefile', view: caseFileView(content, state) });
     }
 
     case 'getCaseFile': {

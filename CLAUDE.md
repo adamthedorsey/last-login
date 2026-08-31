@@ -147,7 +147,13 @@ If not, don't build it that way.
   (~8s; muted/blocked boots hold ~3.5s instead) — once per boot; a skip
   click cuts both, and if autoplay was blocked the login OK click
   retries the sound.
-  No other samples.
+  (5) Casey's sound files: content items of kind `audio` carry
+  `meta.audioSrc` (authorized asset in `public/audio/`) plus a text
+  transcript/description in the body, and open in Sound Recorder.
+  (6) Player audio notes: microphone recordings saved server-side via
+  `saveAudioNote` (size-capped), listed and played in Case Files.
+  No other samples. Sound Recorder is a stock Win95 accessory (1995) —
+  no story-year change needed for any of this.
 
 ### Language & content
 - AMERICAN English only, everywhere — in-world text, UI chrome, docs, and

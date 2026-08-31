@@ -1023,3 +1023,38 @@ describe('evidence copy links', () => {
     expect(found.type === 'find' && found.items).toHaveLength(0);
   });
 });
+
+describe('sound files and audio notes', () => {
+  it("serves Casey's audio files with their recording metadata", () => {
+    const s = offlineState();
+    const kids = run(s, { type: 'listChildren', parentId: 'folder.my-documents' }).result;
+    if (kids.type !== 'children') throw new Error('bad result');
+    const wav = kids.items.find((i) => i.id === 'audio.band-practice');
+    expect(wav?.kind).toBe('audio');
+    expect(wav?.meta?.audioSrc).toContain('/audio/');
+    expect(wav?.meta?.audioSeconds).toBeGreaterThan(0);
+  });
+
+  it('saves, serves and deletes audio notes with hard caps', () => {
+    let s = offlineState();
+    const good = 'data:audio/webm;base64,' + 'A'.repeat(2000);
+    const saved = run(s, { type: 'saveAudioNote', dataUrl: good });
+    expect(saved.result.type).toBe('casefile');
+    s = saved.state;
+    expect(s.audioNotes).toHaveLength(1);
+    expect(s.audioNotes![0].name).toContain('Audio Note');
+
+    // wrong mime and oversized payloads are refused
+    expect(run(s, { type: 'saveAudioNote', dataUrl: 'data:text/html,x' }).result).toMatchObject({
+      type: 'document',
+      ok: false,
+    });
+    expect(
+      run(s, { type: 'saveAudioNote', dataUrl: 'data:audio/webm;base64,' + 'A'.repeat(1_300_000) })
+        .result,
+    ).toMatchObject({ type: 'document', ok: false });
+
+    const gone = run(s, { type: 'deleteAudioNote', noteId: s.audioNotes![0].id });
+    expect(gone.state.audioNotes).toHaveLength(0);
+  });
+});

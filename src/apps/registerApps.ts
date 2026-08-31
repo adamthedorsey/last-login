@@ -26,6 +26,7 @@ import {
   SystemApplet,
 } from './ControlPanel';
 import { SystemMonitor } from './SystemMonitor';
+import { SoundRecorder } from './SoundRecorder';
 import { CaseFile } from './CaseFile';
 
 export function registerAllApps(): void {
@@ -173,6 +174,15 @@ export function registerAllApps(): void {
     component: Display,
     defaultSize: { w: 380, h: 470 },
     singleton: true,
+  });
+  registerApp({
+    id: 'soundrec',
+    name: 'Sound Recorder',
+    icon: 'audio',
+    component: SoundRecorder,
+    // The little fixed accessory, faithful to the original's footprint.
+    defaultSize: { w: 340, h: 220 },
+    resizable: false,
   });
   registerApp({
     id: 'sysmon',
