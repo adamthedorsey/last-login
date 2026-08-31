@@ -1,18 +1,18 @@
 /**
  * The main menu — the evidence room. The website hands the player here:
- * a dark room, the seized machine on a table, an evidence tag on the
- * tower. The only real control is the POWER button; pressing it (or
- * Enter) spins the fan and starts the cold boot. No story text lives
- * here — box copy only. Everything is stepped, nothing eases.
+ * a dark room, the seized machine under one light. Any key (or a click)
+ * powers it on and starts the cold boot. No story text lives here — box
+ * copy only. Everything is stepped, nothing eases.
  */
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { isMuted, playPowerOn, setMuted } from './sounds';
 import { PIXEL_MONO } from '../theme';
+import pcImage from '../assets/images/main-menu-pc.png';
 
 const Room = styled.div`
   height: 100vh;
-  background: #0b0b0d;
+  background: #000;
   color: #b9b4a6;
   display: flex;
   flex-direction: column;
@@ -35,14 +35,21 @@ const Tagline = styled.div`
   font-size: 14px;
   letter-spacing: 4px;
   color: #6d6a60;
-  margin: 10px 0 34px;
+  margin: 10px 0 8px;
+`;
+
+const Photo = styled.img`
+  display: block;
+  width: min(620px, 78vw, 58vh);
+  image-rendering: auto;
 `;
 
 const Hint = styled.div`
   font-family: ${PIXEL_MONO};
   font-size: 16px;
-  color: #6d6a60;
-  margin-top: 30px;
+  color: #8a8578;
+  margin-top: 6px;
+  min-height: 20px;
 `;
 
 const SoundToggle = styled.button`
@@ -57,78 +64,11 @@ const SoundToggle = styled.button`
   padding: 4px 6px;
 `;
 
-/** The machine, flat and period: CRT, tower with the power button, tag. */
-function Machine({
-  stage,
-  onPower,
-}: {
-  stage: 'off' | 'spinning';
-  onPower: () => void;
-}) {
-  const led = stage === 'spinning';
-  return (
-    <svg width={480} height={300} viewBox="0 0 480 300" style={{ imageRendering: 'pixelated' }}>
-      {/* table */}
-      <rect x={12} y={264} width={456} height={10} fill="#2a241c" />
-      <rect x={12} y={274} width={456} height={4} fill="#1c1812" />
-
-      {/* CRT monitor */}
-      <rect x={70} y={40} width={220} height={180} fill="#8f8a7a" />
-      <rect x={70} y={40} width={220} height={6} fill="#a49e8c" />
-      <rect x={70} y={214} width={220} height={6} fill="#5f5b4f" />
-      <rect x={90} y={58} width={180} height={134} fill="#11150f" />
-      {led && <rect x={90} y={58} width={180} height={134} fill="#161c13" />}
-      {/* glare, a hard corner shape */}
-      <polygon points="98,66 150,66 108,110 98,110" fill={led ? '#232a1d' : '#1b201a'} />
-      {/* monitor foot */}
-      <rect x={150} y={220} width={60} height={12} fill="#7c7767" />
-      <rect x={130} y={232} width={100} height={10} fill="#8f8a7a" />
-      <rect x={130} y={242} width={100} height={22} fill="#6d685a" />
-      {/* monitor power dot */}
-      <rect x={252} y={200} width={8} height={6} fill={led ? '#3f7a2f' : '#33302a'} />
-
-      {/* tower */}
-      <rect x={330} y={64} width={92} height={200} fill="#8f8a7a" />
-      <rect x={330} y={64} width={92} height={6} fill="#a49e8c" />
-      <rect x={330} y={258} width={92} height={6} fill="#5f5b4f" />
-      <rect x={342} y={84} width={68} height={12} fill="#6d685a" />
-      <rect x={342} y={104} width={68} height={8} fill="#7c7767" />
-      {/* floppy slit */}
-      <rect x={342} y={126} width={68} height={4} fill="#4b4840" />
-      {/* LED */}
-      <rect x={346} y={196} width={10} height={6} fill={led ? '#4f9a37' : '#33302a'} />
-
-      {/* the POWER button */}
-      <g
-        onClick={stage === 'off' ? onPower : undefined}
-        style={{ cursor: 'var(--cursor-arrow)' }}
-      >
-        <rect x={366} y={186} width={30} height={26} fill="#7c7767" />
-        <rect x={370} y={190} width={22} height={18} fill={led ? '#5f5b4f' : '#9b9585'} />
-        <rect x={372} y={192} width={18} height={2} fill={led ? '#4b4840' : '#b0aa98'} />
-      </g>
-
-      {/* evidence tag, hanging off the tower on a string */}
-      <line x1={422} y1={100} x2={446} y2={140} stroke="#6d6a60" strokeWidth={1} />
-      <g transform="rotate(8 446 140)">
-        <rect x={420} y={140} width={58} height={84} fill="#cdbd8b" />
-        <rect x={420} y={140} width={58} height={84} fill="none" stroke="#8f8468" strokeWidth={2} />
-        <circle cx={449} cy={150} r={4} fill="#0b0b0d" stroke="#8f8468" strokeWidth={2} />
-        <text x={449} y={172} textAnchor="middle" fontFamily="Arial" fontWeight="bold" fontSize={11} fill="#8d2f23">
-          EVIDENCE
-        </text>
-        <rect x={428} y={182} width={42} height={2} fill="#8f8468" />
-        <rect x={428} y={192} width={42} height={2} fill="#8f8468" />
-        <rect x={428} y={202} width={42} height={2} fill="#8f8468" />
-        <rect x={428} y={212} width={26} height={2} fill="#8f8468" />
-      </g>
-    </svg>
-  );
-}
-
 export function MainMenu({ onPower }: { onPower: () => void }) {
   const [stage, setStage] = useState<'off' | 'spinning'>('off');
   const [muted, setMutedState] = useState(isMuted);
+  // The hint blinks on a stepped clock, like a DOS prompt waiting.
+  const [blink, setBlink] = useState(true);
   const fired = useRef(false);
 
   const press = () => {
@@ -141,8 +81,17 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
   };
 
   useEffect(() => {
+    const t = window.setInterval(() => setBlink((b) => !b), 800);
+    return () => window.clearInterval(t);
+  }, []);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') press();
+      // "Any key" means any real key — not a bare modifier, not a browser
+      // shortcut in flight.
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) return;
+      press();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -150,13 +99,14 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
   }, []);
 
   return (
-    <Room>
+    <Room onClick={press}>
       <Title>LAST LOGIN</Title>
       <Tagline>A 1997 DESKTOP MYSTERY</Tagline>
-      <Machine stage={stage} onPower={press} />
-      <Hint>{stage === 'off' ? 'Press POWER to begin.' : ' '}</Hint>
+      <Photo src={pcImage} alt="" draggable={false} />
+      <Hint>{stage === 'off' && blink ? 'Press any key to begin.' : ' '}</Hint>
       <SoundToggle
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           setMuted(!muted);
           setMutedState(!muted);
         }}

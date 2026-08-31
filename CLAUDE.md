@@ -184,8 +184,9 @@ If not, don't build it that way.
   fresh install — the machine greets nobody. Mechanical teaching belongs to
   the Case Files setup wizard (server content) and period-true affordances.
 - The main menu (src/os/MainMenu.tsx) is the website->game airlock: the
-  evidence room — dark screen, the seized machine, one POWER button (or
-  Enter), a sound toggle. Box copy only (title + tagline), never story
+  evidence room — dark screen, the machine photo (main-menu-pc.png),
+  "Press any key to begin" (any key or a click; the hint blinks on a
+  stepped clock), a sound toggle. Box copy only (title + tagline), never story
   text. Stepped, no easing. Power state is sessionStorage
   `lastlogin.power`: reload mid-session is NOT a power cycle; the
   shutdown screen's click clears it (back to the menu) and Shut Down
