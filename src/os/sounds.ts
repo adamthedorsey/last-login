@@ -80,8 +80,14 @@ export function playSystemStartup(cb?: {
   onSilent?: () => void;
 }): void {
   if (startupStarted && startupAudio) {
-    // Re-entry (StrictMode remount): re-attach to the running fanfare.
+    // Re-entry (StrictMode remount): re-attach to the running fanfare —
+    // unless it already finished, in which case waiting would hang.
+    if (startupAudio.ended) {
+      cb?.onEnded?.();
+      return;
+    }
     startupAudio.onended = () => cb?.onEnded?.();
+    startupAudio.onerror = () => cb?.onSilent?.();
     return;
   }
   if (isMuted() || startupPlayed) {
@@ -93,6 +99,12 @@ export function playSystemStartup(cb?: {
     const a = new Audio(startupMp3);
     a.volume = 0.4;
     a.onended = () => cb?.onEnded?.();
+    a.onerror = () => {
+      // The file failed mid-load or mid-play: release the splash.
+      startupStarted = false;
+      startupAudio = null;
+      cb?.onSilent?.();
+    };
     startupAudio = a;
     void a.play().then(
       () => {

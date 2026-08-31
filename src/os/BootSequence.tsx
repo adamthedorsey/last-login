@@ -221,8 +221,11 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   useEffect(() => {
     if (phase !== 'splash') return;
     // The splash holds while the fanfare plays and moves on a beat after
-    // it ends; with no sound (muted/blocked) it holds ~3.5s instead.
+    // it ends; with no sound (muted/blocked) it holds ~3.5s instead. The
+    // watchdog is the backstop: if the audio stack never calls back (a
+    // stalled load, a dropped promise), the splash still leaves.
     let t = 0;
+    const watchdog = window.setTimeout(leaveSplash, 12000);
     playSystemStartup({
       onEnded: () => {
         t = window.setTimeout(leaveSplash, 500);
@@ -231,7 +234,10 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
         t = window.setTimeout(leaveSplash, 3500);
       },
     });
-    return () => window.clearTimeout(t);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(watchdog);
+    };
   }, [phase, leaveSplash]);
   const bootText = useMemo(
     () => frames[Math.min(frameIdx, frames.length - 1)].text,
