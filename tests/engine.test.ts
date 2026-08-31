@@ -392,7 +392,7 @@ describe('the epilogue', () => {
     return run(s, { type: 'connect' }).state;
   }
 
-  it('GhostBridge is unreachable before the finale', () => {
+  it('nightshift is unreachable before the finale', () => {
     const s = loggedInState();
     const res = run(s, { type: 'getConversation', screenname: 'nightshift' }).result;
     expect(res).toMatchObject({ type: 'chat', ok: false });
@@ -437,7 +437,7 @@ describe('analytics events', () => {
 describe('player documents (Notepad saves)', () => {
   it('creates a document that appears on the desktop and opens editable', () => {
     let s = loggedInState();
-    const saved = run(s, { type: 'saveDocument', name: 'my notes', text: 'GhostBridge = ???' });
+    const saved = run(s, { type: 'saveDocument', name: 'my notes', text: 'nightshift = ???' });
     s = saved.state;
     expect(saved.result).toMatchObject({
       type: 'document',
@@ -451,7 +451,7 @@ describe('player documents (Notepad saves)', () => {
 
     const open = run(s, { type: 'open', itemId: doc!.id }).result;
     if (open.type !== 'open' || !open.item) throw new Error('bad result');
-    expect(open.item.body?.text).toBe('GhostBridge = ???');
+    expect(open.item.body?.text).toBe('nightshift = ???');
   });
 
   it('updates an existing document by id', () => {
