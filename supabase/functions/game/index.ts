@@ -11,6 +11,7 @@
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import {
+  ACTION_TYPES,
   handleAction,
   newPlayerState,
   type GameAction,
@@ -33,54 +34,13 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-// MUST mirror the engine's handleAction dispatch — every action the client
-// can send. A missing entry makes parseAction reject the call as bad_request,
-// which never surfaces in dev mode (the in-browser engine handles everything)
-// but silently breaks that whole feature in hosted mode (e.g. Case Files
-// hangs on "opening…" when getCaseFile/caseFileSync aren't listed).
-const VALID_ACTIONS = new Set([
-  // session / state
-  'getState',
-  'login',
-  'logout',
-  'resetSeason',
-  // connectivity
-  'connect',
-  'disconnect',
-  'checkMail',
-  // files / desktop / navigation / search
-  'getDesktop',
-  'listChildren',
-  'open',
-  'attemptPassword',
-  'visit',
-  'search',
-  'findFiles',
-  'recentDocs',
-  // player workspace (mutations on player-created docs only)
-  'saveDocument',
-  'createFolder',
-  'moveDocument',
-  'renameItem',
-  'deleteDocument',
-  'copyItem',
-  // case files
-  'getCaseFile',
-  'caseFileSync',
-  // player audio notes
-  'saveAudioNote',
-  'deleteAudioNote',
-  // messenger
-  'getBuddies',
-  'getConversation',
-  'say',
-  // phone dialer
-  'dial',
-  'getSpeedDial',
-  // remote-access set-piece
-  'getRemoteSession',
-  'remoteSessionDone',
-]);
+// Derived from the engine's ACTION_TYPES — a single shared constant kept in
+// lockstep with the GameAction union at compile time (see gamecore/types.ts),
+// so this allowlist can never fall behind the engine. A missing entry would
+// make parseAction reject the call as bad_request, which never surfaces in dev
+// mode (the in-browser engine has no allowlist) but silently breaks the whole
+// feature in hosted mode — that gap once hung Case Files on "opening…".
+const VALID_ACTIONS = new Set<string>(ACTION_TYPES);
 
 // Per-field length caps; `text` is the player's own Notepad document.
 const FIELD_LIMITS: Record<string, number> = {

@@ -562,6 +562,65 @@ export type GameAction =
   | { type: 'deleteAudioNote'; noteId: string }
   | { type: 'resetSeason' };
 
+/**
+ * The canonical list of every action the client may send — the SINGLE source
+ * of truth shared by the engine and the hosted Edge Function's request
+ * allowlist, so the two can never drift. (A hand-maintained allowlist once
+ * fell 12 actions behind the engine, which silently broke Case Files and more
+ * in hosted mode while dev mode — with no allowlist — looked fine.)
+ *
+ * The guard below is pure compile-time: if this list and the GameAction union
+ * ever disagree in either direction, `npm run verify` (tsc) and the Deno
+ * function build both fail. Keep the order in sync with the union above.
+ */
+export const ACTION_TYPES = [
+  'getState',
+  'login',
+  'logout',
+  'connect',
+  'disconnect',
+  'checkMail',
+  'getDesktop',
+  'recentDocs',
+  'listChildren',
+  'open',
+  'attemptPassword',
+  'visit',
+  'search',
+  'findFiles',
+  'dial',
+  'getSpeedDial',
+  'getBuddies',
+  'getConversation',
+  'say',
+  'getRemoteSession',
+  'remoteSessionDone',
+  'getCaseFile',
+  'caseFileSync',
+  'saveDocument',
+  'copyItem',
+  'createFolder',
+  'moveDocument',
+  'renameItem',
+  'deleteDocument',
+  'saveAudioNote',
+  'deleteAudioNote',
+  'resetSeason',
+] as const;
+
+export type ActionType = (typeof ACTION_TYPES)[number];
+
+// Compile-time exhaustiveness in BOTH directions. If GameAction gains a type
+// not listed above, or the list gains one not in GameAction, the tuple below
+// resolves to `never` and `= true` fails to compile — a loud build error that
+// names nothing at runtime.
+const _actionTypesInSync: [Exclude<GameAction['type'], ActionType>] extends [never]
+  ? [Exclude<ActionType, GameAction['type']>] extends [never]
+    ? true
+    : never
+  : never = true;
+void _actionTypesInSync;
+
 // ---------------------------------------------------------------------------
 // DTOs (server -> client). These must never carry requirements/passwords.
 // ---------------------------------------------------------------------------
