@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getApp } from './appRegistry';
+import { beginLaunchBusy, endLaunchBusy, launchDelayMs } from './launchBusy';
 
 export interface OSWindow {
   id: string;
@@ -49,6 +50,10 @@ interface WindowStore {
 }
 
 let idCounter = 0;
+
+/** Singleton launches already in their load delay — a second double-click
+ * must not spawn a twin. (Non-singletons duplicate, exactly like Win95.) */
+const pendingSingletons = new Set<string>();
 
 export const TASKBAR_HEIGHT = 40;
 
@@ -104,33 +109,54 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       }
     }
 
-    const cascade = (windows.length % 8) * 26;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight - TASKBAR_HEIGHT;
-    const w = Math.min(def.defaultSize.w, vw - 24);
-    const h = Math.min(def.defaultSize.h, vh - 24);
-    const win: OSWindow = {
-      id: `win-${++idCounter}`,
-      appId,
-      title: opts?.title ?? def.name,
-      icon: def.icon,
-      props: opts?.props ?? {},
-      // Wizards and fixed dialogs open dead center; everything else cascades.
-      x: def.center
-        ? Math.max(8, Math.round((vw - w) / 2))
-        : Math.max(8, Math.min(80 + cascade, vw - w - 8)),
-      y: def.center
-        ? Math.max(8, Math.round((vh - h) / 2))
-        : Math.max(8, Math.min(48 + cascade, vh - h - 8)),
-      w,
-      h,
-      z: nextZ + 1,
-      minimized: false,
-      maximized: false,
-      resizable: def.resizable !== false,
-      titleBar: def.titleBar,
+    const spawn = () => {
+      const s = get();
+      const cascade = (s.windows.length % 8) * 26;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight - TASKBAR_HEIGHT;
+      const w = Math.min(def.defaultSize.w, vw - 24);
+      const h = Math.min(def.defaultSize.h, vh - 24);
+      const win: OSWindow = {
+        id: `win-${++idCounter}`,
+        appId,
+        title: opts?.title ?? def.name,
+        icon: def.icon,
+        props: opts?.props ?? {},
+        // Wizards and fixed dialogs open dead center; everything else cascades.
+        x: def.center
+          ? Math.max(8, Math.round((vw - w) / 2))
+          : Math.max(8, Math.min(80 + cascade, vw - w - 8)),
+        y: def.center
+          ? Math.max(8, Math.round((vh - h) / 2))
+          : Math.max(8, Math.min(48 + cascade, vh - h - 8)),
+        w,
+        h,
+        z: s.nextZ + 1,
+        minimized: false,
+        maximized: false,
+        resizable: def.resizable !== false,
+        titleBar: def.titleBar,
+      };
+      set({ windows: [...get().windows, win], nextZ: get().nextZ + 1 });
     };
-    set({ windows: [...get().windows, win], nextZ: get().nextZ + 1 });
+
+    // Programs LOAD, like 1995: the pointer flickers busy and the window
+    // arrives a beat later (cold launch slower than a warm relaunch).
+    // Post-splash opens are instant — the splash already was the wait.
+    if (opts?.props?.skipSplash) {
+      spawn();
+      return;
+    }
+    if (def.singleton) {
+      if (pendingSingletons.has(appId)) return;
+      pendingSingletons.add(appId);
+    }
+    beginLaunchBusy();
+    window.setTimeout(() => {
+      endLaunchBusy();
+      pendingSingletons.delete(appId);
+      spawn();
+    }, launchDelayMs(appId));
   },
 
   completeLaunch() {

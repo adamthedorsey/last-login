@@ -126,6 +126,12 @@ const GlobalStyles = createGlobalStyle`
   html.busy [data-win-shell] div:not([data-resize]),
   html.busy [data-win-shell] span,
   html.busy button, html.busy li { cursor: var(--cursor-wait) !important; }
+  /* Program launch: same everywhere-at-once takeover, but the value
+     flickers on the launch scheduler (src/os/launchBusy.ts). */
+  html.launching, html.launching * { cursor: var(--cursor-launch, var(--cursor-wait)) !important; }
+  html.launching [data-win-shell] div:not([data-resize]),
+  html.launching [data-win-shell] span,
+  html.launching button, html.launching li { cursor: var(--cursor-launch, var(--cursor-wait)) !important; }
 `;
 
 // react95 v4 was written for styled-components v5 prop forwarding; with v6 we

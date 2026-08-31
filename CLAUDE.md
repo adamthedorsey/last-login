@@ -62,6 +62,11 @@ If not, don't build it that way.
   driver hasn't loaded; the GUI splash shows a steady visible
   hourglass, and the post-login desktop load flickers the busy cursors
   (src/os/bootCursor.ts).
+- Programs and files LOAD, never pop: windowStore.open delays fresh
+  windows (cold launch ~0.95–1.4s, warm relaunch ~0.45–0.7s) while the
+  pointer flickers busy on the launch scheduler (src/os/launchBusy.ts).
+  Singleton refocus and post-splash opens stay instant. Keep every new
+  window on this path — no instant window spawns.
 
 ### Typography
 - OS chrome: W95F (`src/assets/fonts`), registered under the family name
