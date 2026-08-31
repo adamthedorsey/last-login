@@ -2,7 +2,14 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import styled from 'styled-components';
 import { Button, Frame, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
-import { playError, playSystemStartup, stopSystemStartup } from './sounds';
+import {
+  playError,
+  playPostSounds,
+  playScanDiskSound,
+  playSystemStartup,
+  stopMachineSounds,
+  stopSystemStartup,
+} from './sounds';
 import { Icon } from './icons';
 import { CloseGlyph, TitleBarButton } from './glyphs';
 import splashBg from '../assets/images/splash-bg.jpg';
@@ -172,6 +179,18 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
     const t = window.setTimeout(finish, 900);
     return () => window.clearTimeout(t);
   }, []);
+
+  // The machine's body: drive chatter under the POST, disk reading under
+  // ScanDisk, silence once the GUI takes over. Deduped in sounds.ts, so
+  // StrictMode remounts don't double them.
+  useEffect(() => {
+    if (phase === 'boot' && fontsReady) playPostSounds();
+    else if (phase === 'scandisk') {
+      stopMachineSounds();
+      playScanDiskSound();
+    } else if (phase === 'splash' || phase === 'login') stopMachineSounds();
+  }, [phase, fontsReady]);
+  useEffect(() => () => stopMachineSounds(), []);
 
   // The frame schedule includes any server-sent boot warning (story data —
   // the view is already loaded by the time this component mounts).

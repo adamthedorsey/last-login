@@ -157,6 +157,11 @@ If not, don't build it that way.
   transcript/description in the body, and open in Sound Recorder.
   (6) Player audio notes: microphone recordings saved server-side via
   `saveAudioNote` (size-capped), listed and played in Case Files.
+  (7) The machine's BODY (`sfx_*.wav`, owner-added): fan spin-up on the
+  main menu's POWER press, a boot tone plus drive chatter under the
+  POST, disk reading under ScanDisk — quiet (0.25–0.35), mute-aware,
+  deduped, stopped when the GUI takes over (sounds.ts machine section).
+  sfx_beep, sfx_chime and sfx_notification are shipped but unwired.
   No other samples. Sound Recorder is a stock Win95 accessory (1995) —
   no story-year change needed for any of this.
 
@@ -178,6 +183,15 @@ If not, don't build it that way.
 - NO first-boot welcome/tips box: this is Casey's long-lived account, not a
   fresh install — the machine greets nobody. Mechanical teaching belongs to
   the Case Files setup wizard (server content) and period-true affordances.
+- The main menu (src/os/MainMenu.tsx) is the website->game airlock: the
+  evidence room — dark screen, the seized machine, one POWER button (or
+  Enter), a sound toggle. Box copy only (title + tagline), never story
+  text. Stepped, no easing. Power state is sessionStorage
+  `lastlogin.power`: reload mid-session is NOT a power cycle; the
+  shutdown screen's click clears it (back to the menu) and Shut Down
+  logs the session out server-side, so the next power-on cold-boots to
+  the logon dialog. A power-on over a still-live session (tab closed
+  mid-play) replays the POST and resumes, like a warm restart.
 - Find: Files or Folders is engine-backed (`findFiles`): it walks only
   accessible, unlocked folders server-side, so it can never out-run gating.
   Keep it that way — no client-side file indexes, ever.

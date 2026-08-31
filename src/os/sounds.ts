@@ -7,6 +7,11 @@ import dialupMp3 from '../assets/sounds/dial-up-modem.mp3';
 import mailMp3 from '../assets/sounds/mt_youve_got_mail.mp3';
 import startupMp3 from '../assets/sounds/mt_microtech-startup-sound.mp3';
 
+import fanWav from '../assets/sounds/sfx_computer_fan.wav';
+import bootBedWav from '../assets/sounds/sfx_computer_booting.wav';
+import diskWav from '../assets/sounds/sfx_computer_reading_bytes.wav';
+import postToneWav from '../assets/sounds/sfx_boot_tone.wav';
+
 const MUTE_KEY = 'lastlogin.muted';
 
 let ctx: AudioContext | null = null;
@@ -106,6 +111,50 @@ export function playSystemStartup(cb?: {
 export function stopSystemStartup(): void {
   startupAudio?.pause();
   startupAudio = null;
+}
+
+/**
+ * The machine's BODY (owner-approved samples): fan spin-up at the power
+ * button, drive chatter under the POST, disk reading under ScanDisk.
+ * Quiet, mute-aware, deduped by source so StrictMode remounts don't
+ * double them; every boot surface stops them on the way out.
+ */
+const machineSounds = new Map<string, HTMLAudioElement>();
+
+function playMachine(src: string, volume: number): void {
+  if (isMuted()) return;
+  const running = machineSounds.get(src);
+  if (running && !running.paused && !running.ended) return;
+  try {
+    const a = new Audio(src);
+    a.volume = volume;
+    a.onended = () => machineSounds.delete(src);
+    machineSounds.set(src, a);
+    void a.play().catch(() => machineSounds.delete(src));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** The power button: the fan spins up. */
+export function playPowerOn(): void {
+  playMachine(fanWav, 0.35);
+}
+
+/** POST: a short boot tone, then drive chatter under the BIOS text. */
+export function playPostSounds(): void {
+  playMachine(postToneWav, 0.3);
+  playMachine(bootBedWav, 0.28);
+}
+
+/** ScanDisk: the disk reads, cluster by cluster. */
+export function playScanDiskSound(): void {
+  playMachine(diskWav, 0.25);
+}
+
+export function stopMachineSounds(): void {
+  machineSounds.forEach((a) => a.pause());
+  machineSounds.clear();
 }
 
 /** Mail arrival: the machine's own greeting sample (owner-approved

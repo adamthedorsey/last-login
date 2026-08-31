@@ -5,6 +5,7 @@ import { GameProvider } from './game/GameProvider';
 import { useGame } from './game/gameContext';
 import { BootSequence } from './os/BootSequence';
 import { DesktopShell } from './os/DesktopShell';
+import { MainMenu } from './os/MainMenu';
 import { registerAllApps } from './apps/registerApps';
 
 registerAllApps();
@@ -28,13 +29,40 @@ function Screen() {
     sessionStorage.removeItem('lastlogin.reboot');
   }, []);
 
+  // The evidence-room main menu: the machine sits powered off until the
+  // player presses POWER. The flag lives in sessionStorage, so a reload
+  // mid-session is not a power cycle — but Shut Down's safe-to-turn-off
+  // click clears it, completing the loop back to the menu.
+  const [powered, setPowered] = useState(
+    () => sessionStorage.getItem('lastlogin.power') === '1',
+  );
+  // A power-on with a session still on disk (tab closed mid-play, reopened
+  // later) still runs the POST, then resumes — same as a warm restart.
+  const [powerBoot, setPowerBoot] = useState(false);
+  if (!powered) {
+    return (
+      <MainMenu
+        onPower={() => {
+          sessionStorage.setItem('lastlogin.power', '1');
+          setPowerBoot(true);
+          setPowered(true);
+        }}
+      />
+    );
+  }
+
   if (!ready || !view) {
     return <div style={{ height: '100vh', background: '#000' }} />;
   }
   const screen = !view.loggedIn ? (
     <BootSequence />
-  ) : rebooting ? (
-    <BootSequence onResume={() => setRebooting(false)} />
+  ) : rebooting || powerBoot ? (
+    <BootSequence
+      onResume={() => {
+        setRebooting(false);
+        setPowerBoot(false);
+      }}
+    />
   ) : (
     <DesktopShell />
   );

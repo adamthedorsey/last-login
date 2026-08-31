@@ -189,6 +189,9 @@ export function DesktopShell() {
   const confirmShutDown = async () => {
     setShutDialog(false);
     if (shutChoice === 'shutdown') {
+      // A real shutdown ends the session: the next power-on runs the cold
+      // boot and lands on the logon dialog, like every Win95 morning.
+      void send({ type: 'logout' });
       setShutDown(true);
     } else if (shutChoice === 'restart') {
       // Full warm reboot: replay the POST, then resume the session.
@@ -217,7 +220,13 @@ export function DesktopShell() {
 
   if (shutDown) {
     return (
-      <ShutdownScreen onClick={() => setShutDown(false)}>
+      <ShutdownScreen
+        onClick={() => {
+          // The click IS the power switch: back to the evidence room.
+          sessionStorage.removeItem('lastlogin.power');
+          window.location.reload();
+        }}
+      >
         It is now safe to turn off
         <br />
         this computer.
