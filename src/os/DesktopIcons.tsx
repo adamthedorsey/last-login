@@ -39,6 +39,34 @@ const IconButton = styled.button<{ $selected: boolean; $dragging: boolean }>`
   }
 `;
 
+/** Small centered confirm sheet (windows are heavier than we need here). */
+const CenterModal = styled.div`
+  position: fixed;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  z-index: 100008;
+  width: 340px;
+  background: #d4d0c8;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  box-shadow: 1px 1px 0 #000;
+  padding: 12px;
+`;
+
+const ModalButton = styled.button`
+  width: 80px;
+  font-size: 13px;
+  font-family: inherit;
+  padding: 4px 0;
+  background: #d4d0c8;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  &:active {
+    border-color: #404040 #fff #fff #404040;
+  }
+`;
+
 const ContextMenu = styled(MenuList)`
   position: fixed;
   z-index: 100005;
@@ -104,6 +132,7 @@ export function DesktopIcons() {
   const [itemMenu, setItemMenu] = useState<{ x: number; y: number; item: ItemSummary } | null>(null);
   const [propsItem, setPropsItem] = useState<ItemSummary | null>(null);
   const [binProps, setBinProps] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<ItemSummary | null>(null);
   const itemMenuRef = useRef<HTMLDivElement>(null);
   const [renaming, setRenaming] = useState<{ id: string; value: string } | null>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -566,7 +595,21 @@ export function DesktopIcons() {
             <Separator />
             <MenuListItem size="sm" disabled>Cut</MenuListItem>
             <MenuListItem size="sm" disabled>Copy</MenuListItem>
-            <MenuListItem size="sm" disabled>Delete</MenuListItem>
+            <MenuListItem
+              size="sm"
+              disabled={!itemMenu.item.editable}
+              onClick={
+                itemMenu.item.editable
+                  ? () => {
+                      const it = itemMenu.item;
+                      setItemMenu(null);
+                      setConfirmDelete(it);
+                    }
+                  : undefined
+              }
+            >
+              Delete
+            </MenuListItem>
             <Separator />
             <MenuListItem
               size="sm"
@@ -614,6 +657,31 @@ export function DesktopIcons() {
       )}
 
       {binProps && <RecycleBinProps onClose={() => setBinProps(false)} />}
+
+      {confirmDelete && (
+        <div data-no-deskmenu>
+          <CenterModal>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <Icon name="warning" size={32} />
+              <p style={{ margin: 0, fontSize: 13 }}>
+                Delete "{confirmDelete.name}"? This file is yours — the deletion is permanent.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
+              <ModalButton
+                onClick={() => {
+                  const it = confirmDelete;
+                  setConfirmDelete(null);
+                  void send({ type: 'deleteDocument', docId: it.id });
+                }}
+              >
+                Yes
+              </ModalButton>
+              <ModalButton onClick={() => setConfirmDelete(null)}>No</ModalButton>
+            </div>
+          </CenterModal>
+        </div>
+      )}
 
       {menuAt && (
         <div ref={menuRef}>

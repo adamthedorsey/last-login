@@ -501,6 +501,7 @@ function docSummary(doc: PlayerDocument, index: number): ItemSummary {
       createdAt: doc.createdAt,
       modifiedAt: doc.modifiedAt,
       sizeKb: Math.max(1, Math.round(doc.text.length / 1024)),
+      ...(doc.sourceId ? { sourceId: doc.sourceId } : {}),
       // Player files stack in their own desktop column(s), right of the story icons.
       desktop: { x: 312 + Math.floor(index / 5) * 96, y: 120 + (index % 5) * 96 },
     },
@@ -930,6 +931,8 @@ export function handleAction(
       });
       (state.documents ?? []).forEach((d, i) => {
         if (hits.length >= MAX_HITS) return;
+        // Case Files' own documents live inside the program, not the disk.
+        if (d.folderId === CASE_DOCS_FOLDER) return;
         const nameHit = !query || d.name.toLowerCase().includes(query);
         const textHit = !text || d.text.toLowerCase().includes(text);
         if (!nameHit || !textHit) return;
@@ -1060,8 +1063,10 @@ export function handleAction(
         text: text.slice(0, MAX_DOC_TEXT),
         createdAt: nowDate,
         modifiedAt: nowDate,
-        // Saved evidence lives in Case Files, not on the desktop.
+        // Saved evidence lives in Case Files, not on the desktop —
+        // and remembers where it was taken from.
         folderId: CASE_DOCS_FOLDER,
+        sourceId: item.id,
       };
       docs.push(copy);
       events.push({ type: 'copy_item', payload: { source: item.id, docId: copy.id } });

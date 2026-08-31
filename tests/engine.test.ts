@@ -1010,3 +1010,16 @@ describe('save to case files', () => {
     expect(desk.type === 'desktop' && desk.items.some((i) => i.name === 'leads.txt')).toBe(false);
   });
 });
+
+describe('evidence copy links', () => {
+  it('copies carry sourceId, and Case Files docs never surface in Find', () => {
+    let s = offlineState();
+    s = run(s, { type: 'copyItem', itemId: 'file.lists' }).state;
+    const cf = run(s, { type: 'listChildren', parentId: 'casefile' }).result;
+    if (cf.type !== 'children') throw new Error('bad result');
+    expect(cf.items[0]?.meta?.sourceId).toBe('file.lists');
+
+    const found = run(s, { type: 'findFiles', query: 'Copy of' }).result;
+    expect(found.type === 'find' && found.items).toHaveLength(0);
+  });
+});

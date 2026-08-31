@@ -105,6 +105,8 @@ export interface ItemMeta {
   mono?: boolean;
   // shortcuts
   appId?: string;
+  // evidence copies: the original item this copy was taken from
+  sourceId?: string;
 }
 
 export interface ItemBody {
@@ -416,6 +418,8 @@ export interface PlayerDocument {
   modifiedAt: string;
   /** When set, the doc lives inside a player folder instead of on the desktop. */
   folderId?: string;
+  /** Evidence copies remember the item they were taken from. */
+  sourceId?: string;
 }
 
 /** A folder the player created on the desktop. */

@@ -384,10 +384,18 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
         setTitle(windowId, opened.item.name);
       }
       if (listed.type === 'children') setItems(listed.items);
-      setSelected([]);
-      anchorRef.current = null;
+      // A launcher (e.g. Case Files "Locate Original") may ask us to
+      // arrive with one item highlighted.
+      const sel = props.selectId as string | undefined;
+      if (sel && listed.type === 'children' && listed.items.some((i) => i.id === sel)) {
+        setSelected([sel]);
+        anchorRef.current = sel;
+      } else {
+        setSelected([]);
+        anchorRef.current = null;
+      }
     },
-    [send, setTitle, windowId],
+    [send, setTitle, windowId, props.selectId],
   );
 
   useEffect(() => {

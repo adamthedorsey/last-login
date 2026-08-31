@@ -550,6 +550,36 @@ export function CaseFile({ windowId }: { windowId: string }) {
     setNotice('Deleted.');
   };
 
+  /** Jump to where the copied original lives on the frozen machine. */
+  const locateOriginal = async (sourceId: string) => {
+    const res = await send({ type: 'open', itemId: sourceId });
+    if (res.type !== 'open' || !res.ok || !res.item) {
+      setNotice('The original could not be located.');
+      return;
+    }
+    const it = res.item;
+    const os = useWindowStore.getState();
+    switch (it.kind) {
+      case 'email':
+      case 'mailbox':
+        os.open('mail');
+        break;
+      case 'trash_item':
+        os.open('recycle');
+        break;
+      case 'webpage':
+        if (it.meta?.url) os.open('browser', { props: { url: it.meta.url } });
+        break;
+      case 'photo':
+        os.open('photos', { props: { folderId: it.parentId, itemId: it.id }, title: it.name });
+        break;
+      default:
+        os.open('explorer', {
+          props: { folderId: it.parentId ?? 'folder.c', selectId: it.id },
+        });
+    }
+  };
+
   const editClipboard = (op: 'cut' | 'copy' | 'paste') => {
     setMenuOpen(null);
     const el = document.activeElement;
@@ -793,6 +823,14 @@ export function CaseFile({ windowId }: { windowId: string }) {
               }}
               style={{ flex: 1 }}
             />
+            {(() => {
+              const src = sectionDocs.find((d) => d.id === docId)?.meta?.sourceId;
+              return src ? (
+                <Button onClick={() => void locateOriginal(src)} style={{ width: 110 }}>
+                  Locate Original
+                </Button>
+              ) : null;
+            })()}
             <Button onClick={() => setConfirmDelete(true)} style={{ width: 70 }}>
               Delete
             </Button>
