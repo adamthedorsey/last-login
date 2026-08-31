@@ -42,7 +42,7 @@ const Scope = styled(Frame).attrs({ variant: 'well' })`
  * (it crashes under React 19). Click or drag to seek. */
 /** The rail sits inside a taller strip so the thumb never clips. */
 const TrackStrip = styled.div`
-  padding: 12px 4px 10px;
+  padding: 16px 4px 14px;
   flex-shrink: 0;
 `;
 
