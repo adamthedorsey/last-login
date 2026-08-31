@@ -5,9 +5,13 @@ name: Deploy to Vercel
 # also runnable by hand from the Actions tab.
 #
 # Required GitHub repo secrets (Settings → Secrets and variables → Actions):
-#   VERCEL_TOKEN       — a Vercel access token
-#   VERCEL_ORG_ID      — your team/org id (same across your projects)
-#   VERCEL_PROJECT_ID  — THIS project's id (unique per project)
+#   VERCEL_TOKEN           — a Vercel access token
+#   VERCEL_ORG_ID          — your team/org id (same across your projects)
+#   VERCEL_PROJECT_ID      — THIS project's id (unique per project)
+#   SUPABASE_ACCESS_TOKEN  — a Supabase access token (supabase.com/dashboard/
+#                            account/tokens); only used by the backend step
+#                            below, which pushes season content + the Edge
+#                            Function when they change.
 #
 # The app's build-time VITE_* variables are NOT duplicated here — `vercel pull`
 # fetches them from the Vercel project's Environment Variables so `vercel build`
@@ -30,6 +34,8 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # The hosted Supabase project (public — it's in the client's API URL).
+      SUPABASE_PROJECT_REF: imlnmvdltxgbxnxgafhn
     steps:
       - uses: actions/checkout@v4
 
@@ -46,6 +52,7 @@ jobs:
       - name: Verify
         run: npm run verify
 
+      # --- Frontend (Vercel) -------------------------------------------------
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
@@ -57,3 +64,39 @@ jobs:
 
       - name: Deploy prebuilt to production
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      # --- Backend (Supabase) ------------------------------------------------
+      # Content and the engine live in the DB and the Edge Function, NOT in the
+      # Vercel build — so they need pushing separately, but ONLY when they
+      # actually change (or on a manual run). The engine lives under
+      # supabase/functions/_shared/gamecore; content (season1.ts) is there too;
+      # the game function is supabase/functions/game.
+      - name: Detect content/engine changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'supabase/functions/**'
+              - 'supabase/seed.sql'
+
+      - name: Set up Supabase CLI
+        if: steps.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Push season content + redeploy the game function
+        if: steps.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Regenerate the seed from the committed content so the DB can't drift
+          # from a stale seed.sql, then upsert it (idempotent) and redeploy the
+          # function. `link` needs no DB password — db query uses the Management
+          # API and functions deploy uses the access token.
+          npm run gen:seed
+          echo | supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          supabase db query --linked --file supabase/seed.sql
+          supabase functions deploy game --project-ref "$SUPABASE_PROJECT_REF"
