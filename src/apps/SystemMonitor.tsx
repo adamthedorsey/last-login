@@ -37,14 +37,14 @@ export function SystemMonitor() {
         <ProgressBar value={cpu} />
         <Row>
           <span>Kernel usage: {cpu}%</span>
-          <span>1 processor, trying its best</span>
+          <span>1 processor</span>
         </Row>
       </GroupBox>
       <GroupBox label="Memory">
         <ProgressBar value={87} />
         <Row>
           <span>27.8 MB of 32 MB in use</span>
-          <span>swapping enthusiastically</span>
+          <span>4.2 MB free</span>
         </Row>
       </GroupBox>
       <GroupBox label="Casey (C:)">
@@ -60,9 +60,6 @@ export function SystemMonitor() {
       >
         Up time: 8 days, 21:47:00
       </Frame>
-      <div style={{ fontSize: 12, color: '#555' }}>
-        Nobody has shut this computer down since October 10.
-      </div>
     </Wrap>
   );
 }

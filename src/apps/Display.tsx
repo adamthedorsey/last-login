@@ -52,7 +52,7 @@ export function Display() {
                 menuMaxHeight={200}
               />
               <div style={{ fontSize: 12, color: '#555', marginTop: 6 }}>
-                Applies immediately. Casey had it on Horizons Teal.
+                Changes apply immediately.
               </div>
             </GroupBox>
           </>
@@ -80,9 +80,6 @@ export function Display() {
                 </Button>
               </div>
             </GroupBox>
-            <div style={{ fontSize: 12, color: '#555', marginTop: 8 }}>
-              Saver: "Starfield" with owner's text. Set up before October 10. It still runs.
-            </div>
           </>
         )}
       </TabBody>
