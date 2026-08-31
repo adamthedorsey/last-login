@@ -918,25 +918,32 @@ A girl's voice: "again. i wasn't ready."`,
       },
     },
     {
-      id: 'audio.greeting',
+      // Her voice, once, close to the microphone, late at night. On first
+      // listen: a restless teenager. After the end: she is carrying
+      // someone else's secret, and she knows what machines remember.
+      id: 'audio.voice-diary',
       kind: 'audio',
-      name: 'greeting2.wav',
+      name: 'dont listen to this.wav',
       icon: 'audio',
-      parentId: 'folder.my-documents',
+      parentId: 'folder.personal',
       meta: {
-        createdAt: '1996-08-30',
-        modifiedAt: '1996-08-30',
-        sizeKb: 156,
-        audioSrc: '/audio/greeting2.m4a',
-        audioSeconds: 14,
+        createdAt: '1997-09-21',
+        modifiedAt: '1997-09-21',
+        sizeKb: 447,
+        audioSrc: '/audio/dont-listen-to-this.m4a',
+        audioSeconds: 42,
       },
       body: {
-        text: `[sound recording — greeting2.wav]
+        text: `[sound recording — dont listen to this.wav]
 
-The family answering machine greeting, take two. Casey,
-bright and bored: "You've reached the Taylors. We're not
-home. You know what to do." Her mom calls something from
-another room; Casey laughs through the beep instruction.`,
+Casey, alone, very quiet, close to the microphone. Past
+midnight. She has never kept a spoken diary before and it
+shows: "okay. i've never done this out loud." A long day
+summarized in one breath. Then, slower: she keeps almost
+telling Sadie something and it won't come out — "it's not
+mine to tell. that's the thing nobody gets. it's not MINE."
+A pause. "…this was stupid. computers remember everything."
+Click.`,
       },
     },
 

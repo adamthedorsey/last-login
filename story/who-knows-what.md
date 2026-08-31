@@ -145,6 +145,7 @@ the matrix first and the graph second.
   wizard pages.
 - **Audio assets to supply** (graceful "Cannot play this file." until then):
   `public/audio/band-practice.m4a` (~39s, garage Solar Flare cover falling
-  apart, laughter) and `public/audio/greeting2.m4a` (~14s, the Taylors'
-  answering-machine greeting in Casey's voice). Authored as mundane
-  texture, not clues; transcripts live in the items.
+  apart, laughter) and `public/audio/dont-listen-to-this.m4a` (~42s,
+  Casey's one spoken diary entry, in her personal stuff folder — "it's
+  not mine to tell"; recontextualizes hard after the finale). Transcripts
+  live in the items.
