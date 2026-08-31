@@ -10,7 +10,7 @@ import { canCopyItem } from './fileTypes';
 import { RecycleBinProps } from './RecycleBinProps';
 import { TASKBAR_HEIGHT, useWindowStore } from './windowStore';
 
-import { GRID, ORIGIN, loadLayout, saveLayout, snapToGrid as snap, type Layout } from './desktopLayout';
+import { GRID, ORIGIN, loadLayout, resolveDesktopSlot, saveLayout, snapToGrid as snap, type Layout } from './desktopLayout';
 
 const IconButton = styled.button<{ $selected: boolean; $dragging: boolean }>`
   position: absolute;
@@ -124,6 +124,14 @@ export function DesktopIcons() {
   // the wallpaper, Ctrl+A takes everything, Enter opens the lot.
   const [selected, setSelected] = useState<string[]>([]);
   const [layout, setLayout] = useState<Layout>(loadLayout);
+  // Anchored slots (bottom-right, center) resolve against the viewport —
+  // re-render on resize so they track it.
+  const [, setViewportTick] = useState(0);
+  useEffect(() => {
+    const onResize = () => setViewportTick((t) => t + 1);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   const [dragDelta, setDragDelta] = useState<{ dx: number; dy: number } | null>(null);
   const [marquee, setMarquee] = useState<{ l: number; t: number; w: number; h: number } | null>(null);
   const marqueeRef = useRef<{ startX: number; startY: number; keep: string[] } | null>(null);
@@ -200,7 +208,9 @@ export function DesktopIcons() {
       setMarquee({ l, t, w: r - l, h: b - t });
       const hit = items
         .filter((i) => {
-          const p = layout[i.id] ?? { x: i.meta?.desktop?.x ?? ORIGIN, y: i.meta?.desktop?.y ?? ORIGIN };
+          const p =
+            layout[i.id] ??
+            (i.meta?.desktop ? resolveDesktopSlot(i.meta.desktop) : { x: ORIGIN, y: ORIGIN });
           return p.x < r && p.x + ICON_W > l && p.y < b && p.y + ICON_H > t;
         })
         .map((i) => i.id);
@@ -274,7 +284,8 @@ export function DesktopIcons() {
   }, [menuAt]);
 
   const posOf = (item: ItemSummary): { x: number; y: number } =>
-    layout[item.id] ?? { x: item.meta?.desktop?.x ?? ORIGIN, y: item.meta?.desktop?.y ?? ORIGIN };
+    layout[item.id] ??
+    (item.meta?.desktop ? resolveDesktopSlot(item.meta.desktop) : { x: ORIGIN, y: ORIGIN });
 
   const takenNames = () => new Set(items.map((i) => i.name));
 

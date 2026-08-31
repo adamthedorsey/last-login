@@ -2162,13 +2162,13 @@ and things go back to nor
       // player's very first breadcrumb. Evidence rules apply to it too.
       id: 'file.start-here',
       kind: 'document',
-      name: 'README.TXT',
+      name: 'README.txt',
       icon: 'doc',
       meta: {
         createdAt: '1997-10-18',
         modifiedAt: '1997-10-18',
         sizeKb: 1,
-        desktop: { x: 408, y: 216 },
+        desktop: { x: 0, y: -1, anchor: 'center' },
       },
       body: {
         text: `START HERE
@@ -2187,7 +2187,7 @@ then open CASE FILES.
       kind: 'shortcut',
       name: 'Case Files',
       icon: 'notes',
-      meta: { appId: 'casefile', desktop: { x: 24, y: 312 } },
+      meta: { appId: 'casefile', desktop: { x: 0, y: 0, anchor: 'center' } },
     },
     {
       id: 'shortcut.recycle',
@@ -2195,7 +2195,7 @@ then open CASE FILES.
       name: 'Recycle Bin',
       icon: 'trash',
       fullWhenHasChildren: 'folder.recycle',
-      meta: { appId: 'recycle', desktop: { x: 24, y: 408 } },
+      meta: { appId: 'recycle', desktop: { x: 0, y: 1, anchor: 'bottom-right' } },
     },
 
     // =====================================================================

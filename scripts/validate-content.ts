@@ -297,7 +297,7 @@ function validate(content: SeasonContent): void {
   for (const item of content.items) {
     const dsk = item.meta?.desktop;
     if (!dsk) continue;
-    const key = `${dsk.x},${dsk.y}`;
+    const key = `${dsk.anchor ?? 'abs'}:${dsk.x},${dsk.y}`;
     const prev = cells.get(key);
     if (prev) warnings.push(`desktop cell ${key} shared by ${prev} and ${item.id}`);
     cells.set(key, item.id);

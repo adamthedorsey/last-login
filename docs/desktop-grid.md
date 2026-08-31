@@ -19,8 +19,6 @@ player-moved icons always agree.)
 | A1   | 0,0     |  24,24    | My Computer       | `folder.computer`   |
 | A2   | 0,1     |  24,120   | My Documents      | `folder.my-documents` |
 | A3   | 0,2     |  24,216   | Pictures          | `folder.pictures`   |
-| A4   | 0,3     |  24,312   | Case Files        | `shortcut.casefile` |
-| A5   | 0,4     |  24,408   | Recycle Bin       | `shortcut.recycle`  |
 | B1   | 1,0     | 120,24    | NetVoyager        | `shortcut.browser`  |
 | B2   | 1,1     | 120,120   | Mail              | `shortcut.mail`     |
 | B3   | 1,2     | 120,216   | Chat              | `shortcut.buddyline` |
@@ -28,11 +26,26 @@ player-moved icons always agree.)
 | C2   | 2,1     | 216,120   | Solitaire         | `shortcut.solitaire` |
 | C3   | 2,2     | 216,216   | WestWind Online   | `shortcut.dialup`   |
 | D1   | 3,0     | 312,24    | from j.txt        | `file.readme-first` |
-| E3   | 4,2     | 408,216   | README.TXT        | `file.start-here`   |
+
+## Anchored slots (resolved against the viewport at render)
+
+`meta.desktop` may carry `anchor: 'bottom-right' | 'center'`; x/y are then
+GRID-SLOT OFFSETS from that anchor (columns in from the right / rows up
+from the bottom, or offsets from the middle column/row). The client
+resolves them per-viewport (`resolveDesktopSlot` in
+`src/os/desktopLayout.ts`) and they always land ON the master grid, so
+Line Up Icons and drag-snapping agree.
+
+| Anchor       | offset  | Icon        | Item id             |
+| ------------ | ------- | ----------- | ------------------- |
+| center       | 0,-1    | README.txt  | `file.start-here`   |
+| center       | 0,0     | Case Files  | `shortcut.casefile` |
+| bottom-right | 0,1     | Recycle Bin | `shortcut.recycle`  |
 
 ## Free slots (reserved for things that appear mid-game)
 
-Everything else is open — notably **D2–D5, E1–E2, E4–E5, and columns F+**.
+Everything else is open — notably **A4–A5, D2–D5, E1–E5, and columns F+**
+(minding the viewport-dependent anchored icons above on small screens).
 Player-saved documents auto-place from the top-left free cell, so prefer
 slots from the RIGHT side (E/F columns) for authored appearances to avoid
 racing the player's own files.

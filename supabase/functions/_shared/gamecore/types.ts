@@ -105,8 +105,12 @@ export interface ItemMeta {
   // recycle bin
   deletedAt?: string;
   originalPath?: string;
-  // desktop placement
-  desktop?: { x: number; y: number };
+  // desktop placement: absolute master-grid pixels by default. With an
+  // anchor, x/y become GRID-SLOT OFFSETS resolved client-side against the
+  // viewport (and snapped to the same master grid): 'bottom-right' counts
+  // columns in from the right edge / rows up from the bottom row;
+  // 'center' offsets from the middle column / middle row.
+  desktop?: { x: number; y: number; anchor?: 'bottom-right' | 'center' };
   /** Render this document in monospace (column-aligned evidence: the
    * ledger, modem.log). Everything else reads proportionally. */
   mono?: boolean;
