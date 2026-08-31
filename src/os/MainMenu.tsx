@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { isMuted, playPowerOn, setMuted } from './sounds';
 import { PIXEL_MONO } from '../theme';
+import { usePlayerEmail, signOutPlayer } from '../game/playerAuth';
 import pcImage from '../assets/images/main-menu-pc.png';
 
 const Room = styled.div`
@@ -77,6 +78,30 @@ const SoundToggle = styled.button`
   padding: 4px 6px;
 `;
 
+/** The player-account line (out of fiction, like the whole evidence room):
+ * who is signed in, and a way out. Fixed top-right, away from the machine. */
+const AccountBar = styled.div`
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: #55524a;
+`;
+
+const SignOut = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 11px;
+  color: #6d6a60;
+  text-decoration: underline;
+`;
+
 /** Stepped zoom schedule: scale per frame, ~90ms apart. By the last
  * frames the dead screen's black is most of the viewport. */
 const ZOOM_STEPS = [1.12, 1.28, 1.5, 1.8, 2.2, 2.8, 3.6, 4.8, 6.4];
@@ -86,6 +111,7 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
   const [stage, setStage] = useState<'off' | 'zoom' | 'black'>('off');
   const [zoomIdx, setZoomIdx] = useState(-1);
   const [muted, setMutedState] = useState(isMuted);
+  const playerEmail = usePlayerEmail();
   const fired = useRef(false);
 
   const press = () => {
@@ -149,6 +175,23 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
         style={{ transform: `scale(${scale})` }}
       />
       <Hint style={hidden}>Press any key to begin.</Hint>
+      {playerEmail && (
+        <AccountBar
+          style={hidden}
+          onClick={(e) => e.stopPropagation()}
+          title="Your save account (not part of the game)"
+        >
+          <span>{playerEmail}</span>
+          <SignOut
+            onClick={(e) => {
+              e.stopPropagation();
+              void signOutPlayer();
+            }}
+          >
+            Sign out
+          </SignOut>
+        </AccountBar>
+      )}
       <Copyright style={hidden}>© Adam Dorsey. All rights reserved.</Copyright>
       <SoundToggle
         style={hidden}

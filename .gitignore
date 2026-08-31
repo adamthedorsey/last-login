@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .env
 .env.local
+
+# Supabase CLI transient state (linked-project ref, cached versions, etc.)
+supabase/.temp/

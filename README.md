@@ -222,6 +222,29 @@ For guest play, enable **anonymous sign-ins** in Auth settings (local
 4. `supabase functions deploy game`.
 5. Set the two `VITE_*` variables at build time. Never expose the service-role key.
 
+### Frontend hosting (Vercel)
+
+Vercel hosts only the built SPA; the game logic stays in the Supabase Edge
+Function (which already sends `Access-Control-Allow-Origin: *`). `vercel.json`
+pins the Vite build (`npm run build` → `dist/`) and the SPA fallback rewrite.
+
+1. Import the repo into Vercel (framework auto-detects as Vite).
+2. Set three **build-time** environment variables (Production + Preview) —
+   these are the same values as local `.env`; the publishable key is
+   client-safe, the service-role key must NEVER be set here:
+   - `VITE_GAME_BACKEND=supabase`
+   - `VITE_SUPABASE_URL=https://<ref>.supabase.co`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY=<publishable key>`
+3. Deploy. Then add the deployed origin(s) to Supabase Auth so email flows
+   resolve: **Authentication → URL Configuration** — set **Site URL** to the
+   production URL and add the Vercel domains (incl. `https://*.vercel.app` for
+   previews) to **Redirect URLs**. Password-reset links use
+   `window.location.origin`, so an unlisted origin is rejected. (OTP codes and
+   password sign-in don't need this; only the reset *link* does.)
+4. For real players, configure **custom SMTP** in Supabase — the default
+   mailer only sends to your org's own addresses — and, for a public launch,
+   turn `enable_confirmations` back on so new emails are verified.
+
 ### Tests
 
 ```bash
