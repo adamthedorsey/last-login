@@ -238,7 +238,7 @@ supabase test db      # pgTAP RLS tests (needs local stack)
    sunflower photos → password `sunflower97`. Note who signed the sticky note.
 2. **Act 1** — Sadie's *"please write back"*: Casey was meeting someone at the
    river and told no one who → the Recycle Bin holds a chat log she was told
-   to delete: GhostBridge proved himself with a word only Sadie knew. (It's
+   to delete: nightshift proved himself with a word only Sadie knew. (It's
    also floating on the screen saver. It always was.)
 3. **Act 2** — Sadie's *"it's not chad"* (you don't get jealous of yourself) →
    Aunt Ruth: Frank saw a clean, quiet, dark 4x4 at the bend. Not Chad's.
