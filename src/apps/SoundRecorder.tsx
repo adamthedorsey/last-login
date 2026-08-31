@@ -89,12 +89,22 @@ const Drop = styled(MenuList)<{ $left: number }>`
   font-size: 13px;
 `;
 
-const RecDot = styled.span`
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  background: #c00000;
-`;
+/** The record glyph is a proper red CIRCLE, like the original's —
+ * embossed gray when the button is disabled, like Win95 glyphs. */
+const RecDot = ({ disabled }: { disabled?: boolean }) => (
+  <svg width={12} height={12} viewBox="0 0 12 12" aria-hidden style={{ display: 'block' }}>
+    {disabled && <circle cx={7} cy={7} r={5} fill="#ffffff" />}
+    <circle cx={6} cy={6} r={5} fill={disabled ? '#808080' : '#c00000'} />
+  </svg>
+);
+
+/** Stop: a solid square, sized to match the other glyphs. */
+const StopSquare = ({ disabled }: { disabled?: boolean }) => (
+  <svg width={12} height={12} viewBox="0 0 12 12" shapeRendering="crispEdges" aria-hidden style={{ display: 'block' }}>
+    {disabled && <rect x={2} y={2} width={10} height={10} fill="#ffffff" />}
+    <rect x={1} y={1} width={10} height={10} fill={disabled ? '#808080' : '#000'} />
+  </svg>
+);
 
 const fmt = (s: number) => `${s.toFixed(2)} sec.`;
 
@@ -369,11 +379,15 @@ export function SoundRecorder({ windowId, props }: AppWindowProps) {
         <Button disabled={mode === 'recording' || !src} onClick={play} style={{ flex: 1 }}>
           ▶
         </Button>
-        <Button disabled={mode === 'idle'} onClick={stop} style={{ flex: 1 }}>
-          ■
+        <Button disabled={mode === 'idle'} onClick={stop} style={{ flex: 1, display: 'inline-flex', justifyContent: 'center' }}>
+          <StopSquare disabled={mode === 'idle'} />
         </Button>
-        <Button disabled={!canRecord || mode === 'recording'} onClick={() => void record()} style={{ flex: 1 }}>
-          <RecDot />
+        <Button
+          disabled={!canRecord || mode === 'recording'}
+          onClick={() => void record()}
+          style={{ flex: 1, display: 'inline-flex', justifyContent: 'center' }}
+        >
+          <RecDot disabled={!canRecord || mode === 'recording'} />
         </Button>
       </div>
 
