@@ -49,12 +49,12 @@ export function PhoneDialer() {
   const callSeq = useRef(0);
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     void send({ type: 'getSpeedDial' }).then((res) => {
-      if (!cancelled && res.type === 'speedDial') setSpeed(res.entries);
+      if (!canceled && res.type === 'speedDial') setSpeed(res.entries);
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [send]);
 

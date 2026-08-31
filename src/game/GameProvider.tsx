@@ -52,19 +52,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     void (async () => {
       const client = await createGameClient();
-      if (cancelled) return;
+      if (canceled) return;
       clientRef.current = client;
       const res = await client.send({ type: 'getState' });
-      if (cancelled) return;
+      if (canceled) return;
       if (res.linePickup) setLineDropSignal((n) => n + 1);
       if (res.type === 'state') setView(res.view);
       setReady(true);
     })();
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, []);
 

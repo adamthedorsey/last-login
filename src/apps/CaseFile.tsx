@@ -353,9 +353,9 @@ export function CaseFile({ windowId }: { windowId: string }) {
   };
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     void send({ type: 'getCaseFile' }).then((res) => {
-      if (cancelled || res.type !== 'casefile') return;
+      if (canceled || res.type !== 'casefile') return;
       setFile(res.view);
       if (!res.view.setup) {
         // Newest memo opens by default the first time it exists.
@@ -367,7 +367,7 @@ export function CaseFile({ windowId }: { windowId: string }) {
       }
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [send, contentEpoch]);
 

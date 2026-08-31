@@ -158,16 +158,16 @@ export function MailApp() {
   const [offlineAlert, setOfflineAlert] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     void send({ type: 'listChildren', parentId: mailbox }).then((res) => {
-      if (cancelled || res.type !== 'children') return;
+      if (canceled || res.type !== 'children') return;
       const sorted = [...res.items].sort((a, b) =>
         (b.meta?.date ?? '').localeCompare(a.meta?.date ?? ''),
       );
       setMessages(sorted);
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [mailbox, send, contentEpoch]);
 

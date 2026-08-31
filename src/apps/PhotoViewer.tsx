@@ -39,11 +39,11 @@ export function PhotoViewer({ windowId, props }: AppWindowProps) {
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     void (async () => {
       if (folderId) {
         const res = await send({ type: 'listChildren', parentId: folderId });
-        if (cancelled || res.type !== 'children') return;
+        if (canceled || res.type !== 'children') return;
         const photos = res.items.filter((i) => i.meta?.photoSrc);
         setSiblings(photos);
         const idx = Math.max(0, photos.findIndex((p) => p.id === startItemId));
@@ -54,7 +54,7 @@ export function PhotoViewer({ windowId, props }: AppWindowProps) {
       }
     })();
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [folderId, startItemId, send]);
 
@@ -62,16 +62,16 @@ export function PhotoViewer({ windowId, props }: AppWindowProps) {
 
   useEffect(() => {
     if (!currentId) return;
-    let cancelled = false;
+    let canceled = false;
     void send({ type: 'open', itemId: currentId }).then((res) => {
-      if (cancelled) return;
+      if (canceled) return;
       if (res.type === 'open' && res.ok && res.item) {
         setPhoto(res.item);
         setTitle(windowId, `${res.item.name} - Picture Viewer`);
       }
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [currentId, send, setTitle, windowId]);
 

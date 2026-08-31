@@ -2311,7 +2311,7 @@ then open CASE FILES.
           { t: 'sub', text: 'Route 9 river bend — Humble County, WV' },
           { t: 'img', caption: '[ map tile: the river, fire road switchbacks past mile marker 6, a marked pull-off at the bend. one residence nearby: a parcel on the ridge above the road. ]' },
           { t: 'p', text: 'Access via the county fire road off Route 9, past mile marker 6. Gate closed to vehicles after dusk; foot access is not patrolled. Approx. 20 minutes by bicycle from downtown Humble.' },
-          { t: 'small', text: 'MapFinder cannot verify current road conditions. Print this page before travelling.' },
+          { t: 'small', text: 'MapFinder cannot verify current road conditions. Print this page before traveling.' },
         ],
       },
     },

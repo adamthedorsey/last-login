@@ -78,12 +78,12 @@ export function RecycleBin() {
   }, [ctxMenu]);
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     void send({ type: 'listChildren', parentId: 'folder.recycle' }).then((res) => {
-      if (!cancelled && res.type === 'children') setItems(res.items);
+      if (!canceled && res.type === 'children') setItems(res.items);
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [send, contentEpoch]);
 

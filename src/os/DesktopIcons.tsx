@@ -226,14 +226,14 @@ export function DesktopIcons() {
 
   useEffect(() => {
     if (!ready || !view?.loggedIn) return;
-    let cancelled = false;
+    let canceled = false;
     void send({ type: 'getDesktop' }).then((res) => {
-      if (!cancelled && res.type === 'desktop') setItems(res.items);
+      if (!canceled && res.type === 'desktop') setItems(res.items);
     });
     // Pick up placements written by other surfaces (e.g. Explorer drag-out).
     setLayout(loadLayout());
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [send, contentEpoch, ready, view?.loggedIn]);
 

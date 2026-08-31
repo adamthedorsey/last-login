@@ -150,6 +150,10 @@ If not, don't build it that way.
   No other samples.
 
 ### Language & content
+- AMERICAN English only, everywhere — in-world text, UI chrome, docs, and
+  code comments alike. No British spellings (-our, -ise, -re, doubled-L
+  forms like "cancelled"/"travelling", "grey", "whilst"). The voice of this
+  world is small-town West Virginia, 1997.
 - In-world text never references anything after 1997 (no smartphones, social
   media, streaming, "google" as a verb, modern slang or meme formats).
 - The in-world clock is frozen season data — never render the player's real

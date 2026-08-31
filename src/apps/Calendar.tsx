@@ -82,13 +82,13 @@ export function Calendar() {
   const [entries, setEntries] = useState<Map<string, string[]>>(new Map());
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     void send({ type: 'open', itemId: 'file.datebook-1997' }).then((res) => {
-      if (cancelled || res.type !== 'open' || !res.ok || !res.item?.body?.text) return;
+      if (canceled || res.type !== 'open' || !res.ok || !res.item?.body?.text) return;
       setEntries(parseEntries(res.item.body.text));
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [send]);
 

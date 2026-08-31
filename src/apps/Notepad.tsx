@@ -106,9 +106,9 @@ export function Notepad({ windowId, props }: AppWindowProps) {
       setStatus('New file');
       return;
     }
-    let cancelled = false;
+    let canceled = false;
     void send({ type: 'open', itemId }).then((res) => {
-      if (cancelled) return;
+      if (canceled) return;
       if (res.type === 'open' && res.ok && res.item) {
         setText(res.item.body?.text ?? '');
         setMono(res.item.meta?.mono === true);
@@ -130,7 +130,7 @@ export function Notepad({ windowId, props }: AppWindowProps) {
       }
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [itemId, send]);
 

@@ -142,12 +142,12 @@ export function BuddyLine({ props }: AppWindowProps) {
   };
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     void send({ type: 'getBuddies' }).then((res) => {
-      if (!cancelled && res.type === 'buddies') setBuddies(res.buddies);
+      if (!canceled && res.type === 'buddies') setBuddies(res.buddies);
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [send, contentEpoch]);
 
@@ -192,13 +192,13 @@ export function BuddyLine({ props }: AppWindowProps) {
   // (scheduled events can add lines mid-chat); extra lines step in.
   useEffect(() => {
     if (!chat) return;
-    let cancelled = false;
+    let canceled = false;
     void send({ type: 'getConversation', screenname: chat.screenname }).then((res) => {
-      if (cancelled || res.type !== 'chat' || !res.ok || !res.chat) return;
+      if (canceled || res.type !== 'chat' || !res.ok || !res.chat) return;
       if (res.chat.messages.length > chat.messages.length) setChat(res.chat);
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts to content shifts only
   }, [contentEpoch]);
