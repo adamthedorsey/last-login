@@ -66,6 +66,14 @@ export function DevPanel() {
       </WindowHeader>
       <WindowContent style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
         <Button onClick={() => void send({ type: 'resetSeason' })}>Reset season</Button>
+        <Button
+          onClick={() => {
+            sessionStorage.removeItem('lastlogin.power');
+            window.location.reload();
+          }}
+        >
+          Power off (main menu)
+        </Button>
         {dev && (
           <>
             {!view?.loggedIn && <Button onClick={() => void autoLogin()}>Auto log in</Button>}

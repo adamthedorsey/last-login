@@ -150,6 +150,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   // An active freeze survives reloads: the state view carries the remaining
   // seconds, so the form arrives already locked and counting down.
   const [lockSeconds, setLockSeconds] = useState(() => view?.loginLockSeconds ?? 0);
+  const [poweringOff, setPoweringOff] = useState(false);
 
   // The freeze: while locked, count the seconds down on screen.
   useEffect(() => {
@@ -305,9 +306,23 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
     setMessage('A password is required to use this computer.');
   };
 
+  // The logon dialog's Shut Down — an NT-style affordance (1996, so
+  // period-fair): the screen cuts to black for a beat, then the machine
+  // is off, back in the evidence room.
+  const shutDownFromLogin = () => {
+    stopSystemStartup();
+    setPoweringOff(true);
+    sessionStorage.removeItem('lastlogin.power');
+    window.setTimeout(() => window.location.reload(), 700);
+  };
+
+  if (poweringOff) {
+    return <div style={{ height: '100vh', background: '#000', cursor: 'none' }} />;
+  }
+
   return (
     <LoginBackdrop>
-      <Window style={{ width: 500 }}>
+      <Window style={{ width: 524 }}>
         <WindowHeader
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
         >
@@ -354,11 +369,14 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
                 )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
-                <Button type="submit" disabled={busy || locked} style={{ width: 84 }}>
+                <Button type="submit" disabled={busy || locked} style={{ width: 104 }}>
                   OK
                 </Button>
-                <Button type="button" onClick={cancel} style={{ width: 84 }}>
+                <Button type="button" onClick={cancel} style={{ width: 104 }}>
                   Cancel
+                </Button>
+                <Button type="button" onClick={shutDownFromLogin} style={{ width: 104, whiteSpace: 'nowrap' }}>
+                  Shut Down...
                 </Button>
               </div>
             </div>
