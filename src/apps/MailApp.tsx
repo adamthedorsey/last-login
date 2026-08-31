@@ -271,6 +271,7 @@ export function MailApp() {
           </MsgTable>
         </ScrollView>
         <Splitter
+          data-resize
           onPointerDown={(e) => {
             e.preventDefault();
             (e.target as HTMLElement).setPointerCapture(e.pointerId);
