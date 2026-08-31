@@ -54,7 +54,7 @@ had been reading *this machine* for months: her diary file, her saved IM
 logs. When Casey's searches showed up in the browser history, he panicked and
 told Sparks. Sparks decided the girl needed handling; Jonathan supplied the
 method. Using what he'd read — private jokes, secrets only her best friend
-knew — he created the screen name **GhostBridge** and, over four nights,
+knew — he created the screen name **nightshift** and, over four nights,
 convinced Casey he was someone safe [PROPOSED options: posing as a state
 investigator's teenage-friendly informant contact / posing as a trusted
 friend on a new name — the slice's "impersonation via stolen intimacy" is
@@ -99,13 +99,13 @@ The player never leaves the machine, so only this column becomes content.
 | Oct 3 | Sleepover at Sadie's; Casey almost tells her; instead they invent a code word for "come get me, no questions" [PROPOSED — the season's "bracelet": a private token only the two of them know] | Sadie IM log: the code word appears once, playfully |
 | Oct 5 | Casey photographs/copies the ledger page from Jonathan's desk | Diary entry (fuller, scared); a hidden file (typed-up copy of the ledger page) buried in a homework folder — **the season's physical MacGuffin** |
 | Oct 6 | She asks Sam Reed the careful question at the counter | Calendar: "pharmacy after school"; later (Act 3) Sam's email referencing it |
-| Oct 7 | **GhostBridge first contact**, evening | IM log #1: stranger who "knows her"; she saves the log despite being told not to |
-| Oct 8 | GhostBridge proves himself with private knowledge (the code word / diary phrases) | IM log #2 — the intimacy proof. Diary: "it HAS to be [trusted person]. unless it isn't." |
+| Oct 7 | **nightshift first contact**, evening | IM log #1: stranger who "knows her"; she saves the log despite being told not to |
+| Oct 8 | nightshift proves himself with private knowledge (the code word / diary phrases) | IM log #2 — the intimacy proof. Diary: "it HAS to be [trusted person]. unless it isn't." |
 | Oct 9 | Casey searches from her own PC: the drug's name, "pharmacy board WV", "how to report a doctor" | Browser history + SearchHound-equivalent gated results; a half-written email to an aunt, never sent |
 | Oct 10, 7:40 AM | Normal school morning; algebra quiz | Calendar: "algebra quiz" + the unexplained "★ 10pm" |
-| Oct 10, 3:30 PM | **Public parking-lot argument with Chad** — he grabbed her arm about "some guy she's been talking to online at all hours" (he'd noticed; he was jealous of GhostBridge without knowing it) | Witness accounts arrive later via email/gossip; Chad's apology email sent 6:02 PM, unread [PROPOSED — this email is the Act 2 pivot: read closely, it's an alibi] |
+| Oct 10, 3:30 PM | **Public parking-lot argument with Chad** — he grabbed her arm about "some guy she's been talking to online at all hours" (he'd noticed; he was jealous of nightshift without knowing it) | Witness accounts arrive later via email/gossip; Chad's apology email sent 6:02 PM, unread [PROPOSED — this email is the Act 2 pivot: read closely, it's an alibi] |
 | Oct 10, 4–7 PM | With Angel: they drive to the Gene's Bar back lot where Angel's cousin sells them wine coolers [PROPOSED]; Angel drops her home ~7 | Angel's later emails contradict her first police statement about the time |
-| Oct 10, 9:31 PM | Final GhostBridge session: "the bend. 10 pm. bring the page. come alone. delete the logs." | THE log. She half-obeys: deletes it — **to the Recycle Bin** |
+| Oct 10, 9:31 PM | Final nightshift session: "the bend. 10 pm. bring the page. come alone. delete the logs." | THE log. She half-obeys: deletes it — **to the Recycle Bin** |
 | Oct 10, ~9:50 PM | Rides her bike toward Route 9; Frank, drunk on his porch, sees headlights stop at the bend — a clean dark 4x4, NOT Chad's lifted truck [PROPOSED: it's Sparks' Bronco, lent to Jonathan] | Nothing on the PC — Frank's knowledge surfaces via an Act 3 email thread (see matrix S6) |
 | Oct 10, ~10:10 PM | The bend. The shove/fall/river. Jonathan takes her backpack — but the ledger page in it is a decoy; the real copy is on the PC | — |
 | **Oct 11, 2:14 AM** | **Jonathan uses her PC**: reads the diary, empties what he finds, deletes the diary file and the IM logs — but misses the hidden ledger copy and doesn't empty the Recycle Bin. At **2:31 AM** he cuts the power at the wall rather than shut down — no goodbye chime, no trace, he thinks | File timestamps postdating her disappearance; Recycle Bin remnants; the diary's "last modified" is AFTER she was gone — **the smoking gun**. And every cold boot since prints: *"WARNING: This computer was not shut down properly. Last session ended: 10/11/97 2:31 AM"* — the machine tattles before the player even logs in [CANON] |
@@ -127,7 +127,7 @@ The player never leaves the machine, so only this column becomes content.
   discovery: *not Chad, not Frank — someone with access to her secrets.*
 - **Act 3 — "The house":** the hidden ledger copy → Sam's forwarded letter →
   Rebecca's history of Jonathan-the-impersonator → the file timestamps of
-  Oct 11, 2:14 AM → discovery: *GhostBridge knew her secrets because he lives
+  Oct 11, 2:14 AM → discovery: *nightshift knew her secrets because he lives
   here — and he touched this machine after she vanished.* Season ends.
 
 ## Dial-up as evidence [BUILT 2026-08-29, except where noted]
@@ -157,8 +157,8 @@ Period-real details of Win95 dial-up that became mechanics and clues:
 1. **The bend: deliberately ambiguous.** Season 1 proves *who*, never *what*.
    Jonathan's hands, Sparks' cover-up — but shove-vs-plan stays unwritten and
    unresolvable from shipped content. Future-season material.
-2. **Season-end beat: GhostBridge signs on.** Moments after the player earns
-   `the-house`, the Chat roster flickers and GhostBridge appears online — he
+2. **Season-end beat: nightshift signs on.** Moments after the player earns
+   `the-house`, the Chat roster flickers and nightshift appears online — he
    knows someone has been on the machine. He answers exactly three things
    ("casey?" → "no. we both know that." / "who is this?" → "a friend of the
    family." / "junebug." → silence, then sign-off). The code word, used as a

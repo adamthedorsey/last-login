@@ -22,7 +22,7 @@
  *  ACT 3  the-pipeline       A: hidden ledger copy     B: sam reed's 2nd letter
  *         who-shaped         A: rebecca's email        B: live chat (woman at the vigil)
  *         the-house          the deleted diary — single-path finale, by design
- *  EPILOGUE  GhostBridge signs on. Say the word. Watch him run.
+ *  EPILOGUE  nightshift signs on. Say the word. Watch him run.
  */
 
 import type { SeasonContent } from './types.ts';
@@ -129,7 +129,7 @@ export const SEASON1: SeasonContent = {
       id: 'stolen-intimacy',
       title: 'Stolen intimacy',
       description:
-        'GhostBridge proved himself with things from inside Casey’s private world — words nobody outside it could know. He didn’t earn her trust. He read it.',
+        'nightshift proved himself with things from inside Casey’s private world — words nobody outside it could know. He didn’t earn her trust. He read it.',
     },
     {
       id: 'chads-window',
@@ -208,7 +208,7 @@ export const SEASON1: SeasonContent = {
       status: 'offline',
     },
     {
-      screenname: 'GhostBridge',
+      screenname: 'nightshift',
       group: 'Buddies',
       status: 'offline',
       // His logs are gone from the messenger. One copy survived elsewhere.
@@ -281,7 +281,7 @@ export const SEASON1: SeasonContent = {
     },
     {
       // THE EPILOGUE DOORBELL. Minutes after the player learns about the
-      // 2:14 AM login, GhostBridge signs on — someone noticed activity on
+      // 2:14 AM login, nightshift signs on — someone noticed activity on
       // this machine. (His roster entry is gated on the same discovery.)
       id: 'evt.ghost-on',
       afterOnlineSeconds: 0,
@@ -295,7 +295,7 @@ export const SEASON1: SeasonContent = {
   // pipeline (someone's whole crime, sitting in a school folder), the GUI
   // drops and a practiced hand dials in: checks the volume, goes straight
   // to `personal stuff`, asks for one file that is no longer there, says
-  // goodnight, hangs up. This is HOW GhostBridge always knew — the same
+  // goodnight, hangs up. This is HOW nightshift always knew — the same
   // session the modem log has been recording at 11-something every night.
   // Watching it earns `the-watcher` and costs the connection.
   // =========================================================================
@@ -650,7 +650,7 @@ export const SEASON1: SeasonContent = {
     {
       // THE EPILOGUE. He signs on minutes after the player learns about the
       // 2:14 AM login. He noticed someone on this machine. He always notices.
-      screenname: 'GhostBridge',
+      screenname: 'nightshift',
       requires: { discovery: 'the-house' },
       opener: ['you’re up late.'],
       prompts: [
@@ -1189,7 +1189,7 @@ metaphor ms. combs, sometimes a bird is a bird]`,
       },
     },
     {
-      // PATH B for stolen-intimacy. On Oct 8 GhostBridge proved himself by
+      // PATH B for stolen-intimacy. On Oct 8 nightshift proved himself by
       // quoting her PRIVATE files. She pasted the log here, disguised as
       // more poems — same camouflage instinct as the ledger copy.
       id: 'file.gb-log-oct8',
@@ -1204,20 +1204,20 @@ metaphor ms. combs, sometimes a bird is a bird]`,
         text: `[not poems. pasted 10/8. if i'm ever wrong about him, this is
 how you'll know. he doesn't just know ABOUT me. he knows my STUFF.]
 
-GhostBridge: you still don't trust me
+nightshift: you still don't trust me
 SunflwrC81: i don't KNOW you. big difference
-GhostBridge: you know me better than you think. "the porch light
+nightshift: you know me better than you think. "the porch light
   stays on all night now. moths keep faith better than people do."
 SunflwrC81: ...
 SunflwrC81: where did you get that
-GhostBridge: you wrote it. it's good. you should finish the chorus.
+nightshift: you wrote it. it's good. you should finish the chorus.
 SunflwrC81: that file is ON MY COMPUTER. it's not on my page. it's
   not ANYWHERE
-GhostBridge: casey. calm down. people who do what i do have ways of
+nightshift: casey. calm down. people who do what i do have ways of
   knowing things. it's why i can help you when nobody else can.
-GhostBridge: your dad can still skip eleven, right? you got to six.
+nightshift: your dad can still skip eleven, right? you got to six.
 SunflwrC81: stop
-GhostBridge: i'm not trying to scare you. i'm showing you i'm real.
+nightshift: i'm not trying to scare you. i'm showing you i'm real.
 SunflwrC81: ok. you're real. that's the part that scares me`,
       },
     },
@@ -2193,31 +2193,31 @@ The Mine Wars were a series of wars that happened in the mines
         sizeKb: 2,
       },
       body: {
-        text: `[BuddyLine saved log — GhostBridge — 10/10/97]
+        text: `[BuddyLine saved log — nightshift — 10/10/97]
 
-GhostBridge: is the page somewhere safe
+nightshift: is the page somewhere safe
 SunflwrC81: yes. ok my turn. you say you've been building a case on
   him for two years. you know things. FINE. but i still don't know
   you're not just some guy
-GhostBridge: what would make you sure
+nightshift: what would make you sure
 SunflwrC81: i don't know. something real
-GhostBridge: alright. tonight, when we meet — if you feel unsafe at
+nightshift: alright. tonight, when we meet — if you feel unsafe at
   any point, say junebug, and i'll know it's really you and get you
   out of there.
 SunflwrC81: ...
 SunflwrC81: how do you know that word
-GhostBridge: i know a lot of things, casey. that's the job. it's how
+nightshift: i know a lot of things, casey. that's the job. it's how
   i knew about sparks before you did.
 SunflwrC81: nobody knows that word. two people on EARTH know that
   word
-GhostBridge: and now a third, who is on your side. the bend. ten
+nightshift: and now a third, who is on your side. the bend. ten
   o'clock. bring the page. come alone — not the boyfriend, not
   sadie. and delete these logs, all of them. if he finds out you
   talked, everything gets worse.
 SunflwrC81: this is crazy. ok. ok. ten.
-GhostBridge: good girl. it will all be over after tonight.
+nightshift: good girl. it will all be over after tonight.
 SunflwrC81: that's a weird way to say it
-GhostBridge: goodnight casey
+nightshift: goodnight casey
 SunflwrC81: hello?
 SunflwrC81: hello??`,
       },

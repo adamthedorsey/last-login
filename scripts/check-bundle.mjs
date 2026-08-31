@@ -12,7 +12,7 @@ const DIST = new URL('../dist', import.meta.url).pathname;
 // appear in dist/, the content pipeline is broken.
 const FORBIDDEN = [
   'sunflower97', // login password
-  'GhostBridge', // the impersonator
+  'nightshift', // the watcher's screen name
   'junebug', // the code word (served via StateView, never client code)
   'stolen-intimacy', // discovery id
   'the-house', // final discovery id
@@ -24,7 +24,7 @@ const FORBIDDEN = [
   'radioactive_dave', // generated-web identity pool
   'poem drafts 2', // hidden Oct 8 log (path B, stolen-intimacy)
   'Simple has an alibi', // Register timeline page (path B, chads-window)
-  'a friend of the family', // GhostBridge's epilogue line
+  'a friend of the family', // nightshift's epilogue line
   'sadie-talking', // conversation flag
   'ghost-signoff', // epilogue flag
   'not shut down properly', // boot warning (server-sent story line)

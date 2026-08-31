@@ -10,8 +10,8 @@
 - **S2 — Casey knew.** She found the cash, the bottle, the ledger page; she
   copied the page onto the PC.
 - **S3 — The meeting was arranged online** by someone using stolen intimacy
-  (GhostBridge).
-- **S4 — Who GhostBridge is** (Jonathan, coached by Sparks).
+  (nightshift).
+- **S4 — Who nightshift is** (Jonathan, coached by Sparks).
 - **S5 — What happened at the bend** (the fall, the river, the cover-up).
 - **S6 — Frank saw the 4x4** that night and has stayed silent (drunk, scared
   of his record, sure no one believes him).
@@ -45,7 +45,7 @@
 | S1 pipeline | P→K | · | · | P* | · | P | **K** | **K** | P | P (seal) | · |
 | S2 Casey knew | K | P (hypotheticals) | · | · | · | · | **K** (via PC) | K (told) | P (her question) | · | · |
 | S3 arranged online | K (too late) | P ("someone new") | · | P (jealous of "online guy") | · | · | **K** | K | · | · | · |
-| S4 GhostBridge = Jonathan | · | · | · | · | · | · | **K** | K | · | · | P (pattern) |
+| S4 nightshift = Jonathan | · | · | · | · | · | · | **K** | K | · | · | P (pattern) |
 | S5 the bend | — | · | · | · | P (saw lights) | · | **K** | **K** | · | · | · |
 | S6 Frank saw the 4x4 | — | K† | · | · | **K** | · | · | · | · | P (Frank hints in a low moment) | · |
 | S7 Angel's evening | K | P | **K** | · | · | · | · | · | · | · | · |
@@ -70,9 +70,9 @@ inbox. She still holds S9 back ("i'm not telling you it. it's ours").
 
 The core mechanic: a secret is inert until it appears where it shouldn't.
 
-1. **S9 in GhostBridge's mouth** — the recovered IM log shows the code word.
+1. **S9 in nightshift's mouth** — the recovered IM log shows the code word.
    Player + Sadie's logs know only two people had it. → *discovery:
-   `stolen-intimacy` — whoever GhostBridge is, he had access to their private
+   `stolen-intimacy` — whoever nightshift is, he had access to their private
    world.* (This is the slice's "bracelet" move, canonized.)
 2. **S3 vs Chad's jealousy** — Chad's angry words in the parking lot ("some
    guy she talks to at 2am") prove he *didn't know who* — a guilty man
@@ -107,7 +107,7 @@ app never soft-locks the season.
 | Sadie IM logs (Oct 3) w/ code word | S9 exists | Chat | open from start | — (retro-ignites after the log) |
 | Sadie's email "please write back" | S3 half | Mail | open | `the-meeting` (A) |
 | LIVE chat: Sadie's porch story | S3 half | Chat | talk to her | `the-meeting` (B) |
-| Recycle Bin: deleted GhostBridge log (Oct 10) | S3, S9 used | Recycle Bin | the-meeting | `stolen-intimacy` (A) |
+| Recycle Bin: deleted nightshift log (Oct 10) | S3, S9 used | Recycle Bin | the-meeting | `stolen-intimacy` (A) |
 | "poem drafts 2.txt" — Oct 8 log Casey hid in Writing!! | S3, S11 shape | Explorer | the-meeting | `stolen-intimacy` (B) |
 | Sadie's email "it's not chad" (jealousy logic) | S8 window | Mail | stolen-intimacy | `chads-window` (A) |
 | Register "Timeline of the 10th" (Gene's barstool alibi) | S8 window | NetVoyager | stolen-intimacy | `chads-window` (B) |
@@ -121,7 +121,7 @@ app never soft-locks the season.
 | modem.log — the 2:17 AM session + the week of midnight dial-ins | S12 | Explorer | who-shaped | `the-house` — END (B) |
 | Chad's unread apology email, 6:02 PM | S8 window | Mail | open | exoneration texture |
 | Angel's apology email + live chat guilt | S7 | Mail/Chat | open / talk | witness conversion |
-| EPILOGUE: GhostBridge signs on; "junebug." makes him run | S4 felt, not proven | Chat | the-house | season sting |
+| EPILOGUE: nightshift signs on; "junebug." makes him run | S4 felt, not proven | Chat | the-house | season sting |
 | THE LINE PICKUP: first online action after who-shaped drops the connection — "the line was picked up by another extension" | the house is not empty | Dial-Up | who-shaped, once | dread, not data |
 
 Notes for writing: Father Mike and Leslie carry no ledger rows — they are
@@ -163,6 +163,6 @@ Casey's own). The Summer_97 (D:) disc now carries: six traded mp3s, a
 mundane internal Purdont territory-summary fragment, her
 oxytera notes.txt, and to do.txt. The former open conflicts are now
 resolved canon (see canon.md): Leslie is the stepmother and June, the
-birth mother, died of an Oxytera overdose; GhostBridge IS the
+birth mother, died of an Oxytera overdose; nightshift IS the
 hacker/future ally; junebug — dad's nickname for Casey, little June —
 is her screensaver word and handle.

@@ -121,8 +121,8 @@ describe('DTO redaction', () => {
     for (const id of CHAIN_OPENS) record({ type: 'open', itemId: id });
     record({ type: 'connect' }); // the line pickup dropped the connection mid-chain
     record({ type: 'getBuddies' });
-    record({ type: 'getConversation', screenname: 'GhostBridge' });
-    record({ type: 'say', screenname: 'GhostBridge', promptId: 'junebug' });
+    record({ type: 'getConversation', screenname: 'nightshift' });
+    record({ type: 'say', screenname: 'nightshift', promptId: 'junebug' });
     record({ type: 'visit', url: 'www.humbleregister.net' });
     record({ type: 'search', query: 'humble' });
     record({ type: 'getState' });
@@ -156,7 +156,7 @@ describe('DTO redaction', () => {
 
   it('the epilogue conversation does not exist before the finale', () => {
     const s = loggedInState();
-    const res = run(s, { type: 'getConversation', screenname: 'GhostBridge' }).result;
+    const res = run(s, { type: 'getConversation', screenname: 'nightshift' }).result;
     expect(res).toMatchObject({ type: 'chat', ok: false });
     expect(JSON.stringify(res)).not.toContain('up late');
   });

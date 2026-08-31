@@ -179,17 +179,17 @@ describe('clue chain progression', () => {
     expect(s.discoveries).toHaveLength(CHAIN.length);
   });
 
-  it('reveals the GhostBridge buddy only after stolen-intimacy', () => {
+  it('reveals the nightshift buddy only after stolen-intimacy', () => {
     let s = loggedInState();
     let res = run(s, { type: 'getBuddies' }).result;
     if (res.type !== 'buddies') throw new Error('bad result');
-    expect(res.buddies.map((b) => b.screenname)).not.toContain('GhostBridge');
+    expect(res.buddies.map((b) => b.screenname)).not.toContain('nightshift');
 
     s = run(s, { type: 'open', itemId: 'email.sadie.please' }).state;
     s = run(s, { type: 'open', itemId: 'trash.bl-log' }).state;
     res = run(s, { type: 'getBuddies' }).result;
     if (res.type !== 'buddies') throw new Error('bad result');
-    expect(res.buddies.map((b) => b.screenname)).toContain('GhostBridge');
+    expect(res.buddies.map((b) => b.screenname)).toContain('nightshift');
   });
 
   it('discoveries are granted only once', () => {
@@ -394,7 +394,7 @@ describe('the epilogue', () => {
 
   it('GhostBridge is unreachable before the finale', () => {
     const s = loggedInState();
-    const res = run(s, { type: 'getConversation', screenname: 'GhostBridge' }).result;
+    const res = run(s, { type: 'getConversation', screenname: 'nightshift' }).result;
     expect(res).toMatchObject({ type: 'chat', ok: false });
   });
 
@@ -402,13 +402,13 @@ describe('the epilogue', () => {
     let s = finishedState();
     let buddies = run(s, { type: 'getBuddies' }).result;
     if (buddies.type !== 'buddies') throw new Error('bad result');
-    expect(buddies.buddies.find((b) => b.screenname === 'GhostBridge')?.status).toBe('online');
+    expect(buddies.buddies.find((b) => b.screenname === 'nightshift')?.status).toBe('online');
 
-    const opened = run(s, { type: 'getConversation', screenname: 'GhostBridge' }).result;
+    const opened = run(s, { type: 'getConversation', screenname: 'nightshift' }).result;
     if (opened.type !== 'chat' || !opened.chat) throw new Error('bad result');
     expect(opened.chat.messages[0].text).toContain('up late');
 
-    const sting = run(s, { type: 'say', screenname: 'GhostBridge', promptId: 'junebug' });
+    const sting = run(s, { type: 'say', screenname: 'nightshift', promptId: 'junebug' });
     s = sting.state;
     if (sting.result.type !== 'chat' || !sting.result.chat) throw new Error('bad result');
     expect(sting.result.chat.signedOff).toBe(true);
@@ -416,8 +416,8 @@ describe('the epilogue', () => {
 
     buddies = run(s, { type: 'getBuddies' }).result;
     if (buddies.type !== 'buddies') throw new Error('bad result');
-    expect(buddies.buddies.find((b) => b.screenname === 'GhostBridge')?.status).toBe('offline');
-    expect(run(s, { type: 'getConversation', screenname: 'GhostBridge' }).result).toMatchObject({
+    expect(buddies.buddies.find((b) => b.screenname === 'nightshift')?.status).toBe('offline');
+    expect(run(s, { type: 'getConversation', screenname: 'nightshift' }).result).toMatchObject({
       type: 'chat',
       ok: false,
     });

@@ -441,11 +441,11 @@ Casey does not know who these people really are.
 
 ---
 
-## The Hacker / Future Ally — GhostBridge
+## The Hacker / Future Ally — nightshift
 
-**GhostBridge is this person.** The ominous presence the existing Season 1 chain builds up — the watcher, the remote access, the deleted files — is the IRC friend Casey met during the Purdont investigation.
+**nightshift is this person.** The ominous presence the existing Season 1 chain builds up — the watcher, the remote access, the deleted files — is the IRC friend Casey met during the Purdont investigation.
 
-To the player: ominous for most of the season. The reveal that GhostBridge was frightened FOR her, not hunting her, is the recontextualization gut-punch — it must re-read earlier threatening behavior, not merely excuse it.
+To the player: ominous for most of the season. The reveal that nightshift was frightened FOR her, not hunting her, is the recontextualization gut-punch — it must re-read earlier threatening behavior, not merely excuse it.
 
 Current season discovery text was written to be read the wrong way on purpose; a future content pass must make sure nothing states the hostile reading as resolved fact.
 
@@ -489,7 +489,7 @@ The eventual reveal that the apparent intruder is an ally should recontextualize
 1. **Leslie Wright is Casey's stepmother** (see "Casey's Household").
    The birth mother, June, died of an Oxytera overdose. All shipped
    Leslie content stands as-is — Casey calls her Mom.
-2. **GhostBridge is the hacker/future ally** (see that section). The
+2. **nightshift is the hacker/future ally** (see that section). The
    existing chain's ominous framing is the intended misdirection;
    future content work interleaves the Purdont arc and keeps the
    hostile reading unconfirmed until the reveal.
@@ -499,6 +499,6 @@ The eventual reveal that the apparent intruder is an ally should recontextualize
    ("say junebug and i come get u") and Casey's "he knew junebug. HOW.
    i keep coming back to it. only me and..." — the hostile read is that
    the watcher stole a childhood-private word; the true read is that
-   Casey WAS junebug to GhostBridge all along, and in her fear she
+   Casey WAS junebug to nightshift all along, and in her fear she
    never connected the two worlds. That line is the reveal's hinge —
    future content must protect its ambiguity.

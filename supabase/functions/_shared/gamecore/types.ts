@@ -186,7 +186,7 @@ export interface Buddy {
   requires?: Requirement; // SERVER ONLY
   /**
    * Conditional presence changes, evaluated in order; the LAST matching
-   * override wins (e.g. GhostBridge signs on after the finale, then signs
+   * override wins (e.g. nightshift signs on after the finale, then signs
    * back off once spoken to). SERVER ONLY — only the resolved status ships.
    */
   overrides?: Array<{ requires: Requirement; status: BuddyStatus; awayMessage?: string }>;

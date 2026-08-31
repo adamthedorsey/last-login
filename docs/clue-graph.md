@@ -59,8 +59,8 @@ flowchart TD
   d_stolen_intimacy -->|requires| i_web_register_timeline
   i_web_mapfinder_bend["MapFinder: Route 9 river bend<br/><i>web</i>"]:::item
   d_the_meeting -->|requires| i_web_mapfinder_bend
-  b_GhostBridge["GhostBridge<br/><i>buddy appears</i>"]:::item
-  d_stolen_intimacy -->|requires| b_GhostBridge
+  b_nightshift["nightshift<br/><i>buddy appears</i>"]:::item
+  d_stolen_intimacy -->|requires| b_nightshift
   c_sadiedraws77_intro["ask sadiedraws77:<br/>“this isn’t casey. i’m at her computer, tryin…”<br/><i>live chat</i>"]:::item
   c_sadiedraws77_intro ==>|grants| d_the_meeting
   c_sadiedraws77_frank["ask sadiedraws77:<br/>“could it have been her dad she was meeting?”<br/><i>live chat</i>"]:::item
