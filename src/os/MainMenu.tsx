@@ -1,8 +1,9 @@
 /**
  * The main menu — the evidence room. The website hands the player here:
  * a dark room, the seized machine under one light. Any key (or a click)
- * powers it on and starts the cold boot. No story text lives here — box
- * copy only. Everything is stepped, nothing eases.
+ * powers it on: the camera drives INTO the dead CRT glass in stepped
+ * frames until the screen's black fills everything — and the next black
+ * screen is the POST. No story text lives here — box copy only.
  */
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -24,10 +25,10 @@ const Room = styled.div`
 
 const Title = styled.div`
   font-family: ${PIXEL_MONO};
-  font-size: 32px;
-  letter-spacing: 10px;
+  font-size: 64px;
+  letter-spacing: 18px;
   color: #d8d3c4;
-  text-shadow: 4px 4px 0 #000;
+  text-shadow: 6px 6px 0 #000;
 `;
 
 const Tagline = styled.div`
@@ -35,13 +36,16 @@ const Tagline = styled.div`
   font-size: 14px;
   letter-spacing: 4px;
   color: #6d6a60;
-  margin: 10px 0 8px;
+  margin: 12px 0 8px;
 `;
 
+/** The zoom scales the photo toward the CRT glass (its center sits at
+ * ~47.5% / 34.5% of the frame) in stepped frames — no easing. */
 const Photo = styled.img`
   display: block;
   width: min(620px, 78vw, 58vh);
   image-rendering: auto;
+  transform-origin: 47.5% 34.5%;
 `;
 
 const Hint = styled.div`
@@ -64,26 +68,42 @@ const SoundToggle = styled.button`
   padding: 4px 6px;
 `;
 
+/** Stepped zoom schedule: scale per frame, ~90ms apart. By the last
+ * frames the dead screen's black is most of the viewport. */
+const ZOOM_STEPS = [1.12, 1.28, 1.5, 1.8, 2.2, 2.8, 3.6, 4.8, 6.4];
+const ZOOM_TICK_MS = 90;
+
 export function MainMenu({ onPower }: { onPower: () => void }) {
-  const [stage, setStage] = useState<'off' | 'spinning'>('off');
+  const [stage, setStage] = useState<'off' | 'zoom' | 'black'>('off');
+  const [zoomIdx, setZoomIdx] = useState(-1);
   const [muted, setMutedState] = useState(isMuted);
-  // The hint blinks on a stepped clock, like a DOS prompt waiting.
-  const [blink, setBlink] = useState(true);
   const fired = useRef(false);
 
   const press = () => {
     if (fired.current) return;
     fired.current = true;
-    setStage('spinning');
     playPowerOn();
-    // The machine takes a moment to come alive — stepped, not eased.
-    window.setTimeout(onPower, 1200);
+    setStage('zoom');
+    setZoomIdx(0);
   };
 
+  // Drive the zoom frames, then cut to black.
   useEffect(() => {
-    const t = window.setInterval(() => setBlink((b) => !b), 800);
-    return () => window.clearInterval(t);
-  }, []);
+    if (stage !== 'zoom' || zoomIdx < 0) return;
+    if (zoomIdx >= ZOOM_STEPS.length) {
+      setStage('black');
+      return;
+    }
+    const t = window.setTimeout(() => setZoomIdx((i) => i + 1), ZOOM_TICK_MS);
+    return () => window.clearTimeout(t);
+  }, [stage, zoomIdx]);
+
+  // A beat of black, then the POST takes over.
+  useEffect(() => {
+    if (stage !== 'black') return;
+    const t = window.setTimeout(onPower, 250);
+    return () => window.clearTimeout(t);
+  }, [stage, onPower]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -98,13 +118,30 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (stage === 'black') {
+    return <Room style={{ cursor: 'none' }} />;
+  }
+
+  const zooming = stage === 'zoom';
+  const scale = zooming && zoomIdx > 0 ? ZOOM_STEPS[Math.min(zoomIdx, ZOOM_STEPS.length) - 1] : 1;
+
+  // The text snaps off at zoom start but keeps its layout space, so the
+  // photo never jumps.
+  const hidden = zooming ? { visibility: 'hidden' as const } : undefined;
+
   return (
-    <Room onClick={press}>
-      <Title>LAST LOGIN</Title>
-      <Tagline>A 1997 DESKTOP MYSTERY</Tagline>
-      <Photo src={pcImage} alt="" draggable={false} />
-      <Hint>{stage === 'off' && blink ? 'Press any key to begin.' : ' '}</Hint>
+    <Room onClick={press} style={zooming ? { cursor: 'none' } : undefined}>
+      <Title style={hidden}>LAST LOGIN</Title>
+      <Tagline style={hidden}>A 1997 DESKTOP MYSTERY</Tagline>
+      <Photo
+        src={pcImage}
+        alt=""
+        draggable={false}
+        style={{ transform: `scale(${scale})` }}
+      />
+      <Hint style={hidden}>Press any key to begin.</Hint>
       <SoundToggle
+        style={hidden}
         onClick={(e) => {
           e.stopPropagation();
           setMuted(!muted);

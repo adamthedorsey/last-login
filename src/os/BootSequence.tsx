@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Button, Frame, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
 import {
+  fadeMachineSounds,
   playError,
   playPostSounds,
   playSystemStartup,
@@ -180,13 +181,12 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
     return () => window.clearTimeout(t);
   }, []);
 
-  // The machine's body: drive chatter under the POST, disk reading under
-  // ScanDisk, silence once the GUI takes over. Deduped in sounds.ts, so
-  // StrictMode remounts don't double them.
+  // The machine's body: the long boot take runs under the POST, ScanDisk
+  // AND the splash fanfare (they layer); leaveSplash fades it out as the
+  // login screen (or the desktop) arrives. Deduped in sounds.ts, so
+  // StrictMode remounts don't double it.
   useEffect(() => {
     if (phase === 'boot' && fontsReady) playPostSounds();
-    // ScanDisk rides the same long boot take; the splash cuts it off.
-    else if (phase === 'splash' || phase === 'login') stopMachineSounds();
   }, [phase, fontsReady]);
   useEffect(() => () => stopMachineSounds(), []);
 
@@ -214,6 +214,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   // The GUI splash: logo over the horizons, pointer flickering busy — the
   // machine is "loading Horizons 95". Click skips, like everything staged.
   const leaveSplash = useCallback(() => {
+    fadeMachineSounds(1500);
     if (view?.loggedIn && onResume) onResume();
     else setPhase('login');
   }, [view, onResume]);

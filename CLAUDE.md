@@ -161,7 +161,8 @@ If not, don't build it that way.
   `.m4a` files — the `.wav` originals stay in the repo as source and
   never reach the bundle): fan spin-up on the main menu's POWER press;
   boot tone plus the LONG boot take (sfx_boot_long, ~24s) carrying the
-  whole POST and ScanDisk, cut off at the Microtech splash; entering
+  whole POST, ScanDisk AND the Microtech splash (it layers under the
+  fanfare), faded out over ~1.5s as the splash hands off; entering
   MS-DOS mode plays beep -> boot chatter, then the fan holds a
   SEAMLESS WebAudio loop (HTMLAudio's loop gap was audible — never go
   back to it) with the disk reading layered on top, stopped on exit;
@@ -191,9 +192,11 @@ If not, don't build it that way.
   fresh install — the machine greets nobody. Mechanical teaching belongs to
   the Case Files setup wizard (server content) and period-true affordances.
 - The main menu (src/os/MainMenu.tsx) is the website->game airlock: the
-  evidence room — dark screen, the machine photo (main-menu-pc.png),
-  "Press any key to begin" (any key or a click; the hint blinks on a
-  stepped clock), a sound toggle. Box copy only (title + tagline), never story
+  evidence room — dark screen, the machine photo (main-menu-pc.png,
+  front-facing), the title at 64px Fixedsys, a steady "Press any key to
+  begin" (any key or a click), a sound toggle. Pressing a key drives
+  the camera INTO the dead CRT glass in stepped scale frames (no
+  easing), cuts to black, and the next black screen is the POST. Box copy only (title + tagline), never story
   text. Stepped, no easing. Power state is sessionStorage
   `lastlogin.power`: reload mid-session is NOT a power cycle; the
   shutdown screen's click clears it (back to the menu) and Shut Down

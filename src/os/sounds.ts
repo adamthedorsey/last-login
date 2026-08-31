@@ -242,6 +242,24 @@ export function stopMachineSounds(): void {
   stopFanLoop();
 }
 
+/** Ease the machine bed out (the login screen arrives, the room goes
+ * quiet) — stepped volume drops, then silence. */
+export function fadeMachineSounds(ms = 1500): void {
+  const steps = 12;
+  machineSounds.forEach((a) => {
+    const drop = a.volume / steps;
+    const t = window.setInterval(() => {
+      if (a.volume > drop) a.volume = Math.max(0, a.volume - drop);
+      else {
+        window.clearInterval(t);
+        a.pause();
+      }
+    }, Math.max(30, ms / steps));
+  });
+  machineSounds.clear();
+  stopFanLoop();
+}
+
 /** Mail arrival: the machine's own greeting sample (owner-approved
  * exception #3), played QUIET — it punctuates, never startles. The chip
  * chirp is the fallback if playback is blocked. */
