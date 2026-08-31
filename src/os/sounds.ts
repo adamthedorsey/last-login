@@ -7,10 +7,11 @@ import dialupMp3 from '../assets/sounds/dial-up-modem.mp3';
 import mailMp3 from '../assets/sounds/mt_youve_got_mail.mp3';
 import startupMp3 from '../assets/sounds/mt_microtech-startup-sound.mp3';
 
-import fanWav from '../assets/sounds/sfx_computer_fan.wav';
-import bootBedWav from '../assets/sounds/sfx_computer_booting.wav';
-import diskWav from '../assets/sounds/sfx_computer_reading_bytes.wav';
-import postToneWav from '../assets/sounds/sfx_boot_tone.wav';
+import fanSfx from '../assets/sounds/sfx_computer_fan.m4a';
+import bootBedSfx from '../assets/sounds/sfx_computer_booting.m4a';
+import diskSfx from '../assets/sounds/sfx_computer_reading_bytes.m4a';
+import postToneSfx from '../assets/sounds/sfx_boot_tone.m4a';
+import beepSfx from '../assets/sounds/sfx_beep.m4a';
 
 const MUTE_KEY = 'lastlogin.muted';
 
@@ -121,14 +122,22 @@ export function stopSystemStartup(): void {
  */
 const machineSounds = new Map<string, HTMLAudioElement>();
 
-function playMachine(src: string, volume: number): void {
+function playMachine(
+  src: string,
+  volume: number,
+  opts?: { loop?: boolean; onEnded?: () => void },
+): void {
   if (isMuted()) return;
   const running = machineSounds.get(src);
   if (running && !running.paused && !running.ended) return;
   try {
     const a = new Audio(src);
     a.volume = volume;
-    a.onended = () => machineSounds.delete(src);
+    a.loop = opts?.loop ?? false;
+    a.onended = () => {
+      machineSounds.delete(src);
+      opts?.onEnded?.();
+    };
     machineSounds.set(src, a);
     void a.play().catch(() => machineSounds.delete(src));
   } catch {
@@ -136,20 +145,54 @@ function playMachine(src: string, volume: number): void {
   }
 }
 
+function stopMachine(src: string): void {
+  const a = machineSounds.get(src);
+  if (a) {
+    a.pause();
+    machineSounds.delete(src);
+  }
+}
+
 /** The power button: the fan spins up. */
 export function playPowerOn(): void {
-  playMachine(fanWav, 0.35);
+  playMachine(fanSfx, 0.35);
 }
 
 /** POST: a short boot tone, then drive chatter under the BIOS text. */
 export function playPostSounds(): void {
-  playMachine(postToneWav, 0.3);
-  playMachine(bootBedWav, 0.28);
+  playMachine(postToneSfx, 0.3);
+  playMachine(bootBedSfx, 0.28);
 }
 
 /** ScanDisk: the disk reads, cluster by cluster. */
 export function playScanDiskSound(): void {
-  playMachine(diskWav, 0.25);
+  playMachine(diskSfx, 0.25);
+}
+
+/**
+ * Entering MS-DOS mode: the BIOS beep, then the boot chatter — and once
+ * the machine settles, the fan holds a quiet loop with the disk reading
+ * layered over it. stopMachineSounds() on the way out kills all of it.
+ */
+export function playDosBoot(): void {
+  playMachine(beepSfx, 0.3, {
+    onEnded: () =>
+      playMachine(bootBedSfx, 0.28, {
+        onEnded: () => {
+          playMachine(fanSfx, 0.12, { loop: true });
+          playMachine(diskSfx, 0.18);
+        },
+      }),
+  });
+}
+
+/** Program launch: the disk seeks under the flickering pointer. */
+export function playLaunchSeek(): void {
+  playMachine(diskSfx, 0.16);
+}
+
+export function stopLaunchSeek(): void {
+  stopMachine(diskSfx);
 }
 
 export function stopMachineSounds(): void {

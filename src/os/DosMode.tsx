@@ -11,6 +11,7 @@ import styled from 'styled-components';
 import type { ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { dosShortName as shortName } from './dosname';
+import { playDosBoot, stopMachineSounds } from './sounds';
 import { PIXEL_MONO } from '../theme';
 
 const Screen = styled.div`
@@ -73,6 +74,14 @@ export function DosMode({ onExit }: { onExit: () => void }) {
 
   const volLabel = view?.dosVolume?.label ?? 'NO NAME';
   const volSerial = view?.dosVolume?.serial ?? '0000-0000';
+
+  // Dropping to DOS reboots the machine: the BIOS beep, the boot chatter,
+  // then the fan holds a quiet loop with the disk reading over it —
+  // silenced again on the way back to Horizons.
+  useEffect(() => {
+    playDosBoot();
+    return () => stopMachineSounds();
+  }, []);
 
   const prompt = useMemo(() => {
     const p = pathRef.current;

@@ -157,12 +157,17 @@ If not, don't build it that way.
   transcript/description in the body, and open in Sound Recorder.
   (6) Player audio notes: microphone recordings saved server-side via
   `saveAudioNote` (size-capped), listed and played in Case Files.
-  (7) The machine's BODY (`sfx_*.wav`, owner-added): fan spin-up on the
-  main menu's POWER press, a boot tone plus drive chatter under the
-  POST, disk reading under ScanDisk — quiet (0.25–0.35), mute-aware,
-  deduped, stopped when the GUI takes over (sounds.ts machine section).
-  sfx_beep, sfx_chime and sfx_notification are shipped but unwired.
-  No other samples. Sound Recorder is a stock Win95 accessory (1995) —
+  (7) The machine's BODY (owner-added sfx, shipped as small mono
+  `.m4a` files — the `.wav` originals stay in the repo as source and
+  never reach the bundle): fan spin-up on the main menu's POWER press;
+  boot tone plus drive chatter under the POST; disk reading under
+  ScanDisk; entering MS-DOS mode plays beep -> boot chatter, then a
+  quiet LOOPED fan with the disk reading layered on top (stopped on
+  exit); and every program launch plays the disk seek under the
+  flickering pointer (launchBusy), cut when the window lands. All
+  quiet (0.12–0.35), mute-aware, deduped (sounds.ts machine section).
+  sfx_chime, sfx_notification and sfx_empty_bin are shipped but
+  unwired. No other samples. Sound Recorder is a stock Win95 accessory (1995) —
   no story-year change needed for any of this.
 
 ### Language & content

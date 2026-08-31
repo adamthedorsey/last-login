@@ -6,6 +6,8 @@
  * the first launch of a program is slow, a warm relaunch is quicker.
  */
 
+import { playLaunchSeek, stopLaunchSeek } from './sounds';
+
 const SCHEDULE: Array<[cursor: string, holdMs: number]> = [
   ['var(--cursor-appstarting)', 420],
   ['var(--cursor-wait)', 380],
@@ -31,6 +33,7 @@ export function beginLaunchBusy(): void {
   if (pending > 1) return;
   idx = 0;
   document.documentElement.classList.add('launching');
+  playLaunchSeek(); // the disk seeks under the flickering pointer
   tick();
 }
 
@@ -41,6 +44,7 @@ export function endLaunchBusy(): void {
   timer = null;
   document.documentElement.classList.remove('launching');
   document.documentElement.style.removeProperty('--cursor-launch');
+  stopLaunchSeek();
 }
 
 /** Cold launches seek the disk; warm relaunches come out of cache. */
