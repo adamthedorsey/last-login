@@ -156,10 +156,12 @@ function CardView({
 
 // ---------------------------------------------------------------------------
 
-// The knock: get the four foundations (left to right) showing 3, 2, 4,
-// then Ace at the same time — that opens what Solitaire is really a
-// front for. Position matters; Ace = 1.
-const KNOCK_TOPS = [3, 2, 4, 1];
+// The knock: with no card in hand, click the empty foundation slots in
+// the order 3, 2, 4, 1 (Ace) — three seconds if you know it, and you
+// never click empty foundations for nothing, so nobody trips it. The
+// numbers are the foundation POSITIONS, left to right (1-indexed), hence
+// zero-based indices 2, 1, 3, 0.
+const KNOCK_SLOTS = [2, 1, 3, 0];
 
 export function Solitaire() {
   const [game, setGame] = useState<GameState>(newDeal);
@@ -167,8 +169,9 @@ export function Solitaire() {
   const [moves, setMoves] = useState(0);
   // Undo history: a snapshot pushed before each committed move.
   const [history, setHistory] = useState<GameState[]>([]);
-  // The knock fires once per open of this window; re-arm on a new deal.
-  const knockedRef = useRef(false);
+  // Rolling record of empty-foundation-slot clicks; matched against the
+  // knock. Any real move clears it.
+  const knockRef = useRef<number[]>([]);
   const openWindow = useWindowStore((st) => st.open);
 
   const won = game.foundations.every((f) => f.length === 13);
@@ -178,7 +181,7 @@ export function Solitaire() {
     setSel(null);
     setMoves(0);
     setHistory([]);
-    knockedRef.current = false;
+    knockRef.current = [];
   };
 
   const undo = () => {
@@ -194,6 +197,7 @@ export function Solitaire() {
 
   const commit = (g: GameState) => {
     setHistory((h) => [...h, game].slice(-200));
+    knockRef.current = [];
     setGame(g);
     setSel(null);
     setMoves((m) => m + 1);
@@ -250,12 +254,13 @@ export function Solitaire() {
     return true;
   };
 
-  const checkKnock = (g: GameState) => {
-    if (knockedRef.current) return;
-    if (g.foundations.some((f) => f.length === 0)) return;
-    const tops = g.foundations.map((f) => f[f.length - 1].rank);
-    if (tops.every((r, i) => r === KNOCK_TOPS[i])) {
-      knockedRef.current = true;
+  // Click on an EMPTY foundation slot with nothing selected: pure knock
+  // input, never a real move.
+  const knockClick = (pile: number) => {
+    const buf = [...knockRef.current, pile].slice(-KNOCK_SLOTS.length);
+    knockRef.current = buf;
+    if (buf.length === KNOCK_SLOTS.length && buf.every((v, i) => v === KNOCK_SLOTS[i])) {
+      knockRef.current = [];
       openWindow('solbackdoor');
     }
   };
@@ -273,7 +278,6 @@ export function Solitaire() {
     const taken = removeSelected(g, s);
     g.foundations[target].push(...taken);
     commit(g);
-    checkKnock(g);
     return true;
   };
 
@@ -334,7 +338,13 @@ export function Solitaire() {
                 }}
               />
             ) : (
-              <Slot key={i} onClick={() => sel && tryFoundation(i)}>
+              <Slot
+                key={i}
+                onClick={() => {
+                  if (sel) tryFoundation(i);
+                  else knockClick(i);
+                }}
+              >
                 {SUITS[i]}
               </Slot>
             ),

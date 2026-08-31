@@ -508,8 +508,8 @@ The eventual reveal that the apparent intruder is an ally should recontextualize
 
 The Solitaire on Casey's machine is a real, working game — and a front.
 
-Sending cards of the four foundations (left to right) showing
-**3, 2, 4, Ace** — a sequence that cannot occur in normal ascending play, so
+Sending cards of clicking the empty foundation slots
+(left to right positions **3, 2, 4, 1**) with no card in hand — a sequence that cannot occur in normal ascending play, so
 you only ever reach it on purpose — opens a hidden login: a bare
 green-on-black terminal titled **porthole**. It asks for a username and
 password.
@@ -522,7 +522,7 @@ desk would see only a card game. "porthole" = a small window into
 somewhere else; "a light on" for the night shift.
 
 Current state / open threads (do NOT hard-canonize yet):
-- The knock (foundations reading 3,2,4,Ace) and the backdoor are built.
+- The knock (empty-slot clicks 3,2,4,1) and the backdoor are built.
 - Credentials: placeholder password only (SERVER-side, story/engine).
   Who set the username, what it is, and whether the player is meant to
   RECOVER it from elsewhere on the machine is unresolved.
