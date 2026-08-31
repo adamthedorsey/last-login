@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import {
   AppBar,
   Button,
-  DatePicker__UNSTABLE as DatePicker,
   Frame,
   MenuList,
   MenuListItem,
@@ -22,7 +21,7 @@ import { isMuted, setMuted } from './sounds';
 import { launchItem } from './launch';
 import { animateZoom, taskbarButtonBox } from './zoomRect';
 import { useGame } from '../game/gameContext';
-import timedateIcon from '../assets/images/icon-timedate-16.png';
+import { DateWindow } from './DateWindow';
 
 const Bar = styled(AppBar)`
   top: auto;
@@ -96,27 +95,6 @@ const TrayClock = styled.button`
 `;
 
 /** The Date/Time popup sits above the tray, like the Start menu does. */
-/** react95's stock DatePicker header is an emoji jammed against the
- * word "Date" — swap the emoji glyph for our calendar art, in flow, so
- * it centers with the text and gets real air before it. */
-const DatePicker95 = styled(DatePicker)`
-  > div:first-child {
-    display: flex;
-    align-items: center;
-  }
-  > div:first-child > span[role='img'] {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    font-size: 0;
-    color: transparent;
-    overflow: hidden;
-    background: url(${timedateIcon}) center no-repeat;
-    image-rendering: pixelated;
-    margin-right: 9px;
-  }
-`;
-
 const DatePopup = styled.div`
   position: absolute;
   right: 4px;
@@ -651,9 +629,8 @@ export function Taskbar({
                 </WindowContent>
               </Window>
             ) : (
-              <DatePicker95
-                shadow
-                // The picker reads its date with getUTC*; anchor the frozen
+              <DateWindow
+                // The window reads its date with getUTC*; anchor the frozen
                 // in-world day to UTC noon so it shows the same calendar day
                 // in every player timezone.
                 date={`${view.clockNow.slice(0, 10)}T12:00:00Z`}

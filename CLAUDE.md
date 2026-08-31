@@ -367,6 +367,12 @@ If not, don't build it that way.
 - TypeScript strict; `npm run lint` (oxlint) warnings should not grow.
 - react95 caveat: `Slider` (and anything relying on `findDOMNode`) crashes
   under React 19 — do not use it; prefer Select/NumberInput/buttons.
+- react95 is the PRIMITIVE layer (Button, Window, Select, menus, wells) —
+  restyle it freely, but when a prebuilt react95 WIDGET hardcodes chrome
+  we can't reach (the DatePicker's emoji header), rebuild it in `src/os`
+  from primitives (see DateWindow) instead of hacking its internals. No
+  forking the library; keep our chrome in our own components so the
+  primitives stay swappable.
 - Clue-graph tooling: `npm run validate` checks the content graph (dangling
   refs, ungrantable/unreachable discoveries and items, finale reachability,
   two-path warnings) and `npm run graph` regenerates `docs/clue-graph.md`
