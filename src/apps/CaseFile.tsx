@@ -674,21 +674,24 @@ export function CaseFile({ windowId }: { windowId: string }) {
   // to a small centered sheet; the workspace that follows is roomy and
   // resizable again.
   const wizardActive = (file?.setup?.length ?? 0) > 0 || syncStage === 'done';
+  // Before the file loads we can't be certain, but a player who hasn't finished
+  // setup is headed for the wizard — size the window to the wizard sheet up
+  // front so it never opens workspace-wide and then snaps smaller. Once setup
+  // is behind them the window grows to the roomy, resizable workspace.
+  const wizardSized = wizardActive || (!file && !setupDone);
   useEffect(() => {
-    if (!file) return;
     const st = useWindowStore.getState();
-    st.setResizable(windowId, !wizardActive);
+    st.setResizable(windowId, !wizardSized);
     const vw = window.innerWidth;
     const vh = window.innerHeight - TASKBAR_HEIGHT;
-    const [w, h] = wizardActive ? [700, 530] : [880, 640];
+    const [w, h] = wizardSized ? [700, 530] : [880, 640];
     st.setRect(windowId, {
       x: Math.max(8, Math.round((vw - w) / 2)),
       y: Math.max(8, Math.round((vh - h) / 2)),
       w: Math.min(w, vw - 16),
       h: Math.min(h, vh - 16),
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- file presence only gates first run
-  }, [windowId, wizardActive, file === null]);
+  }, [windowId, wizardSized]);
 
   const finishWizard = () => {
     // Land in the inbox with the newest message open (the briefing).
