@@ -233,11 +233,9 @@ function sameDay(aIso: string, bIso: string): boolean {
 export function Taskbar({
   onShutDown,
   onScreenSaver,
-  onDosMode,
 }: {
   onShutDown: () => void;
   onScreenSaver: () => void;
-  onDosMode: () => void;
 }) {
   const { windows, focus, minimize, open, cascade, tile, minimizeAll } = useWindowStore();
   const { view, send, netActivity } = useGame();
@@ -350,8 +348,9 @@ export function Taskbar({
       setRunError(null);
       return;
     }
-    if (['dos', 'command', 'command.com', 'cmd', 'ms-dos'].includes(q)) {
-      onDosMode();
+    if (['dos', 'command', 'command.com', 'cmd', 'ms-dos', 'mt-dos'].includes(q)) {
+      // Typing COMMAND in Run opened the WINDOWED prompt, like the real thing.
+      open('dosprompt');
       setRunOpen(false);
       setRunText('');
       setRunError(null);
@@ -475,7 +474,7 @@ export function Taskbar({
                   </MenuListItem>
                 ))}
               <Separator />
-              <MenuListItem size="sm" onMouseEnter={() => setSub2(null)} onClick={() => { closeStart(); onDosMode(); }}>
+              <MenuListItem size="sm" onMouseEnter={() => setSub2(null)} onClick={() => { closeStart(); open('dosprompt'); }}>
                 <ItemRow icon="dos" size={18}><span>MT-DOS Prompt</span></ItemRow>
               </MenuListItem>
             </SubMenu>

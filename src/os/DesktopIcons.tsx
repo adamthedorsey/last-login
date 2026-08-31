@@ -160,10 +160,22 @@ export function DesktopIcons() {
   };
 
   // Desktop keyboard: F2 renames, Ctrl+A selects all, Enter opens the
-  // selection — but only when a window doesn't own the focus.
+  // selection — but ONLY while the desktop is the active surface. A
+  // focused window may have no focusable element (the MT-DOS Prompt),
+  // so activeElement alone can't tell; track where the last click
+  // landed instead, the way Win95 activated surfaces.
+  const deskFocusRef = useRef(true);
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      deskFocusRef.current = !(e.target as HTMLElement | null)?.closest?.('[data-no-deskmenu]');
+    };
+    window.addEventListener('pointerdown', onDown, true);
+    return () => window.removeEventListener('pointerdown', onDown, true);
+  }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (renaming) return;
+      if (!deskFocusRef.current) return;
       const owned = (document.activeElement as HTMLElement | null)?.closest('[data-no-deskmenu]');
       if (owned) return;
       if (e.key === 'F2') {

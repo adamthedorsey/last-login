@@ -27,6 +27,7 @@ import {
 } from './ControlPanel';
 import { SystemMonitor } from './SystemMonitor';
 import { SoundRecorder } from './SoundRecorder';
+import { DosPrompt } from './DosPrompt';
 import { CaseFile } from './CaseFile';
 
 export function registerAllApps(): void {
@@ -183,6 +184,18 @@ export function registerAllApps(): void {
     // The little fixed accessory, faithful to the original's footprint.
     defaultSize: { w: 360, h: 214 },
     resizable: false,
+  });
+  registerApp({
+    id: 'dosprompt',
+    name: 'MT-DOS Prompt',
+    icon: 'dos',
+    component: DosPrompt,
+    // COMMAND in a window — resizable, NOT a singleton (the real thing
+    // happily ran several prompts at once). Hidden from the auto Programs
+    // listing; the Start menu's hardcoded row (after the separator, the
+    // Win95 way) is its home.
+    defaultSize: { w: 640, h: 400 },
+    hidden: true,
   });
   registerApp({
     id: 'sysmon',

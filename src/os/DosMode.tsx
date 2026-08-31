@@ -14,9 +14,11 @@ import { dosShortName as shortName } from './dosname';
 import { playDosBoot, stopMachineSounds } from './sounds';
 import { PIXEL_MONO } from '../theme';
 
-const Screen = styled.div`
-  position: fixed;
-  inset: 0;
+const Screen = styled.div<{ $windowed?: boolean }>`
+  ${(p) =>
+    p.$windowed
+      ? 'flex: 1; min-height: 0; width: 100%;'
+      : 'position: fixed; inset: 0; z-index: 100006;'}
   background: #000;
   color: #b8b8b8;
   font-family: ${PIXEL_MONO};
@@ -26,7 +28,6 @@ const Screen = styled.div`
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-all;
-  z-index: 100006;
   cursor: var(--cursor-text);
 `;
 
@@ -60,7 +61,23 @@ function entryDate(i: ItemSummary): string | undefined {
   return i.meta?.modifiedAt ?? i.meta?.createdAt ?? i.meta?.deletedAt ?? i.meta?.date;
 }
 
-export function DosMode({ onExit }: { onExit: () => void }) {
+/**
+ * The shared terminal core. Two shells mount it:
+ *  - DosMode (below): the full-screen "Restart in MT-DOS mode" set-piece.
+ *  - DosPrompt (src/apps): the windowed MT-DOS Prompt, exactly like the
+ *    real thing ran COMMAND in a window. Windowed prompts skip the reboot
+ *    theater and only listen to the keyboard while their window is
+ *    focused (`active`).
+ */
+export function DosTerminal({
+  onExit,
+  windowed = false,
+  active = true,
+}: {
+  onExit: () => void;
+  windowed?: boolean;
+  active?: boolean;
+}) {
   const { send, view } = useGame();
   const [lines, setLines] = useState<string[]>([]);
   const [input, setInput] = useState('');
@@ -79,8 +96,10 @@ export function DosMode({ onExit }: { onExit: () => void }) {
   // then the fan holds a quiet loop with the disk reading over it —
   // silenced again on the way back to Horizons.
   useEffect(() => {
+    if (windowed) return; // a windowed prompt is just a program, no reboot
     playDosBoot();
     return () => stopMachineSounds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- variant is fixed for a mount
   }, []);
 
   const prompt = useMemo(() => {
@@ -96,13 +115,22 @@ export function DosMode({ onExit }: { onExit: () => void }) {
   useEffect(() => {
     if (bannerPrinted.current) return; // StrictMode double-mounts effects
     bannerPrinted.current = true;
-    print([
-      'Microtech Horizons 95 is restarting in MT-DOS mode.',
-      '',
-      'MT-DOS Version 7.10',
-      '(C)Copyright Microtech Systems 1988-1995.',
-      '',
-    ]);
+    print(
+      windowed
+        ? [
+            'Microtech(R) Horizons 95',
+            '   (C)Copyright Microtech Systems 1988-1995.',
+            '',
+          ]
+        : [
+            'Microtech Horizons 95 is restarting in MT-DOS mode.',
+            '',
+            'MT-DOS Version 7.10',
+            '(C)Copyright Microtech Systems 1988-1995.',
+            '',
+          ],
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- variant is fixed for a mount
   }, [print]);
 
   useEffect(() => {
@@ -209,6 +237,10 @@ export function DosMode({ onExit }: { onExit: () => void }) {
   };
 
   const doExit = () => {
+    if (windowed) {
+      onExit(); // the window just closes, like COMMAND did
+      return;
+    }
     setLeaving(true);
     print(['', 'Starting Microtech Horizons 95 ...']);
     window.setTimeout(onExit, 1400);
@@ -281,6 +313,12 @@ export function DosMode({ onExit }: { onExit: () => void }) {
         print(['DIR    CD    TYPE    CLS    VOL    VER    MEM    SCANDISK    ECHO    EXIT', '']);
         return;
       case 'win':
+        if (windowed) {
+          print(['Microtech Horizons 95 is already running.', '']);
+          return;
+        }
+        doExit();
+        return;
       case 'exit':
         doExit();
         return;
@@ -290,6 +328,7 @@ export function DosMode({ onExit }: { onExit: () => void }) {
   };
 
   useEffect(() => {
+    if (!active) return;
     const onKey = (e: KeyboardEvent) => {
       if (leaving || busy) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -315,10 +354,10 @@ export function DosMode({ onExit }: { onExit: () => void }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- execute reads live refs
-  }, [input, prompt, busy, leaving]);
+  }, [input, prompt, busy, leaving, active]);
 
   return (
-    <Screen>
+    <Screen $windowed={windowed}>
       {lines.join('\n')}
       {lines.length > 0 ? '\n' : ''}
       {!leaving && !busy && (
@@ -331,4 +370,9 @@ export function DosMode({ onExit }: { onExit: () => void }) {
       <div ref={bottomRef} />
     </Screen>
   );
+}
+
+/** The full-screen set-piece: Shut Down -> "Restart in MT-DOS mode". */
+export function DosMode({ onExit }: { onExit: () => void }) {
+  return <DosTerminal onExit={onExit} />;
 }

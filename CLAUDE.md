@@ -277,6 +277,10 @@ If not, don't build it that way.
   chip-synth like everything else.
 
 ### MT-DOS mode & system mortality
+- The MT-DOS Prompt (Start → Programs, or COMMAND in Run) opens WINDOWED
+  like the real thing — the same engine-backed terminal (DosTerminal in
+  DosMode.tsx) in a resizable window, multiple instances allowed, keys
+  only while its window is the active surface, `exit` closes it.
 - MT-DOS mode (Shut Down → "Restart in MT-DOS mode") is a real prompt whose
   every listing and TYPE goes through the ENGINE — content gating carries
   over automatically and no story text may live in DosMode.tsx. DOS-only

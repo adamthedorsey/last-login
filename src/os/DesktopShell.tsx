@@ -395,7 +395,6 @@ export function DesktopShell() {
       <Taskbar
         onShutDown={() => setShutDialog(true)}
         onScreenSaver={startSaver}
-        onDosMode={() => setDosMode(true)}
       />
     </Desk>
   );
