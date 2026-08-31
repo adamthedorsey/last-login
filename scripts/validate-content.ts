@@ -68,6 +68,14 @@ function validate(content: SeasonContent): void {
     for (const d of item.onOpen?.discover ?? [])
       if (!discoveryIds.has(d)) errors.push(`${item.id}: grants unknown discovery "${d}"`);
   }
+  const recent = content.recentDocuments ?? [];
+  if (recent.length > 15) errors.push(`recentDocuments: ${recent.length} entries (Win95 keeps 15)`);
+  const seenRecent = new Set<string>();
+  for (const id of recent) {
+    if (!itemIds.has(id)) errors.push(`recentDocuments: unknown item "${id}"`);
+    if (seenRecent.has(id)) errors.push(`recentDocuments: duplicate entry "${id}"`);
+    seenRecent.add(id);
+  }
   for (const buddy of content.buddies) {
     checkReq(`buddy ${buddy.screenname}`, buddy.requires);
     for (const o of buddy.overrides ?? []) checkReq(`buddy ${buddy.screenname} override`, o.requires);

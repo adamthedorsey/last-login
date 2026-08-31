@@ -99,6 +99,25 @@ export const SEASON1: SeasonContent = {
   maxPasswordAttempts: 6,
   lockoutSeconds: 90,
 
+  // The Start menu's Documents list — the files Casey opened in her final
+  // sessions, frozen the night the machine was seized. Mostly homework and
+  // mundane texture; 'wv history extra notes.txt' hides in plain sight,
+  // and the two entries from the locked personal folder surface as dead
+  // shortcuts that point a curious player at the password.
+  recentDocuments: [
+    'file.datebook-1997',
+    'file.minewars-report',
+    'file.gb-log-oct8',
+    'file.algebra',
+    'file.tourdates',
+    'file.ledger-copy',
+    'file.lists',
+    'file.readme-first',
+    'file.riverstory',
+    'photo.river',
+    'file.songs',
+  ],
+
   discoveries: [
     {
       id: 'the-meeting',

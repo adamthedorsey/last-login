@@ -373,6 +373,13 @@ export interface SeasonContent {
   wallpaper: string;
   homeUrl: string;
   items: ContentItem[];
+  /**
+   * The Start menu's Documents list: the files Casey opened in her last
+   * sessions, most-recent-first (the machine's C:\Windows\Recent, frozen
+   * as evidence). Item ids; entries may point at gated or locked content
+   * — they serve as name-only dead shortcuts until earned. Max 15.
+   */
+  recentDocuments?: string[];
   discoveries: Discovery[];
   buddies: Buddy[];
   /** Live prompt-tree conversations (see ChatConversation). SERVER ONLY. */
@@ -503,6 +510,7 @@ export type GameAction =
   | { type: 'disconnect' }
   | { type: 'checkMail' }
   | { type: 'getDesktop' }
+  | { type: 'recentDocs' }
   | { type: 'listChildren'; parentId: string }
   | { type: 'open'; itemId: string }
   | { type: 'attemptPassword'; targetId: string; password: string }
@@ -672,6 +680,7 @@ export type ActionResult = (
       view?: StateView;
     }
   | { type: 'desktop'; items: ItemSummary[] }
+  | { type: 'recentDocs'; items: ItemSummary[] }
   | { type: 'children'; items: ItemSummary[] }
   | {
       type: 'open';

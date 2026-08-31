@@ -100,6 +100,25 @@ function isUnlocked(state: PlayerState, item: ContentItem): boolean {
 }
 
 /**
+ * A locked ANCESTOR seals everything inside it. Explorer and Find never
+ * hand out ids from locked folders, but shortcuts (the Documents menu)
+ * can — so `open` checks the whole chain, not just the item.
+ */
+function lockedAncestor(
+  content: SeasonContent,
+  state: PlayerState,
+  item: ContentItem,
+): ContentItem | undefined {
+  let cur: ContentItem | undefined = itemById(content, item.parentId ?? '');
+  let hops = 0;
+  while (cur && ++hops <= 20) {
+    if (!isUnlocked(state, cur)) return cur;
+    cur = itemById(content, cur.parentId ?? '');
+  }
+  return undefined;
+}
+
+/**
  * The ambient clock: while the line is up, any scheduled event whose delay
  * has elapsed in the CURRENT connection and whose requirements are met fires
  * exactly once per season. Effects are flags (everything downstream gates on
@@ -782,6 +801,31 @@ export function handleAction(
       return done({ type: 'desktop', items });
     }
 
+    case 'recentDocs': {
+      // Casey's last sessions, frozen — the machine's Recent folder as
+      // evidence. Entries pointing at content the player hasn't earned
+      // serve as name-only dead shortcuts (Win95 kept those too);
+      // opening them goes through the gated `open` path like everything
+      // else.
+      const items: ItemSummary[] = [];
+      for (const id of (content.recentDocuments ?? []).slice(0, 15)) {
+        const item = itemById(content, id);
+        if (!item) continue;
+        const reachable =
+          isAccessible(content, state, item) &&
+          isUnlocked(state, item) &&
+          !lockedAncestor(content, state, item);
+        if (reachable) {
+          items.push(toSummary(content, state, item));
+        } else {
+          const dead: ItemSummary = { id: item.id, kind: item.kind, name: item.name };
+          if (item.icon) dead.icon = item.icon;
+          items.push(dead);
+        }
+      }
+      return done({ type: 'recentDocs', items });
+    }
+
     case 'listChildren': {
       // Player folders (and the Case Files space) list their own documents.
       if (action.parentId === CASE_DOCS_FOLDER || playerFolder(state, action.parentId)) {
@@ -822,6 +866,10 @@ export function handleAction(
       }
       if (!isUnlocked(state, item)) {
         return done({ type: 'open', ok: false, lockedHint: item.passwordHint, error: 'locked' });
+      }
+      const sealed = lockedAncestor(content, state, item);
+      if (sealed) {
+        return done({ type: 'open', ok: false, lockedHint: sealed.passwordHint, error: 'locked' });
       }
       const { newDiscoveries, ended } = applyOpenEffects(content, state, item, events);
       return done({

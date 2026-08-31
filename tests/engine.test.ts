@@ -1058,3 +1058,76 @@ describe('sound files and audio notes', () => {
     expect(gone.state.audioNotes).toHaveLength(0);
   });
 });
+
+describe('the Documents menu (recentDocs)', () => {
+  it('serves the authored list; gated entries are name-only dead shortcuts', () => {
+    const s = offlineState();
+    const res = run(s, { type: 'recentDocs' }).result;
+    expect(res.type).toBe('recentDocs');
+    if (res.type !== 'recentDocs') return;
+    expect(res.items.length).toBe(SEASON1.recentDocuments!.length);
+    expect(res.items.map((i) => i.id)).toEqual(SEASON1.recentDocuments);
+
+    // A reachable file carries its summary (meta included).
+    const datebook = res.items.find((i) => i.id === 'file.datebook-1997')!;
+    expect(datebook.meta?.modifiedAt).toBeTruthy();
+
+    // Gated files still show their (innocuous) names — dead shortcuts —
+    // but nothing else: no meta, no location.
+    const ledger = res.items.find((i) => i.id === 'file.ledger-copy')!;
+    expect(ledger.name).toBe('wv history extra notes.txt');
+    expect(ledger.meta).toBeUndefined();
+    expect(ledger.parentId).toBeUndefined();
+
+    // And opening one goes through gating like everywhere else.
+    const open = run(s, { type: 'open', itemId: 'file.ledger-copy' }).result;
+    expect(open).toMatchObject({ type: 'open', ok: false });
+  });
+
+  it('is frozen: player activity never changes the list', () => {
+    let s = offlineState();
+    const before = run(s, { type: 'recentDocs' }).result;
+    s = run(s, { type: 'open', itemId: 'file.algebra' }).state;
+    s = run(s, { type: 'open', itemId: 'file.lists' }).state;
+    const after = run(s, { type: 'recentDocs' }).result;
+    if (before.type !== 'recentDocs' || after.type !== 'recentDocs') throw new Error('bad type');
+    expect(after.items.map((i) => i.id)).toEqual(before.items.map((i) => i.id));
+  });
+});
+
+describe('locked-ancestor sealing', () => {
+  // Season 1 has no locked folders yet, so this uses a tiny synthetic
+  // season: a Recent-style shortcut must not open a file inside a locked
+  // folder (Explorer never hands out such ids, but shortcuts can).
+  const TINY: typeof SEASON1 = {
+    slug: 'tiny',
+    title: 'tiny',
+    clock: { now: '1997-10-18T21:00:00' },
+    computer: { owner: 'x', loginUser: 'x', loginTargetId: 'login.x' },
+    passwords: { 'login.x': { password: 'pw' }, 'folder.safe': { password: 'open sesame' } },
+    wallpaper: '',
+    homeUrl: '',
+    items: [
+      { id: 'folder.safe', kind: 'folder', name: 'safe', password: 'open sesame' },
+      { id: 'file.inside', kind: 'document', name: 'inside.txt', parentId: 'folder.safe', body: { text: 'hi' } },
+    ],
+    discoveries: [],
+    buddies: [],
+    maxPasswordAttempts: 5,
+    lockoutSeconds: 60,
+  };
+
+  it('open refuses a file whose ancestor folder is still locked', () => {
+    let s = newPlayerState();
+    s = handleAction(TINY, s, { type: 'login', password: 'pw' }, NOW).state;
+    const refused = handleAction(TINY, s, { type: 'open', itemId: 'file.inside' }, NOW).result;
+    expect(refused).toMatchObject({ type: 'open', ok: false, error: 'locked' });
+
+    const unlock = handleAction(
+      TINY, s, { type: 'attemptPassword', targetId: 'folder.safe', password: 'open sesame' }, NOW,
+    );
+    s = unlock.state;
+    const opened = handleAction(TINY, s, { type: 'open', itemId: 'file.inside' }, NOW).result;
+    expect(opened).toMatchObject({ type: 'open', ok: true });
+  });
+});

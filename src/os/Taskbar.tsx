@@ -308,12 +308,27 @@ export function Taskbar({
     return () => window.removeEventListener('pointerdown', onDown);
   }, [startOpen, helpOpen, runOpen]);
 
-  // "Documents" lists the player's own saved files (their case notes).
+  // A long submenu shifts UP to fit above the taskbar, the way Win95
+  // menus did — they never scrolled.
+  const docsMenuRef = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    const el = docsMenuRef.current;
+    if (!el) return;
+    const maxBottom = window.innerHeight - TASKBAR_HEIGHT - 4;
+    el.style.maxHeight = 'none'; // measure the full menu, not the scroll cap
+    const r = el.getBoundingClientRect();
+    if (r.bottom > maxBottom) {
+      el.style.top = `${Math.max(2, maxBottom - r.height)}px`;
+    }
+  }, [sub, recentDocs]);
+
+  // "Documents" is the machine's Recent folder, frozen at Casey's last
+  // session — engine-served, alphabetized like the real Win95 menu.
   useEffect(() => {
     if (!startOpen) return;
-    void send({ type: 'getDesktop' }).then((res) => {
-      if (res.type === 'desktop') {
-        setRecentDocs(res.items.filter((i) => i.editable && i.kind === 'document'));
+    void send({ type: 'recentDocs' }).then((res) => {
+      if (res.type === 'recentDocs') {
+        setRecentDocs([...res.items].sort((a, b) => a.name.localeCompare(b.name)));
       }
     });
   }, [startOpen, send]);
@@ -478,7 +493,7 @@ export function Taskbar({
           )}
 
           {startOpen && sub === 'documents' && (
-            <SubMenu $left={SUB_X} $top={subTop}>
+            <SubMenu ref={docsMenuRef} $left={SUB_X} $top={subTop}>
               {recentDocs.length === 0 && (
                 <MenuListItem size="sm" disabled>
                   <span style={{ color: '#808080' }}>(Empty)</span>
@@ -486,7 +501,7 @@ export function Taskbar({
               )}
               {recentDocs.map((doc) => (
                 <MenuListItem key={doc.id} size="sm" onClick={() => { launchItem(doc); closeStart(); }}>
-                  <ItemRow icon="doc" size={18}><span>{doc.name}</span></ItemRow>
+                  <ItemRow icon={doc.icon ?? 'doc'} size={18}><span>{doc.name}</span></ItemRow>
                 </MenuListItem>
               ))}
             </SubMenu>

@@ -176,6 +176,13 @@ If not, don't build it that way.
 - Find: Files or Folders is engine-backed (`findFiles`): it walks only
   accessible, unlocked folders server-side, so it can never out-run gating.
   Keep it that way — no client-side file indexes, ever.
+- The Start menu's Documents list is the machine's Recent folder FROZEN at
+  Casey's last session: season content (`recentDocuments`, max 15) served
+  by the engine (`recentDocs`), alphabetized client-side like real Win95.
+  Player activity never changes it. Entries may point at gated content —
+  they serve as name-only dead shortcuts (no meta, no location) and
+  `open` enforces gating (including locked ANCESTOR folders) when
+  clicked. Never populate it client-side.
 
 ### Web pages (in-game)
 - Author pages ONLY as `PageBlock` data in season content — never raw HTML
