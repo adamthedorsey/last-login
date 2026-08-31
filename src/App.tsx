@@ -39,22 +39,18 @@ function Screen() {
   // A power-on with a session still on disk (tab closed mid-play, reopened
   // later) still runs the POST, then resumes — same as a warm restart.
   const [powerBoot, setPowerBoot] = useState(false);
-  if (!powered) {
-    return (
-      <MainMenu
-        onPower={() => {
-          sessionStorage.setItem('lastlogin.power', '1');
-          setPowerBoot(true);
-          setPowered(true);
-        }}
-      />
-    );
-  }
 
-  if (!ready || !view) {
-    return <div style={{ height: '100vh', background: '#000' }} />;
-  }
-  const screen = !view.loggedIn ? (
+  const screen = !powered ? (
+    <MainMenu
+      onPower={() => {
+        sessionStorage.setItem('lastlogin.power', '1');
+        setPowerBoot(true);
+        setPowered(true);
+      }}
+    />
+  ) : !ready || !view ? (
+    <div style={{ height: '100vh', background: '#000' }} />
+  ) : !view.loggedIn ? (
     <BootSequence />
   ) : rebooting || powerBoot ? (
     <BootSequence
@@ -66,6 +62,7 @@ function Screen() {
   ) : (
     <DesktopShell />
   );
+  // The dev panel rides every screen, the evidence room included.
   return (
     <>
       {screen}
