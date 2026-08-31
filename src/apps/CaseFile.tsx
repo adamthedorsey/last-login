@@ -25,6 +25,10 @@ import { CloseGlyph, TitleBarButton } from '../os/glyphs';
 import { DOC_TEXT } from '../theme';
 
 const SEEN_KEY = 'lastlogin.casefile.seen';
+// Per-device flag: has this player finished the first-run setup wizard? Used
+// only to choose the right loading placeholder — the "Opening Case Files..."
+// loader must never flash BEFORE the wizard, only once setup is behind you.
+const SETUP_DONE_KEY = 'lastlogin.casefile.setupDone';
 
 /**
  * Handler lines are authored with hard breaks (typewriter width). In the
@@ -58,6 +62,14 @@ function loadSeen(): string[] {
     return JSON.parse(localStorage.getItem(SEEN_KEY) ?? '[]') as string[];
   } catch {
     return [];
+  }
+}
+
+function loadSetupDone(): boolean {
+  try {
+    return localStorage.getItem(SETUP_DONE_KEY) === '1';
+  } catch {
+    return false;
   }
 }
 
@@ -294,6 +306,7 @@ export function CaseFile({ windowId }: { windowId: string }) {
   const [file, setFile] = useState<CaseFileView | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [seen, setSeen] = useState<string[]>(loadSeen);
+  const [setupDone, setSetupDone] = useState(loadSetupDone);
 
   // Wizard state. `page` counts through the server pages, then the sync
   // step. -1 = not in the wizard (normal workspace).
@@ -337,12 +350,22 @@ export function CaseFile({ windowId }: { windowId: string }) {
     });
   };
 
+  const markSetupDone = () => {
+    setSetupDone(true);
+    try {
+      localStorage.setItem(SETUP_DONE_KEY, '1');
+    } catch {
+      /* per-player convenience only */
+    }
+  };
+
   useEffect(() => {
     let canceled = false;
     void send({ type: 'getCaseFile' }).then((res) => {
       if (canceled || res.type !== 'casefile') return;
       setFile(res.view);
-      if (!res.view.setup) {
+      if (!res.view.setup?.length) {
+        markSetupDone();
         // Newest memo opens by default the first time it exists.
         setOpenId((prev) => {
           const id = prev ?? res.view.messages[res.view.messages.length - 1]?.id ?? null;
@@ -672,15 +695,19 @@ export function CaseFile({ windowId }: { windowId: string }) {
     const id = file?.messages[file.messages.length - 1]?.id ?? null;
     setOpenId(id);
     if (id) markSeen(id);
+    markSetupDone();
     setSyncStage('idle');
   };
 
   // ----------------------------------------------------------------------
 
   if (!file) {
+    // Only the returning-player path (setup already done) gets the workspace
+    // loader. On a first launch the wizard is coming, so show a neutral blank
+    // instead — never flash "Opening Case Files..." before the wizard.
     return (
       <Frame variant="well" style={{ flex: 1, padding: 12, fontSize: 13 }}>
-        Opening Case Files ...
+        {setupDone ? 'Opening Case Files ...' : ''}
       </Frame>
     );
   }
