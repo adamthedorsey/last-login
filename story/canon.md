@@ -39,9 +39,11 @@ The central question of the game is:
 
 ---
 
-## Casey's Mother
+## Casey's Mother — June
 
-Casey's mother had been prescribed **Oxytera CR**, a controlled-release opioid manufactured by Purdont Pharmaceutical Company.
+Casey's birth mother was **June Taylor**.
+
+June had been prescribed **Oxytera CR**, a controlled-release opioid manufactured by Purdont Pharmaceutical Company.
 
 She became dependent on the medication and ultimately died from an overdose.
 
@@ -51,7 +53,19 @@ This is not an abstract cause for Casey.
 
 It destroyed her family.
 
-> **[CONFLICT — needs owner resolution, see "Open conflicts" at the bottom: shipped Season 1 content has Casey's mother (Leslie Wright, remarried to Jon) alive and emailing on 10/9/97, plus "moms work" in the Phone Dialer, the "moms flower" login hint, and moms_sunflowers.gif.]**
+**junebug** — Casey's father's nickname for Casey, after her mother: little June. Casey carries it quietly — it is her screensaver word, and her handle online. Most players will meet the word long before they learn what it means.
+
+The sunflowers were June's. The login hint Casey wrote for herself — "moms flower + the year" — means her real mother, whatever the word "mom" means day to day in the house she lives in now.
+
+## Casey's Household — Leslie
+
+The woman in Casey's day-to-day life is **Leslie Wright** — her **stepmother**, whom Casey calls Mom. Casey lives with Leslie and Leslie's husband **Jon**.
+
+Casey's **father** lives elsewhere and calls the house; the relationship is strained but not severed ("if you want to see him this weekend that's fine, tell me first").
+
+Leslie is not a villain and not an obstacle: she is an ordinary, caring guardian who has no idea what is on that computer.
+
+The exact chain of marriages and custody that produced this arrangement is soft canon — implied, never litigated in content.
 
 ---
 
@@ -427,7 +441,13 @@ Casey does not know who these people really are.
 
 ---
 
-## The Hacker / Future Ally
+## The Hacker / Future Ally — GhostBridge
+
+**GhostBridge is this person.** The ominous presence the existing Season 1 chain builds up — the watcher, the remote access, the deleted files — is the IRC friend Casey met during the Purdont investigation.
+
+To the player: ominous for most of the season. The reveal that GhostBridge was frightened FOR her, not hunting her, is the recontextualization gut-punch — it must re-read earlier threatening behavior, not merely excuse it.
+
+Current season discovery text was written to be read the wrong way on purpose; a future content pass must make sure nothing states the hostile reading as resolved fact.
 
 One IRC user becomes particularly important.
 
@@ -464,20 +484,21 @@ The eventual reveal that the apparent intruder is an ally should recontextualize
 
 ---
 
-## Open conflicts with shipped Season 1 content (owner decisions needed)
+## Resolved canon decisions (2026-08-31)
 
-1. **Casey's mother is alive in shipped content.** Leslie Wright
-   (remarried, "Jon and I") emails Casey on 10/9/97; Casey replies; the
-   Phone Dialer has "moms work"; the login hint is "moms flower + the
-   year"; Pictures has moms_sunflowers.gif; the voice diary has a quiet
-   house. Options include: the overdose parent becomes someone else
-   (note the existing dad/clean-truck/ledger chain would pair naturally
-   with a mine-injury -> Oxytera arc), Leslie becomes a stepmother/
-   guardian and the birth mother died earlier, or the mom content gets
-   re-authored. UNRESOLVED.
-2. **GhostBridge and the existing clue chain** (the-meeting,
-   stolen-intimacy, the-clean-truck, the-pipeline, the-house) predate
-   this canon. How the Purdont arc interleaves with — or absorbs —
-   that chain is future content work. UNRESOLVED.
-3. **junebug**: proposal (not canon) that Casey's IRC handle is
-   "junebug", recontextualizing her screensaver word. UNRESOLVED.
+1. **Leslie Wright is Casey's stepmother** (see "Casey's Household").
+   The birth mother, June, died of an Oxytera overdose. All shipped
+   Leslie content stands as-is — Casey calls her Mom.
+2. **GhostBridge is the hacker/future ally** (see that section). The
+   existing chain's ominous framing is the intended misdirection;
+   future content work interleaves the Purdont arc and keeps the
+   hostile reading unconfirmed until the reveal.
+3. **junebug is canon**: June is the mother; junebug was her father's
+   nickname for Casey; Casey made it her screensaver word and her
+   handle. NOTE the shipped beat this powers: Sadie's safe-word pact
+   ("say junebug and i come get u") and Casey's "he knew junebug. HOW.
+   i keep coming back to it. only me and..." — the hostile read is that
+   the watcher stole a childhood-private word; the true read is that
+   Casey WAS junebug to GhostBridge all along, and in her fear she
+   never connected the two worlds. That line is the reveal's hinge —
+   future content must protect its ambiguity.
