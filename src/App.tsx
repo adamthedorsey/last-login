@@ -6,6 +6,7 @@ import { useGame } from './game/gameContext';
 import { BootSequence } from './os/BootSequence';
 import { DesktopShell } from './os/DesktopShell';
 import { MainMenu } from './os/MainMenu';
+import { CRASH_BOOT_FLAG } from './os/crash';
 import { registerAllApps } from './apps/registerApps';
 
 registerAllApps();
@@ -25,8 +26,14 @@ function Screen() {
   const [rebooting, setRebooting] = useState(
     () => sessionStorage.getItem('lastlogin.reboot') === '1',
   );
+  // A crash reboot replays the POST with the not-shut-down-properly stamp
+  // carrying the CURRENT in-world clock, gated on Enter (see crash.ts).
+  const [crashBoot, setCrashBoot] = useState(
+    () => sessionStorage.getItem(CRASH_BOOT_FLAG) === '1',
+  );
   useEffect(() => {
     sessionStorage.removeItem('lastlogin.reboot');
+    sessionStorage.removeItem(CRASH_BOOT_FLAG);
   }, []);
 
   // The evidence-room main menu: the machine sits powered off until the
@@ -58,11 +65,13 @@ function Screen() {
     <div style={{ height: '100vh', background: '#000' }} />
   ) : !view.loggedIn ? (
     <BootSequence />
-  ) : rebooting || powerBoot ? (
+  ) : rebooting || powerBoot || crashBoot ? (
     <BootSequence
+      crashBoot={crashBoot}
       onResume={() => {
         setRebooting(false);
         setPowerBoot(false);
+        setCrashBoot(false);
       }}
     />
   ) : (

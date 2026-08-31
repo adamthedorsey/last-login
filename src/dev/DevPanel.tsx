@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { Button, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
 import { DevGameClient } from '../game/devGameClient';
+import { resetCrashTraps, triggerCrash } from '../os/crash';
 
 const Panel = styled(Window)`
   position: fixed;
@@ -65,7 +66,15 @@ export function DevPanel() {
         </Button>
       </WindowHeader>
       <WindowContent style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
-        <Button onClick={() => void send({ type: 'resetSeason' })}>Reset season</Button>
+        <Button
+          onClick={() => {
+            resetCrashTraps();
+            void send({ type: 'resetSeason' });
+          }}
+        >
+          Reset season
+        </Button>
+        <Button onClick={() => triggerCrash()}>Blue screen (crash)</Button>
         <Button
           onClick={() => {
             sessionStorage.removeItem('lastlogin.power');

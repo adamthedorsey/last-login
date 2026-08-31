@@ -600,6 +600,10 @@ export interface StateView {
   saverText?: string;
   imScreenname?: string;
   bootWarning?: string[];
+  /** The crash set-piece's reboot stamp: the same improper-shutdown wording
+   * carrying the CURRENT in-world clock. Server-built so the wording never
+   * ships in the client bundle. */
+  crashBootWarning?: string[];
   dosVolume?: { label: string; serial: string };
   /** Dial-up: whether the machine is currently connected. */
   online: boolean;

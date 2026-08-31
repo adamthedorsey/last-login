@@ -184,6 +184,17 @@ function pendingRemote(
   );
 }
 
+/** "10/18/97  9:47 PM" straight from the ISO string — the in-world clock. */
+function crashClockStamp(iso: string): string {
+  const [d, t] = iso.split('T');
+  const [y, mo, da] = d.split('-');
+  let h = parseInt(t?.slice(0, 2) ?? '0', 10);
+  const min = t?.slice(3, 5) ?? '00';
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${parseInt(mo, 10)}/${parseInt(da, 10)}/${y.slice(2)}  ${h}:${min} ${ampm}`;
+}
+
 // ---------------------------------------------------------------------------
 // Redaction: server shapes -> client DTOs
 // ---------------------------------------------------------------------------
@@ -293,6 +304,10 @@ export function toStateView(
     imScreenname: content.computer.imScreenname,
     // The dirty flag clears after the first clean session (see 'login').
     bootWarning: state.bootChecked ? undefined : content.computer.bootWarning,
+    crashBootWarning: [
+      'WARNING: This computer was not shut down properly.',
+      `Last session ended:  ${crashClockStamp(content.clock.now)}`,
+    ],
     dosVolume: content.computer.dosVolume,
     wallpaper: content.wallpaper,
     homeUrl: content.homeUrl,

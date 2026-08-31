@@ -13,6 +13,7 @@ import { Taskbar } from './Taskbar';
 import { DesktopIcons } from './DesktopIcons';
 import { AltTabSwitcher } from './AltTabSwitcher';
 import { useBootCursor } from './bootCursor';
+import { rebootFromCrash } from './crash';
 import { useGame } from '../game/gameContext';
 import { PIXEL_MONO } from '../theme';
 import { Screensaver } from './Screensaver';
@@ -82,6 +83,19 @@ export function DesktopShell() {
   const [shutChoice, setShutChoice] = useState<ShutChoice>('shutdown');
   const [dosMode, setDosMode] = useState(false);
   const [bsod, setBsod] = useState(false);
+  // The crash set-piece: unlike the flavor blue screen, this one reboots.
+  // A short arming grace eats the tail of the very click that triggered
+  // it (a double-click's trailing events must not dismiss the screen).
+  const [crashing, setCrashing] = useState(false);
+  const crashArmedAt = useRef(0);
+  useEffect(() => {
+    const onCrash = () => {
+      crashArmedAt.current = performance.now();
+      setCrashing(true);
+    };
+    window.addEventListener('lastlogin:crash', onCrash);
+    return () => window.removeEventListener('lastlogin:crash', onCrash);
+  }, []);
   // The one-phone-line scare: fires when the server stamps a result with
   // the pickup notice (exactly one result ever carries it).
   const [lineDrop, setLineDrop] = useState(false);
@@ -171,7 +185,7 @@ export function DesktopShell() {
   const remoteActive = view?.remotePending === true;
   const overlayRef = useRef(false);
   overlayRef.current =
-    bsod || saverOn || shutDown || shutDialog || dosMode || showEndCard || remoteActive;
+    bsod || crashing || saverOn || shutDown || shutDialog || dosMode || showEndCard || remoteActive;
   useEffect(() => {
     const onDown = () => {
       if (overlayRef.current || bsodShown.current >= 2) return;
@@ -391,6 +405,13 @@ export function DesktopShell() {
       <AltTabSwitcher />
       {saverOn && <Screensaver />}
       {bsod && <Bsod onDismiss={() => setBsod(false)} />}
+      {crashing && (
+        <Bsod
+          onDismiss={() => {
+            if (performance.now() - crashArmedAt.current > 700) rebootFromCrash();
+          }}
+        />
+      )}
 
       <Taskbar
         onShutDown={() => setShutDialog(true)}

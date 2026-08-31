@@ -296,7 +296,13 @@ If not, don't build it that way.
   clues are authored as content (e.g. `computer.dosVolume`), served via
   StateView.
 - The blue screen is pure flavor: rare (random click budget, at most twice a
-  session), silent, loses nothing, any key continues. Never let it interrupt
+  session), silent, loses nothing, any key continues. SEPARATE from it: the
+  CRASH set-piece (src/os/crash.ts) — blue screen, then a reboot whose
+  improper-shutdown stamp carries the CURRENT in-world clock (SERVER-built,
+  StateView.crashBootWarning — the wording never ships client-side) and
+  gates on Enter again; a mechanic-in-waiting, currently fired by the DEV
+  panel and a one-shot trap on the first Solitaire launch (per-device
+  localStorage, re-armed by Reset season). Never let it interrupt
   an overlay (saver, dialogs, DOS, end card, remote session) and never make
   it a punishment.
 - The remote-access takeover (`remoteAccess` in content) is a story

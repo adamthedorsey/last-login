@@ -134,7 +134,10 @@ function buildBootFrames(warning?: string[]): BootFrame[] {
   return frames;
 }
 
-export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
+export function BootSequence({
+  onResume,
+  crashBoot = false,
+}: { onResume?: () => void; crashBoot?: boolean } = {}) {
   const { view, send } = useGame();
   // "Log on as a different user" skips the POST — the machine never turned
   // off. (Read without consuming; cleared once on mount for StrictMode.)
@@ -195,8 +198,13 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   }, [phase, fontsReady]);
 
   // The frame schedule includes any server-sent boot warning (story data —
-  // the view is already loaded by the time this component mounts).
-  const frames = useMemo(() => buildBootFrames(view?.bootWarning), [view]);
+  // the view is already loaded by the time this component mounts). A crash
+  // reboot shows the SERVER-built stamp carrying the current in-world
+  // clock (view.crashBootWarning) — the wording never ships client-side.
+  const frames = useMemo(
+    () => buildBootFrames(crashBoot ? view?.crashBootWarning : view?.bootWarning),
+    [view, crashBoot],
+  );
 
   useEffect(() => {
     if (phase !== 'boot' || !fontsReady) return;

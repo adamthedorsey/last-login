@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { getApp } from './appRegistry';
 import { beginLaunchBusy, endLaunchBusy, launchDelayMs } from './launchBusy';
+import { maybeCrashOnLaunch } from './crash';
 
 export interface OSWindow {
   id: string;
@@ -78,6 +79,8 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
   open(appId, opts) {
     const def = getApp(appId);
     if (!def) return;
+    // The crash set-piece can eat a launch (see crash.ts).
+    if (maybeCrashOnLaunch(appId)) return;
     const { windows, nextZ, pendingLaunch } = get();
 
     // Fresh launch of an app with a startup splash: show the splash first,
