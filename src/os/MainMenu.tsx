@@ -41,12 +41,13 @@ const Tagline = styled.div`
 `;
 
 /** The zoom scales the photo toward the CRT glass (its center sits at
- * ~47.5% / 34.5% of the frame) in stepped frames — no easing. */
+ * ~51% / 34% of the frame, measured from the artwork) in stepped frames —
+ * no easing. */
 const Photo = styled.img`
   display: block;
   width: min(620px, 78vw, 58vh);
   image-rendering: auto;
-  transform-origin: 47.5% 34.5%;
+  transform-origin: 51% 34%;
 `;
 
 const Hint = styled.div`
@@ -105,7 +106,7 @@ const SignOut = styled.button`
 /** Stepped zoom schedule: scale per frame, ~90ms apart. By the last
  * frames the dead screen's black is most of the viewport. */
 const ZOOM_STEPS = [1.12, 1.28, 1.5, 1.8, 2.2, 2.8, 3.6, 4.8, 6.4];
-const ZOOM_TICK_MS = 45;
+const ZOOM_TICK_MS = 30;
 
 // Shut Down hands the room back with a REVERSE zoom: the shutdown screen sets
 // `lastlogin.zoomout` and reloads, and the freshly-mounted menu reads it here
