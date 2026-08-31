@@ -286,8 +286,7 @@ If not, don't build it that way.
   chip-synth like everything else.
 
 ### Hidden surfaces
-- Solitaire is a working game AND a front: sending ranks 7,3,5,6 to the
-  foundations in order (impossible in normal ascending play) opens the
+- Solitaire is a working game AND a front: sending the four foundations (left to right) to show 3,2,4,Ace opens the
   `solbackdoor` window ("porthole") — a login whose credentials the
   ENGINE checks (standalone password target `backdoor.sol`), so no
   secret ships client-side. Past a correct login is a generic

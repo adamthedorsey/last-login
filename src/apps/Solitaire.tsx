@@ -156,18 +156,17 @@ function CardView({
 
 // ---------------------------------------------------------------------------
 
-// The knock: send cards of these ranks up to the foundations, in this
-// exact order, to open what Solitaire is really a front for. The sequence
-// can't occur in normal ascending play — you only reach it on purpose.
-const KNOCK = [7, 3, 5, 6];
+// The knock: get the four foundations (left to right) showing 3, 2, 4,
+// then Ace at the same time — that opens what Solitaire is really a
+// front for. Position matters; Ace = 1.
+const KNOCK_TOPS = [3, 2, 4, 1];
 
 export function Solitaire() {
   const [game, setGame] = useState<GameState>(newDeal);
   const [sel, setSel] = useState<Sel>(null);
   const [moves, setMoves] = useState(0);
-  // A rolling record of the ranks sent to the foundations; the tail is
-  // matched against KNOCK.
-  const knockRef = useRef<number[]>([]);
+  // The knock fires once per open of this window; re-arm on a new deal.
+  const knockedRef = useRef(false);
   const openWindow = useWindowStore((st) => st.open);
 
   const won = game.foundations.every((f) => f.length === 13);
@@ -176,6 +175,7 @@ export function Solitaire() {
     setGame(newDeal());
     setSel(null);
     setMoves(0);
+    knockedRef.current = false;
   };
 
   const commit = (g: GameState) => {
@@ -235,11 +235,12 @@ export function Solitaire() {
     return true;
   };
 
-  const registerKnock = (rank: number) => {
-    const buf = [...knockRef.current, rank].slice(-KNOCK.length);
-    knockRef.current = buf;
-    if (buf.length === KNOCK.length && buf.every((r, i) => r === KNOCK[i])) {
-      knockRef.current = [];
+  const checkKnock = (g: GameState) => {
+    if (knockedRef.current) return;
+    if (g.foundations.some((f) => f.length === 0)) return;
+    const tops = g.foundations.map((f) => f[f.length - 1].rank);
+    if (tops.every((r, i) => r === KNOCK_TOPS[i])) {
+      knockedRef.current = true;
       openWindow('solbackdoor');
     }
   };
@@ -257,7 +258,7 @@ export function Solitaire() {
     const taken = removeSelected(g, s);
     g.foundations[target].push(...taken);
     commit(g);
-    registerKnock(card.rank);
+    checkKnock(g);
     return true;
   };
 
