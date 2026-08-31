@@ -13,6 +13,7 @@ import { useGame } from '../game/gameContext';
 import { useWindowStore } from '../os/windowStore';
 import { playBusy, playError, startDialupSound, stopDialupSound } from '../os/sounds';
 import { Icon } from '../os/icons';
+import { PasswordField } from '../os/PasswordField';
 import type { AppWindowProps } from '../os/appRegistry';
 
 const Row = styled.div`
@@ -193,7 +194,7 @@ export function DialUp({ windowId }: AppWindowProps) {
       </Row>
       <Row>
         <label htmlFor="du-pass">Password:</label>
-        <TextInput id="du-pass" type="password" value="********" readOnly style={{ flex: 1 }} />
+        <PasswordField id="du-pass" value="********" readOnly />
       </Row>
       <Row>
         <label htmlFor="du-phone">Phone number:</label>

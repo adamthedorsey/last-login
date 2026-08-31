@@ -15,6 +15,7 @@ import splashBg from '../assets/images/splash-bg.jpg';
 import splashLogo from '../assets/images/splash-logo.png';
 import { ScanDisk } from './ScanDisk';
 import { PowerOff } from './PowerOff';
+import { PasswordField } from './PasswordField';
 import { PIXEL_MONO } from '../theme';
 
 const BootScreen = styled.div`
@@ -391,12 +392,10 @@ export function BootSequence({
                 </Row>
                 <Row>
                   <label htmlFor="login-pass">Password:</label>
-                  <TextInput
+                  <PasswordField
                     id="login-pass"
-                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    style={{ flex: 1 }}
                     disabled={locked}
                     autoFocus
                   />
