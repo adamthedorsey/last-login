@@ -226,7 +226,16 @@ If not, don't build it that way.
 - Keep 1997 web texture: visitor counters, "best viewed at 800x600",
   under-construction energy, table-era layouts, blue/underlined links.
 
-### Live chat (in-game)
+### Live chat (in-game) — Messenger
+- The chat client is **Messenger** (`src/apps/Messenger.tsx`), styled like
+  1997 AIM: a tall, narrow buddy-list window (`buddyline` app id, kept for
+  wire compat) of collapsible groups with online counts and our own
+  BuddyIcon status art (online/away/idle/offline). SINGLE-click selects a
+  buddy; DOUBLE-click opens an IM. IMs are their OWN windows, one per buddy
+  (`im` app, `MessengerIM.tsx`), deduped in `src/os/messenger.ts`
+  (`openIm`) so re-opening focuses the existing window. The client only
+  ever names the fictional network (BuddyLine); a live buddy list comes
+  from the server. Never revive the old single-window combined roster+chat.
 - Conversations are server-authored prompt trees (`ChatConversation` in
   season content). The player never types free text; the client only ever
   receives the prompts currently on offer, and the full transcript is
@@ -241,8 +250,9 @@ If not, don't build it that way.
   presence is a scheduled event setting a flag an override keys on.
 - A buddy who messages FIRST is an `interjections` entry on the conversation
   (requirement-gated lines anchored into the rebuilt transcript) plus a
-  scheduled event with an `im` wire notice — the client only opens the
-  window and steps the new lines in.
+  scheduled event with an `im` wire notice — the client (GameProvider)
+  calls `openIm({screenname, fromWire:true})`, which opens that buddy's IM
+  window and steps only the new trailing lines in.
 
 ### Dial-up (the online/offline mechanic)
 - The core loop: OFFLINE = explore what Casey already had on the machine;

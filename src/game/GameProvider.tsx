@@ -3,7 +3,7 @@ import type { ActionResult, DiscoveryView, GameAction, StateView, WireNotice } f
 import { createGameClient, type GameClient } from './client';
 import { GameContext, type GameContextValue, type Toast } from './gameContext';
 import { playBuddyOff, playBuddyOn, playImMsg, playMailSound, playNotify } from '../os/sounds';
-import { useWindowStore } from '../os/windowStore';
+import { openIm } from '../os/messenger';
 
 /** Generic per-kind toast copy — deliberately spoiler-free client strings.
  * Anything specific (names, subjects) must arrive IN the notice, server-sent. */
@@ -130,10 +130,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
           ]);
         }
         if (n.kind === 'im' && n.screenname) {
-          // Somebody messaged first — their window opens, like it did in 1997.
-          useWindowStore.getState().open('buddyline', {
-            props: { liveScreenname: n.screenname, wireSeq: Date.now() },
-          });
+          // Somebody messaged first — their IM window opens on its own,
+          // like it did in 1997.
+          openIm({ screenname: n.screenname, fromWire: true });
         }
       }
       if (notices.length > 0) {

@@ -3,7 +3,8 @@ import { FileExplorer } from './FileExplorer';
 import { Notepad } from './Notepad';
 import { PhotoViewer } from './PhotoViewer';
 import { MailApp } from './MailApp';
-import { BuddyLine } from './BuddyLine';
+import { Messenger } from './Messenger';
+import { MessengerIM } from './MessengerIM';
 import { Browser } from './Browser';
 import { RecycleBin } from './RecycleBin';
 import { DialUp } from './DialUp';
@@ -67,11 +68,22 @@ export function registerAllApps(): void {
   });
   registerApp({
     id: 'buddyline',
-    name: 'Chat',
+    name: 'Messenger',
     icon: 'im-app',
-    component: BuddyLine,
-    defaultSize: { w: 620, h: 460 },
+    component: Messenger,
+    // The AIM-style buddy list: tall and narrow, roster only.
+    defaultSize: { w: 250, h: 460 },
     singleton: true,
+  });
+  registerApp({
+    id: 'im',
+    name: 'Instant Message',
+    icon: 'im',
+    component: MessengerIM,
+    // One IM window per buddy (deduped in os/messenger.ts). Not a
+    // singleton — several conversations open at once, like the real thing.
+    defaultSize: { w: 420, h: 380 },
+    hidden: true,
   });
   registerApp({
     id: 'browser',

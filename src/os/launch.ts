@@ -1,3 +1,4 @@
+import { openIm } from './messenger';
 import type { ItemSummary } from '@gamecore/types.ts';
 import { useWindowStore } from './windowStore';
 
@@ -45,7 +46,7 @@ export function launchItem(item: ItemSummary): void {
       os.open('mail');
       return;
     case 'im_conversation':
-      os.open('buddyline', { props: { conversationId: item.id } });
+      openIm({ logItemId: item.id });
       return;
     case 'webpage':
       if (item.meta?.url) os.open('browser', { props: { url: item.meta.url } });

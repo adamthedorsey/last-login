@@ -216,7 +216,7 @@ export function MouseApplet() {
 // --- Add/Remove Programs ---------------------------------------------------
 
 const INSTALLED = [
-  'BuddyLine 2.4 for Horizons',
+  'Messenger 2.4 (BuddyLine)',
   'Kava Runtime 1.1',
   'Minefield',
   'NetVoyager 3.0',
