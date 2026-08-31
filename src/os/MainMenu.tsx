@@ -71,7 +71,7 @@ const SoundToggle = styled.button`
 /** Stepped zoom schedule: scale per frame, ~90ms apart. By the last
  * frames the dead screen's black is most of the viewport. */
 const ZOOM_STEPS = [1.12, 1.28, 1.5, 1.8, 2.2, 2.8, 3.6, 4.8, 6.4];
-const ZOOM_TICK_MS = 90;
+const ZOOM_TICK_MS = 45;
 
 export function MainMenu({ onPower }: { onPower: () => void }) {
   const [stage, setStage] = useState<'off' | 'zoom' | 'black'>('off');
