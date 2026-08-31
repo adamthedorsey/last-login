@@ -935,8 +935,8 @@ A girl's voice: "again. i wasn't ready."`,
 
 The family answering machine greeting, take two. Casey,
 bright and bored: "You've reached the Taylors. We're not
-home. You know what to do." A dog barks; she laughs
-through the beep instruction.`,
+home. You know what to do." Her mom calls something from
+another room; Casey laughs through the beep instruction.`,
       },
     },
 
