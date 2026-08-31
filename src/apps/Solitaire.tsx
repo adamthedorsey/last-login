@@ -165,6 +165,8 @@ export function Solitaire() {
   const [game, setGame] = useState<GameState>(newDeal);
   const [sel, setSel] = useState<Sel>(null);
   const [moves, setMoves] = useState(0);
+  // Undo history: a snapshot pushed before each committed move.
+  const [history, setHistory] = useState<GameState[]>([]);
   // The knock fires once per open of this window; re-arm on a new deal.
   const knockedRef = useRef(false);
   const openWindow = useWindowStore((st) => st.open);
@@ -175,10 +177,23 @@ export function Solitaire() {
     setGame(newDeal());
     setSel(null);
     setMoves(0);
+    setHistory([]);
     knockedRef.current = false;
   };
 
+  const undo = () => {
+    setHistory((h) => {
+      if (h.length === 0) return h;
+      const prev = h[h.length - 1];
+      setGame(prev);
+      setSel(null);
+      setMoves((m) => Math.max(0, m - 1));
+      return h.slice(0, -1);
+    });
+  };
+
   const commit = (g: GameState) => {
+    setHistory((h) => [...h, game].slice(-200));
     setGame(g);
     setSel(null);
     setMoves((m) => m + 1);
@@ -280,6 +295,7 @@ export function Solitaire() {
     <>
       <Toolbar style={{ gap: 8, flexShrink: 0, alignItems: 'center' }}>
         <Button onClick={deal}>Deal</Button>
+        <Button onClick={undo} disabled={history.length === 0}>Undo</Button>
         <span style={{ fontSize: 13 }}>Moves: {moves}</span>
         <span style={{ fontSize: 13, marginLeft: 'auto', color: '#444' }}>
           click to pick up · click to place · double-click sends up
