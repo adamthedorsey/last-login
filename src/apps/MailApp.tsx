@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Frame, ScrollView, Toolbar } from 'react95';
 import type { ItemContent, ItemSummary } from '@gamecore/types.ts';
@@ -19,15 +19,23 @@ const Layout = styled.div`
   min-height: 0;
   display: grid;
   grid-template-columns: 140px 1fr;
-  grid-template-rows: 200px 1fr;
-  gap: 4px;
+  /* rows come inline: list height is the draggable splitter's state */
+  gap: 0 4px;
   margin-top: 4px;
 `;
 
 const BoxList = styled(Frame).attrs({ variant: 'well' })`
-  grid-row: 1 / 3;
+  grid-row: 1 / 4;
   padding: 4px;
   overflow: auto;
+`;
+
+/** The Outlook-Express splitter between the list and the reading pane. */
+const Splitter = styled.div`
+  grid-column: 2;
+  cursor: ns-resize;
+  /* a slim grab strip; the visual bar is the panes' own bevels */
+  touch-action: none;
 `;
 
 const BoxRow = styled.button<{ $active: boolean }>`
@@ -151,6 +159,9 @@ function fmtDate(iso?: string): string {
 export function MailApp() {
   const { send, view, contentEpoch } = useGame();
   const [mailbox, setMailbox] = useState('mailbox.inbox');
+  // The list/reading splitter: plain per-session state, dragged live.
+  const [listHeight, setListHeight] = useState(200);
+  const splitDrag = useRef<{ startY: number; startH: number } | null>(null);
   const [messages, setMessages] = useState<ItemSummary[]>([]);
   const [openMsg, setOpenMsg] = useState<ItemContent | null>(null);
   const [attachments, setAttachments] = useState<ItemSummary[]>([]);
@@ -228,7 +239,7 @@ export function MailApp() {
           casey_t@westwind.net
         </span>
       </Toolbar>
-      <Layout>
+      <Layout style={{ gridTemplateRows: `${listHeight}px 6px 1fr` }}>
         <BoxList>
           {MAILBOXES.map((b) => (
             <BoxRow key={b.id} $active={mailbox === b.id} onClick={() => setMailbox(b.id)}>
@@ -259,6 +270,23 @@ export function MailApp() {
             {messages.length === 0 && <div style={{ padding: 10, color: '#777' }}>(no messages)</div>}
           </MsgTable>
         </ScrollView>
+        <Splitter
+          onPointerDown={(e) => {
+            e.preventDefault();
+            (e.target as HTMLElement).setPointerCapture(e.pointerId);
+            splitDrag.current = { startY: e.clientY, startH: listHeight };
+          }}
+          onPointerMove={(e) => {
+            const d = splitDrag.current;
+            if (!d) return;
+            const box = (e.currentTarget as HTMLElement).parentElement!.getBoundingClientRect();
+            const max = Math.max(80, box.height - 120);
+            setListHeight(Math.min(max, Math.max(60, d.startH + (e.clientY - d.startY))));
+          }}
+          onPointerUp={() => {
+            splitDrag.current = null;
+          }}
+        />
         <Reading>
           {openMsg ? (
             <>
