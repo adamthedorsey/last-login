@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Button, Frame, MenuList, MenuListItem, Separator, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
+import { StatusGrip } from '../os/StatusGrip';
 import { DOC_MONO, DOC_TEXT } from '../theme';
 import { useWindowStore } from '../os/windowStore';
 import { CloseGlyph, TitleBarButton } from '../os/glyphs';
@@ -55,6 +56,7 @@ const StatusBar = styled(Frame).attrs({ variant: 'well' })`
   padding: 2px 8px;
   font-size: 12px;
   flex-shrink: 0;
+  position: relative;
 `;
 
 const DialogOverlay = styled.div`
@@ -353,6 +355,7 @@ export function Notepad({ windowId, props }: AppWindowProps) {
       <StatusBar>
         {status}
         {dirty && !readOnly ? ' *' : ''}
+        <StatusGrip />
       </StatusBar>
 
       {findOpen && (

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Button, Frame, ScrollView, Toolbar } from 'react95';
 import type { ItemContent, ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
+import { StatusGrip } from '../os/StatusGrip';
 import { playError } from '../os/sounds';
 import { OfflineAlert } from '../os/OfflineAlert';
 import { Icon } from '../os/icons';
@@ -328,8 +329,9 @@ export function MailApp() {
           )}
         </Reading>
       </Layout>
-      <Frame variant="well" style={{ marginTop: 4, padding: '2px 8px', fontSize: 12, flexShrink: 0 }}>
+      <Frame variant="well" style={{ marginTop: 4, padding: '2px 8px', fontSize: 12, flexShrink: 0, position: 'relative' }}>
         {status ?? (online ? 'Connected to westwind.net' : 'Working offline — downloaded mail only.')}
+        <StatusGrip />
       </Frame>
 
       {offlineAlert && (

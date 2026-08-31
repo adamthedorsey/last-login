@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Button, Frame, MenuList, MenuListItem, ScrollView, Separator, Toolbar, Window, WindowContent, WindowHeader } from 'react95';
 import type { ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
+import { StatusGrip } from '../os/StatusGrip';
 import { launchItem } from '../os/launch';
 import { Icon } from '../os/icons';
 import { PropertiesDialog } from '../os/PropertiesDialog';
@@ -49,6 +50,7 @@ const StatusBar = styled(Frame).attrs({ variant: 'well' })`
   padding: 2px 8px;
   font-size: 12px;
   margin-top: 4px;
+  position: relative;
 `;
 
 const MenuRow = styled.div`
@@ -789,6 +791,7 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
             .join(', ');
           return extra ? `${base} — ${extra}` : base;
         })()}
+        <StatusGrip />
       </StatusBar>
     </>
   );

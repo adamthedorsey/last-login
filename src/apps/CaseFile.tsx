@@ -17,6 +17,7 @@ import { useGame } from '../game/gameContext';
 import { TASKBAR_HEIGHT, useWindowStore } from '../os/windowStore';
 import { isMuted } from '../os/sounds';
 import { Icon } from '../os/icons';
+import { StatusGrip } from '../os/StatusGrip';
 import wizardArt from '../assets/images/humble-county-wizard.jpg';
 import sealArt from '../assets/images/sheriff-seal.png';
 import { OfflineAlert } from '../os/OfflineAlert';
@@ -215,22 +216,6 @@ const Reading = styled(Frame).attrs({ variant: 'field' })`
   user-select: text;
   ${DOC_TEXT}
   white-space: pre-wrap;
-`;
-
-/** The ribbed size grip, drawn where Win95 drew it: in the status bar. */
-const StatusGrip = styled.div`
-  position: absolute;
-  right: 1px;
-  bottom: 1px;
-  width: 13px;
-  height: 13px;
-  background: repeating-linear-gradient(
-    135deg,
-    transparent 0 2px,
-    #808080 2px 3px,
-    #ffffff 3px 4px
-  );
-  pointer-events: none;
 `;
 
 const MemoHead = styled.div`
