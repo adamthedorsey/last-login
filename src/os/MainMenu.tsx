@@ -141,7 +141,7 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
   return (
     <Room onClick={press} style={zooming ? { cursor: 'none' } : undefined}>
       <Title style={hidden}>LAST LOGIN</Title>
-      <Tagline style={hidden}>A 1997 DESKTOP MYSTERY</Tagline>
+      <Tagline style={hidden}>A DESKTOP MYSTERY GAME</Tagline>
       <Photo
         src={pcImage}
         alt=""
