@@ -160,7 +160,7 @@ const Message = styled.div`
 type Mode = 'password' | 'signup' | 'otp-email' | 'otp-code' | 'reset-request' | 'reset-update';
 
 const SUBTITLES: Record<Mode, string> = {
-  password: 'Sign in to save your progress. This account is yours — the machine you are about to open is not.',
+  password: 'Sign in to save your progress. This account is yours. The machine you are about to open is not.',
   signup: 'Create an account so the machine remembers where you leave off.',
   'otp-email': 'We will email you a one-time sign-in code.',
   'otp-code': 'Enter the code we just sent you.',
@@ -327,17 +327,10 @@ function SupabaseAuth({ children }: { children: ReactNode }) {
             <Submit type="submit" disabled={busy || !email || !password}>
               Sign in
             </Submit>
-            <LinkRow>
-              <TextLink type="button" onClick={() => go('signup')} disabled={busy}>
-                Create account
-              </TextLink>
-              <TextLink type="button" onClick={() => go('reset-request')} disabled={busy}>
-                Forgot password?
-              </TextLink>
-              <TextLink type="button" onClick={() => go('otp-email')} disabled={busy}>
-                Email me a code
-              </TextLink>
-            </LinkRow>
+            {/* Sign-in only for now — accounts are seeded directly in Supabase.
+               The signup / reset / OTP flows below stay in the code (still
+               reachable via the recovery-link event) so the links can be
+               restored later without rebuilding them. */}
           </form>
         )}
 
