@@ -33,10 +33,10 @@ const Title = styled.div`
 
 const Tagline = styled.div`
   font-family: Arial, sans-serif;
-  font-size: 14px;
-  letter-spacing: 4px;
+  font-size: 17px;
+  letter-spacing: 5px;
   color: #6d6a60;
-  margin: 12px 0 8px;
+  margin: 2px 0 8px;
 `;
 
 /** The zoom scales the photo toward the CRT glass (its center sits at
@@ -52,8 +52,17 @@ const Hint = styled.div`
   font-family: ${PIXEL_MONO};
   font-size: 16px;
   color: #8a8578;
-  margin-top: 6px;
+  margin-top: 26px;
   min-height: 20px;
+`;
+
+const Copyright = styled.div`
+  position: fixed;
+  left: 16px;
+  bottom: 12px;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: #55524a;
 `;
 
 const SoundToggle = styled.button`
@@ -140,6 +149,7 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
         style={{ transform: `scale(${scale})` }}
       />
       <Hint style={hidden}>Press any key to begin.</Hint>
+      <Copyright style={hidden}>© Adam Dorsey. All rights reserved.</Copyright>
       <SoundToggle
         style={hidden}
         onClick={(e) => {
