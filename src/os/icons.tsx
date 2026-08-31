@@ -31,7 +31,6 @@ import {
   Wangimg129,
   Freecell1,
   HelpBook,
-  Mail,
   Mailnews2,
   Mailnews14,
   McmPhone,
