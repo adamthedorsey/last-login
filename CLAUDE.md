@@ -162,7 +162,9 @@ If not, don't build it that way.
   never reach the bundle): fan spin-up on the main menu's POWER press;
   boot tone plus the LONG boot take (sfx_boot_long, ~24s) carrying the
   whole POST, ScanDisk AND the Microtech splash (it layers under the
-  fanfare), faded out over ~1.5s as the splash hands off; entering
+  fanfare) and trailing into the login screen, where it dies on its
+  own — the shipped m4a has a 2s fade baked into its tail, and nothing
+  cuts it at runtime (Shut Down from the login dialog excepted); entering
   MS-DOS mode plays beep -> boot chatter, then the fan holds a
   SEAMLESS WebAudio loop (HTMLAudio's loop gap was audible — never go
   back to it) with the disk reading layered on top, stopped on exit;

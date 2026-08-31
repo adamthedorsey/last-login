@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Button, Frame, TextInput, Window, WindowContent, WindowHeader } from 'react95';
 import { useGame } from '../game/gameContext';
 import {
-  fadeMachineSounds,
   playError,
   playPostSounds,
   playSystemStartup,
@@ -188,7 +187,6 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   useEffect(() => {
     if (phase === 'boot' && fontsReady) playPostSounds();
   }, [phase, fontsReady]);
-  useEffect(() => () => stopMachineSounds(), []);
 
   // The frame schedule includes any server-sent boot warning (story data —
   // the view is already loaded by the time this component mounts).
@@ -213,8 +211,10 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   const done = frameIdx >= frames.length;
   // The GUI splash: logo over the horizons, pointer flickering busy — the
   // machine is "loading Horizons 95". Click skips, like everything staged.
+  // The boot take is NOT cut here: it runs to its own end (a 2s fade is
+  // baked into the shipped file), so the machine hum trails naturally
+  // into the login screen and dies on its own.
   const leaveSplash = useCallback(() => {
-    fadeMachineSounds(1500);
     if (view?.loggedIn && onResume) onResume();
     else setPhase('login');
   }, [view, onResume]);
@@ -309,6 +309,7 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   // is off, back in the evidence room.
   const shutDownFromLogin = () => {
     stopSystemStartup();
+    stopMachineSounds();
     setPoweringOff(true);
     sessionStorage.removeItem('lastlogin.power');
     window.setTimeout(() => window.location.reload(), 700);
