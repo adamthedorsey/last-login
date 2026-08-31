@@ -5,7 +5,7 @@ import { DosMode } from './DosMode';
 import { RemoteSession } from './RemoteSession';
 import { Bsod } from './Bsod';
 import { Icon } from './icons';
-import { playError, playGoodbyeVoice, playWelcomeVoice } from './sounds';
+import { playError } from './sounds';
 import { topWindowId, useWindowStore, TASKBAR_HEIGHT } from './windowStore';
 import { getApp } from './appRegistry';
 import { WindowFrame } from './WindowFrame';
@@ -91,10 +91,7 @@ export function DesktopShell() {
   const [deskLoading, setDeskLoading] = useState(true);
   const deskCursor = useBootCursor(deskLoading);
   useEffect(() => {
-    const t = window.setTimeout(() => {
-      setDeskLoading(false);
-      playWelcomeVoice();
-    }, 2200);
+    const t = window.setTimeout(() => setDeskLoading(false), 2200);
     return () => window.clearTimeout(t);
   }, []);
   const focusedId = topWindowId(windows);
@@ -192,7 +189,6 @@ export function DesktopShell() {
   const confirmShutDown = async () => {
     setShutDialog(false);
     if (shutChoice === 'shutdown') {
-      playGoodbyeVoice();
       setShutDown(true);
     } else if (shutChoice === 'restart') {
       // Full warm reboot: replay the POST, then resume the session.

@@ -6,8 +6,6 @@
 import dialupMp3 from '../assets/sounds/dial-up-modem.mp3';
 import mailMp3 from '../assets/sounds/mt_youve_got_mail.mp3';
 import startupMp3 from '../assets/sounds/mt_microtech-startup-sound.mp3';
-import welcomeMp3 from '../assets/sounds/mt_welcome_to_microtech_horizons_95.mp3';
-import goodbyeMp3 from '../assets/sounds/mt_goodbye.mp3';
 
 const MUTE_KEY = 'lastlogin.muted';
 
@@ -108,43 +106,6 @@ export function playSystemStartup(cb?: {
 export function stopSystemStartup(): void {
   startupAudio?.pause();
   startupAudio = null;
-}
-
-/** The Horizons 95 voice welcome (system sound — clean), played as the
- * desktop reveals after logging on. If the startup fanfare is still
- * running (a blocked-autoplay retry), the welcome waits its turn. */
-export function playWelcomeVoice(): void {
-  if (isMuted()) return;
-  const start = () => {
-    try {
-      const a = new Audio(welcomeMp3);
-      a.volume = 0.4;
-      void a.play().catch(() => {
-        /* blocked — the welcome is flavor, no fallback needed */
-      });
-    } catch {
-      /* ignore */
-    }
-  };
-  if (startupAudio && !startupAudio.ended && !startupAudio.paused) {
-    startupAudio.addEventListener('ended', start, { once: true });
-  } else {
-    start();
-  }
-}
-
-/** "Goodbye." — the shutdown voice line, over the safe-to-turn-off screen. */
-export function playGoodbyeVoice(): void {
-  if (isMuted()) return;
-  try {
-    const a = new Audio(goodbyeMp3);
-    a.volume = 0.4;
-    void a.play().catch(() => {
-      /* blocked — silence is fine here */
-    });
-  } catch {
-    /* ignore */
-  }
 }
 
 /** Mail arrival: the machine's own greeting sample (owner-approved
