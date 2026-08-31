@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Button, Frame, ScrollView, Toolbar } from 'react95';
 import type { ItemContent, ItemSummary } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
+import { DOC_TEXT } from '../theme';
 import { StatusGrip } from '../os/StatusGrip';
 import { playError } from '../os/sounds';
 import { OfflineAlert } from '../os/OfflineAlert';
@@ -137,15 +138,12 @@ const Headers = styled.div`
 `;
 
 /**
- * Letter bodies read in Arial — what Outlook Express actually used in 1997,
- * and the comfortable long-form face. Aliased like everything else; the
- * bitmap chrome font stays on lists and headers, where it's short and crisp.
+ * Letter bodies read exactly like Notepad documents: the one DOC_TEXT
+ * reading face (Arial 15/1.55), so every long-form surface matches.
  */
 const BodyText = styled.div`
   white-space: pre-wrap;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 14px;
-  line-height: 1.6;
+  ${DOC_TEXT}
 `;
 
 function fmtDate(iso?: string): string {
