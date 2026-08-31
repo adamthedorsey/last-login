@@ -4,8 +4,8 @@
  */
 
 import dialupMp3 from '../assets/sounds/dial-up-modem.mp3';
-import mailMp3 from '../assets/sounds/youve_got_mail.mp3';
-import startupMp3 from '../assets/sounds/microtech-startup-sound.mp3';
+import mailMp3 from '../assets/sounds/mt_youve_got_mail.mp3';
+import startupMp3 from '../assets/sounds/mt_microtech-startup-sound.mp3';
 
 const MUTE_KEY = 'lastlogin.muted';
 

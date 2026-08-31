@@ -140,9 +140,9 @@ If not, don't build it that way.
   recording (`audioSrc`, served from `public/audio/`) — reserved for
   important case moments, always with the transcript in the message lines.
   (3) Mail arrival plays the machine's own greeting sample
-  (`youve_got_mail.mp3`) QUIET (~0.22 volume) — it is a computer sound,
+  (`mt_youve_got_mail.mp3`) QUIET (~0.22 volume) — it is a computer sound,
   so it stays clean, no degradation; the chip chirp is its fallback.
-  (4) The startup fanfare (`microtech-startup-sound.mp3`, clean, ~0.4)
+  (4) The startup fanfare (`mt_microtech-startup-sound.mp3`, clean, ~0.4)
   plays with the GUI splash, and the splash HOLDS until it finishes
   (~8s; muted/blocked boots hold ~3.5s instead) — once per boot; a skip
   click cuts both, and if autoplay was blocked the login OK click
