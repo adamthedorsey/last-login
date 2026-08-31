@@ -27,3 +27,6 @@ dist-ssr
 
 # Supabase CLI transient state (linked-project ref, cached versions, etc.)
 supabase/.temp/
+
+# Vercel CLI local link + pulled env (contains project ids / build env)
+.vercel/
