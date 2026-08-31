@@ -21,7 +21,9 @@ const Shell = styled(Window)<{ $maximized: boolean }>`
 const Header = styled(WindowHeader)`
   display: flex;
   align-items: center;
-  gap: 6px;
+  /* Icon art that fills its 16px frame (the calendar, the drives) needs
+     real air before the title — 6px read as touching. */
+  gap: 9px;
   cursor: var(--cursor-arrow);
   flex-shrink: 0;
 `;
@@ -247,7 +249,7 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
             </TitleBarButton>
           )}
         </span>
-        <TitleBarButton onClick={() => close(win.id)} aria-label="Close" style={{ marginLeft: -4 }}>
+        <TitleBarButton onClick={() => close(win.id)} aria-label="Close" style={{ marginLeft: -7 }}>
           <CloseGlyph />
         </TitleBarButton>
       </Header>
