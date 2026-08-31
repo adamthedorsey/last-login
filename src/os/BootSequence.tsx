@@ -5,7 +5,6 @@ import { useGame } from '../game/gameContext';
 import {
   playError,
   playPostSounds,
-  playScanDiskSound,
   playSystemStartup,
   stopMachineSounds,
   stopSystemStartup,
@@ -186,10 +185,8 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
   // StrictMode remounts don't double them.
   useEffect(() => {
     if (phase === 'boot' && fontsReady) playPostSounds();
-    else if (phase === 'scandisk') {
-      stopMachineSounds();
-      playScanDiskSound();
-    } else if (phase === 'splash' || phase === 'login') stopMachineSounds();
+    // ScanDisk rides the same long boot take; the splash cuts it off.
+    else if (phase === 'splash' || phase === 'login') stopMachineSounds();
   }, [phase, fontsReady]);
   useEffect(() => () => stopMachineSounds(), []);
 

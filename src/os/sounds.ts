@@ -12,6 +12,7 @@ import bootBedSfx from '../assets/sounds/sfx_computer_booting.m4a';
 import diskSfx from '../assets/sounds/sfx_computer_reading_bytes.m4a';
 import postToneSfx from '../assets/sounds/sfx_boot_tone.m4a';
 import beepSfx from '../assets/sounds/sfx_beep.m4a';
+import bootLongSfx from '../assets/sounds/sfx_boot_long.m4a';
 
 const MUTE_KEY = 'lastlogin.muted';
 
@@ -158,28 +159,68 @@ export function playPowerOn(): void {
   playMachine(fanSfx, 0.35);
 }
 
-/** POST: a short boot tone, then drive chatter under the BIOS text. */
+/** The boot bed: one long take of the machine coming up (~24s) carries
+ * the whole POST and ScanDisk, cut off when the GUI splash arrives. */
 export function playPostSounds(): void {
   playMachine(postToneSfx, 0.3);
-  playMachine(bootBedSfx, 0.28);
+  playMachine(bootLongSfx, 0.3);
 }
 
-/** ScanDisk: the disk reads, cluster by cluster. */
-export function playScanDiskSound(): void {
-  playMachine(diskSfx, 0.25);
+/**
+ * The fan hold: a seamless WebAudio loop (HTMLAudio's loop restarts with
+ * an audible gap). The loop points sit inside the sample so the edge
+ * transients never click.
+ */
+let fanLoop: AudioBufferSourceNode | null = null;
+const loopBuffers = new Map<string, AudioBuffer>();
+
+async function startFanLoop(volume: number): Promise<void> {
+  if (isMuted() || fanLoop) return;
+  const ac = audio();
+  if (!ac) return;
+  try {
+    let buf = loopBuffers.get(fanSfx);
+    if (!buf) {
+      const res = await fetch(fanSfx);
+      buf = await ac.decodeAudioData(await res.arrayBuffer());
+      loopBuffers.set(fanSfx, buf);
+    }
+    if (fanLoop) return; // a second call raced the fetch
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    src.loopStart = 0.25;
+    src.loopEnd = Math.max(0.5, buf.duration - 0.25);
+    const g = ac.createGain();
+    g.gain.value = volume;
+    src.connect(g).connect(ac.destination);
+    src.start();
+    fanLoop = src;
+  } catch {
+    /* ignore */
+  }
+}
+
+function stopFanLoop(): void {
+  try {
+    fanLoop?.stop();
+  } catch {
+    /* ignore */
+  }
+  fanLoop = null;
 }
 
 /**
  * Entering MS-DOS mode: the BIOS beep, then the boot chatter — and once
- * the machine settles, the fan holds a quiet loop with the disk reading
- * layered over it. stopMachineSounds() on the way out kills all of it.
+ * the machine settles, the fan holds a seamless loop with the disk
+ * reading layered over it. stopMachineSounds() on the way out kills it.
  */
 export function playDosBoot(): void {
   playMachine(beepSfx, 0.3, {
     onEnded: () =>
       playMachine(bootBedSfx, 0.28, {
         onEnded: () => {
-          playMachine(fanSfx, 0.12, { loop: true });
+          void startFanLoop(0.12);
           playMachine(diskSfx, 0.18);
         },
       }),
@@ -198,6 +239,7 @@ export function stopLaunchSeek(): void {
 export function stopMachineSounds(): void {
   machineSounds.forEach((a) => a.pause());
   machineSounds.clear();
+  stopFanLoop();
 }
 
 /** Mail arrival: the machine's own greeting sample (owner-approved

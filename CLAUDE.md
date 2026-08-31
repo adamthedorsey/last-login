@@ -160,12 +160,14 @@ If not, don't build it that way.
   (7) The machine's BODY (owner-added sfx, shipped as small mono
   `.m4a` files — the `.wav` originals stay in the repo as source and
   never reach the bundle): fan spin-up on the main menu's POWER press;
-  boot tone plus drive chatter under the POST; disk reading under
-  ScanDisk; entering MS-DOS mode plays beep -> boot chatter, then a
-  quiet LOOPED fan with the disk reading layered on top (stopped on
-  exit); and every program launch plays the disk seek under the
-  flickering pointer (launchBusy), cut when the window lands. All
-  quiet (0.12–0.35), mute-aware, deduped (sounds.ts machine section).
+  boot tone plus the LONG boot take (sfx_boot_long, ~24s) carrying the
+  whole POST and ScanDisk, cut off at the Microtech splash; entering
+  MS-DOS mode plays beep -> boot chatter, then the fan holds a
+  SEAMLESS WebAudio loop (HTMLAudio's loop gap was audible — never go
+  back to it) with the disk reading layered on top, stopped on exit;
+  and every program launch plays the disk seek under the flickering
+  pointer (launchBusy), cut when the window lands. All quiet
+  (0.12–0.35), mute-aware, deduped (sounds.ts machine section).
   sfx_chime, sfx_notification and sfx_empty_bin are shipped but
   unwired. No other samples. Sound Recorder is a stock Win95 accessory (1995) —
   no story-year change needed for any of this.
