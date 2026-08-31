@@ -242,6 +242,47 @@ export function Taskbar({
   // The TX light: blinks on the tray phone whenever the machine talks to
   // the outside world. Stepped, never faded.
   const [txLit, setTxLit] = useState(false);
+  // An unexplained SECOND connection icon that is sometimes just... there,
+  // next to the volume. Ambient machine theater — client-random, knows no
+  // story: while the line is up it pops in for a few seconds and vanishes,
+  // more restless when a remote session is pending, and gone the moment
+  // you point at it.
+  const [ghost, setGhost] = useState(false);
+  const online = view?.online === true;
+  const restless = view?.remotePending === true;
+  useEffect(() => {
+    if (!online) {
+      setGhost(false);
+      return;
+    }
+    let alive = true;
+    let t = 0;
+    const loop = () => {
+      if (!alive) return;
+      const idleMs = ((restless ? 12 : 40) + Math.random() * (restless ? 25 : 75)) * 1000;
+      t = window.setTimeout(() => {
+        if (!alive) return;
+        setGhost(true);
+        t = window.setTimeout(() => {
+          if (!alive) return;
+          setGhost(false);
+          loop();
+        }, 3500 + Math.random() * 5500);
+      }, idleMs);
+    };
+    loop();
+    return () => {
+      alive = false;
+      window.clearTimeout(t);
+      setGhost(false);
+    };
+  }, [online, restless]);
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const onToggle = () => setGhost((v) => !v);
+    window.addEventListener('lastlogin:ghost', onToggle);
+    return () => window.removeEventListener('lastlogin:ghost', onToggle);
+  }, []);
   useEffect(() => {
     if (netActivity === 0) return;
     const ts = [
@@ -742,6 +783,24 @@ export function Taskbar({
                     }}
                   />
                 )}
+              </TrayButton>
+            )}
+            {ghost && (
+              <TrayButton
+                aria-hidden
+                style={{ cursor: 'default' }}
+                onPointerEnter={() => setGhost(false)}
+              >
+                <svg width={16} height={16} viewBox="0 0 16 16" shapeRendering="crispEdges">
+                  <rect x={0} y={2} width={8} height={7} fill="#c0c0c0" />
+                  <rect x={1} y={3} width={6} height={4} fill="#3a6ea5" />
+                  <rect x={2} y={9} width={4} height={1} fill="#808080" />
+                  <rect x={8} y={6} width={8} height={7} fill="#c0c0c0" />
+                  <rect x={9} y={7} width={6} height={4} fill="#3a6ea5" />
+                  <rect x={10} y={13} width={4} height={1} fill="#808080" />
+                  <rect x={6} y={11} width={3} height={1} fill="#404040" />
+                  <rect x={13} y={4} width={2} height={2} fill="#d04000" />
+                </svg>
               </TrayButton>
             )}
             <TrayButton
