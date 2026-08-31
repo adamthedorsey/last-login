@@ -58,7 +58,11 @@ If not, don't build it that way.
   cold-boot POST runs ~6s with uneven machine-like timing (memory count-up,
   IDE pause), the GUI splash holds ~3.5s (logo over the horizons,
   click-skippable), and the post-login desktop "load" holds ~2.2s of bare
-  wallpaper. DOS-era surfaces (POST, ScanDisk) show NO mouse cursor — the
+  wallpaper. FIRST BOOT ONLY: the improper-shutdown warning (the last-
+  session date is a clue) HOLDS at "Press ENTER to continue" — clicks
+  fast-forward to the gate but never through it — and ScanDisk runs;
+  the engine clears the dirty flag at the first successful login
+  (PlayerState.bootChecked), so every later boot goes straight through. DOS-era surfaces (POST, ScanDisk) show NO mouse cursor — the
   driver hasn't loaded; the GUI splash shows a steady visible
   hourglass, and the post-login desktop load flickers the busy cursors
   (src/os/bootCursor.ts).

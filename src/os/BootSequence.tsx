@@ -89,6 +89,9 @@ const Row = styled.div`
 interface BootFrame {
   text: string;
   ms: number;
+  /** Hold here until the player presses Enter (the dirty-shutdown stamp —
+   * the date is a clue, and it must not scroll past unseen). */
+  waitEnter?: boolean;
 }
 
 function buildBootFrames(warning?: string[]): BootFrame[] {
@@ -122,6 +125,9 @@ function buildBootFrames(warning?: string[]): BootFrame[] {
   if (warning && warning.length > 0) {
     line('', 400);
     for (const w of warning) line(w, 800);
+    line('', 300);
+    cur += '\nPress ENTER to continue . . .';
+    frames.push({ text: cur, ms: 0, waitEnter: true });
   }
   line('', 300);
   line('Starting Microtech Horizons 95 ...', 1700);
@@ -204,9 +210,21 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
       }, 400);
       return () => window.clearTimeout(t);
     }
+    // The Enter gate: the schedule stops here until the key.
+    if (frames[frameIdx].waitEnter) return;
     const t = window.setTimeout(() => setFrameIdx((i) => i + 1), frames[frameIdx].ms);
     return () => window.clearTimeout(t);
   }, [phase, frameIdx, fontsReady, frames, view, onResume]);
+
+  // Enter releases the gate; nothing else does.
+  useEffect(() => {
+    if (phase !== 'boot' || !frames[frameIdx]?.waitEnter) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') setFrameIdx((i) => i + 1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [phase, frameIdx, frames]);
 
   const done = frameIdx >= frames.length;
   // The GUI splash: logo over the horizons, pointer flickering busy — the
@@ -276,7 +294,13 @@ export function BootSequence({ onResume }: { onResume?: () => void } = {}) {
 
   if (phase === 'boot') {
     return (
-      <BootScreen onClick={() => setFrameIdx(frames.length)}>
+      <BootScreen
+        onClick={() => {
+          const gate = frames.findIndex((f) => f.waitEnter);
+          // Clicks fast-forward TO the gate, never through it — only Enter does.
+          setFrameIdx((i) => (gate >= 0 && i <= gate ? gate : frames.length));
+        }}
+      >
         {bootText}
         {!done && (
           <>

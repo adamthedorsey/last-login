@@ -461,6 +461,10 @@ export interface PlayerFolder {
 }
 
 export interface PlayerState {
+  /** True once the machine has come up cleanly (first successful login):
+   * the improper-shutdown warning and its ScanDisk pass run exactly once,
+   * like a real dirty flag clearing. */
+  bootChecked?: boolean;
   loggedIn: boolean;
   opened: string[];
   discoveries: string[];

@@ -291,7 +291,8 @@ export function toStateView(
         : undefined,
     saverText: content.computer.saverText,
     imScreenname: content.computer.imScreenname,
-    bootWarning: content.computer.bootWarning,
+    // The dirty flag clears after the first clean session (see 'login').
+    bootWarning: state.bootChecked ? undefined : content.computer.bootWarning,
     dosVolume: content.computer.dosVolume,
     wallpaper: content.wallpaper,
     homeUrl: content.homeUrl,
@@ -701,6 +702,9 @@ export function handleAction(
       events.push({ type: 'login_attempt', payload: { ok: check.ok } });
       if (check.ok) {
         state.loggedIn = true;
+        // The machine came up and got used: the improper-shutdown check
+        // has run its once. Later boots go straight through the POST.
+        state.bootChecked = true;
         return done({ type: 'login', ok: true, view: toStateView(content, state, nowMs) });
       }
       // Enough failures earn the owner's own hint — permanently.
