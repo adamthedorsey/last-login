@@ -42,7 +42,7 @@ const Scope = styled(Frame).attrs({ variant: 'well' })`
  * (it crashes under React 19). Click or drag to seek. */
 /** The rail sits inside a taller strip so the thumb never clips. */
 const TrackStrip = styled.div`
-  padding: 16px 4px 14px;
+  padding: 11px 4px 6px;
   flex-shrink: 0;
 `;
 
@@ -92,9 +92,9 @@ const Drop = styled(MenuList)<{ $left: number }>`
 /** The record glyph is a proper red CIRCLE, like the original's —
  * embossed gray when the button is disabled, like Win95 glyphs. */
 const RecDot = ({ disabled }: { disabled?: boolean }) => (
-  <svg width={12} height={12} viewBox="0 0 12 12" aria-hidden style={{ display: 'block' }}>
-    {disabled && <circle cx={7} cy={7} r={5} fill="#ffffff" />}
-    <circle cx={6} cy={6} r={5} fill={disabled ? '#808080' : '#c00000'} />
+  <svg width={16} height={16} viewBox="0 0 16 16" aria-hidden style={{ display: 'block' }}>
+    {disabled && <circle cx={9} cy={9} r={6.5} fill="#ffffff" />}
+    <circle cx={8} cy={8} r={6.5} fill={disabled ? '#808080' : '#c00000'} />
   </svg>
 );
 
@@ -107,6 +107,16 @@ const StopSquare = ({ disabled }: { disabled?: boolean }) => (
 );
 
 const fmt = (s: number) => `${s.toFixed(2)} sec.`;
+
+/** Transport buttons sit at the original's squat height. */
+const TRANSPORT = {
+  flex: 1,
+  height: 27,
+  padding: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+} as const;
 
 type Mode = 'idle' | 'playing' | 'recording';
 
@@ -362,7 +372,7 @@ export function SoundRecorder({ windowId, props }: AppWindowProps) {
             setPos(0);
             if (audioRef.current) audioRef.current.currentTime = 0;
           }}
-          style={{ flex: 1 }}
+          style={TRANSPORT}
         >
           ◀◀
         </Button>
@@ -372,20 +382,20 @@ export function SoundRecorder({ windowId, props }: AppWindowProps) {
             setPos(length);
             if (audioRef.current) audioRef.current.currentTime = length;
           }}
-          style={{ flex: 1 }}
+          style={TRANSPORT}
         >
           ▶▶
         </Button>
-        <Button disabled={mode === 'recording' || !src} onClick={play} style={{ flex: 1 }}>
+        <Button disabled={mode === 'recording' || !src} onClick={play} style={TRANSPORT}>
           ▶
         </Button>
-        <Button disabled={mode === 'idle'} onClick={stop} style={{ flex: 1, display: 'inline-flex', justifyContent: 'center' }}>
+        <Button disabled={mode === 'idle'} onClick={stop} style={TRANSPORT}>
           <StopSquare disabled={mode === 'idle'} />
         </Button>
         <Button
           disabled={!canRecord || mode === 'recording'}
           onClick={() => void record()}
-          style={{ flex: 1, display: 'inline-flex', justifyContent: 'center' }}
+          style={TRANSPORT}
         >
           <RecDot disabled={!canRecord || mode === 'recording'} />
         </Button>
