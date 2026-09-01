@@ -11,7 +11,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame, Hourglass, MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
+import { Button, Frame, Handle, Hourglass, MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
 import type { CaseFileView } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { TASKBAR_HEIGHT, useWindowStore } from '../os/windowStore';
@@ -121,11 +121,58 @@ const RibbonButton = styled(Button)`
   padding: 2px;
 `;
 
-const RibbonSep = styled.div`
-  width: 2px;
-  margin: 3px 4px;
-  border-left: 1px solid #808080;
-  border-right: 1px solid #fff;
+/** The app's identity band: the county software announcing itself — the
+ * same black->teal as the title bar and the wizard banner, the seal, the
+ * wordmark, and the CASE line. This is where the case title LIVES. */
+const Masthead = styled.div`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  background: linear-gradient(90deg, #000000, #14636a);
+  border: 1px solid #000;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+`;
+
+const Wordmark = styled.div`
+  font-size: 19px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  white-space: nowrap;
+`;
+
+const CaseLine = styled.div`
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: #cfe3e0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  padding-left: 10px;
+`;
+
+const Agency = styled.div`
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #9dc3bd;
+  white-space: nowrap;
+`;
+
+/** Small institutional label over each sidebar list. */
+const SideLabel = styled.div`
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #6a6552;
+  padding: 2px 2px 3px;
+  flex-shrink: 0;
 `;
 
 /** The section tabs, folder-tab style. */
@@ -191,6 +238,8 @@ const MemoList = styled(Frame).attrs({ variant: 'well' })`
   overflow: auto;
   padding: 4px;
   font-family: Arial, Helvetica, sans-serif;
+  flex: 1;
+  min-height: 0;
 `;
 
 const MemoRow = styled.button<{ $active: boolean; $unread: boolean }>`
@@ -872,6 +921,8 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
               : 'No copy selected'}
       </TitleBand>
       <Layout>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <SideLabel>{section === 'notes' ? 'MY NOTES' : 'SAVED COPIES'}</SideLabel>
         <MemoList>
           {sectionDocs.map((d) => (
             <MemoRow
@@ -892,6 +943,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
             </div>
           )}
         </MemoList>
+        </div>
         {/* Read-only — editing happens in the Case Note window. */}
         <Reading>
           {multiSelected.length > 1 ? (
@@ -1008,12 +1060,19 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
         )}
       </MenuRow>
 
+      <Masthead>
+        <img src={sealArt} alt="" style={{ width: 34, height: 34, imageRendering: 'pixelated' }} />
+        <Wordmark>CASE FILES</Wordmark>
+        <CaseLine>{file.title || '...'}</CaseLine>
+        <Agency>HUMBLE COUNTY{'\n'}SHERIFF'S OFFICE</Agency>
+      </Masthead>
+
       <Ribbon>
         <RibbonButton onClick={() => void checkServer()}>
           <Icon name="mail-app" size={22} />
           Check Server
         </RibbonButton>
-        <RibbonSep />
+        <Handle size={44} style={{ margin: '4px 5px' }} />
         <RibbonButton onClick={() => openCaseNote()}>
           <Icon name="notepad" size={22} />
           New Note
@@ -1042,8 +1101,6 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
         )}
       </Ribbon>
 
-      <TitleBand>{file.title || '...'}</TitleBand>
-
       <NavRow>
         {(
           [
@@ -1061,6 +1118,8 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
 
       {section === 'messages' && (
         <Layout>
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <SideLabel>MESSAGES ON FILE</SideLabel>
           <MemoList>
             {file.messages
               .slice()
@@ -1083,6 +1142,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
               <div style={{ padding: 8, color: '#777', fontSize: 13 }}>(no messages on file)</div>
             )}
           </MemoList>
+          </div>
           <Reading ref={readingRef}>
             {open ? (
               <>
@@ -1156,78 +1216,84 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
       {(section === 'notes' || section === 'evidence') && docsPane}
 
       {section === 'bookmarks' && (
-        <Layout>
-          <MemoList>
-            {(file.bookmarks ?? []).map((b) => (
-              <MemoRow key={b.id} $active={b.id === bmId} $unread={false} onClick={() => setBmId(b.id)}>
-                <span>{b.title}</span>
-                <small>{b.url}</small>
-              </MemoRow>
-            ))}
-            {(file.bookmarks ?? []).length === 0 && (
-              <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
-                (nothing bookmarked yet — use the Bookmark button in NetVoyager)
-              </div>
-            )}
-          </MemoList>
+        <>
           {(() => {
             const bm = (file.bookmarks ?? []).find((b) => b.id === bmId);
-            return bm ? (
-              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: 4 }}>
-                <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
-                  <div
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      fontFamily: 'Arial, Helvetica, sans-serif',
-                      fontSize: 13,
-                      fontWeight: 'bold',
-                      overflow: 'hidden',
-                      whiteSpace: 'nowrap',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {bm.title}
-                  </div>
+            return (
+              <>
+                <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 4, flexShrink: 0 }}>
                   <Button
-                    onClick={() =>
-                      useWindowStore.getState().open('browser', {
-                        props: { url: bm.url, urlNonce: Date.now() },
-                      })
+                    disabled={!bm}
+                    onClick={
+                      bm
+                        ? () =>
+                            useWindowStore.getState().open('browser', {
+                              props: { url: bm.url, urlNonce: Date.now() },
+                            })
+                        : undefined
                     }
                     style={{ padding: '0 12px' }}
                   >
                     Open in NetVoyager
                   </Button>
                   <Button
-                    onClick={() => {
-                      void send({ type: 'deleteBookmark', bookmarkId: bm.id }).then((res) => {
-                        if (res.type === 'casefile') {
-                          setFile(res.view);
-                          setBmId(null);
-                          setNotice('Bookmark removed.');
-                        }
-                      });
-                    }}
+                    disabled={!bm}
+                    onClick={
+                      bm
+                        ? () => {
+                            void send({ type: 'deleteBookmark', bookmarkId: bm.id }).then((res) => {
+                              if (res.type === 'casefile') {
+                                setFile(res.view);
+                                setBmId(null);
+                                setNotice('Bookmark removed.');
+                              }
+                            });
+                          }
+                        : undefined
+                    }
                     style={{ width: 70 }}
                   >
                     Delete
                   </Button>
                 </div>
-                <Reading>
-                  <span style={{ color: '#555' }}>
-                    {bm.url}
-                    {'\n'}Saved {bm.addedAt}
-                  </span>
-                </Reading>
-              </div>
-            ) : (
-              <Reading>
-                <span style={{ color: '#777' }}>Select a bookmark.</span>
-              </Reading>
+                <TitleBand style={{ marginTop: 4 }}>{bm ? bm.title : 'No bookmark selected'}</TitleBand>
+                <Layout>
+                  <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                    <SideLabel>SAVED ADDRESSES</SideLabel>
+                    <MemoList>
+                      {(file.bookmarks ?? []).map((b) => (
+                        <MemoRow
+                          key={b.id}
+                          $active={b.id === bmId}
+                          $unread={false}
+                          onClick={() => setBmId(b.id)}
+                        >
+                          <span>{b.title}</span>
+                          <small>{b.url}</small>
+                        </MemoRow>
+                      ))}
+                      {(file.bookmarks ?? []).length === 0 && (
+                        <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
+                          (nothing bookmarked yet — use the Bookmark button in NetVoyager)
+                        </div>
+                      )}
+                    </MemoList>
+                  </div>
+                  <Reading>
+                    {bm ? (
+                      <span style={{ color: '#555' }}>
+                        {bm.url}
+                        {'\n'}Saved {bm.addedAt}
+                      </span>
+                    ) : (
+                      <span style={{ color: '#777' }}>Select a bookmark.</span>
+                    )}
+                  </Reading>
+                </Layout>
+              </>
             );
           })()}
-        </Layout>
+        </>
       )}
 
       {section === 'summary' && (
