@@ -833,82 +833,79 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   const sectionIds = sectionDocs.map((d) => d.id);
   const multiSelected = selIds.filter((id) => sectionIds.includes(id));
 
+  // The doc pane: action buttons on their own row (top), the open item's
+  // name in its own bar beneath, then the list and the white sheet with
+  // their tops ALIGNED — the sheet lines up with the sidebar like the
+  // other tabs.
+  const singleDoc = multiSelected.length <= 1 && docId && sectionDocs.some((d) => d.id === docId);
+  const docSrc = singleDoc ? sectionDocs.find((d) => d.id === docId)?.meta?.sourceId : undefined;
   const docsPane = (
-    <Layout>
-      <MemoList>
-        {sectionDocs.map((d) => (
-          <MemoRow
-            key={d.id}
-            $active={multiSelected.includes(d.id)}
-            $unread={false}
-            onClick={(e) => rowClick(e, d.id, sectionIds)}
-          >
-            <span>{d.name}</span>
-            <small>{d.meta?.modifiedAt ?? ''}</small>
-          </MemoRow>
-        ))}
-        {sectionDocs.length === 0 && (
-          <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
-            {section === 'notes'
-              ? '(no notes yet — use New Note)'
-              : '(nothing saved yet — right-click any file on the computer and choose Save to Case Files)'}
-          </div>
+    <>
+      <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 4, flexShrink: 0 }}>
+        {docSrc && (
+          <Button onClick={() => void locateOriginal(docSrc)} style={{ padding: '0 12px' }}>
+            Locate Original
+          </Button>
         )}
-      </MemoList>
-      {multiSelected.length > 1 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: 4 }}>
-          <div style={{ display: 'flex', gap: 6, flexShrink: 0, justifyContent: 'flex-end' }}>
-            <Button onClick={() => setConfirmDelete(true)} style={{ width: 70 }}>
-              Delete
-            </Button>
-          </div>
-          <Reading>
-            <span style={{ color: '#777' }}>{multiSelected.length} items selected.</span>
-          </Reading>
-        </div>
-      ) : docId && sectionDocs.some((d) => d.id === docId) ? (
-        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: 4 }}>
-          <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
-            <div
-              style={{
-                flex: 1,
-                minWidth: 0,
-                fontFamily: 'Arial, Helvetica, sans-serif',
-                fontSize: 13,
-                fontWeight: 'bold',
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-              }}
+        <Button
+          disabled={!singleDoc}
+          onClick={singleDoc ? () => openCaseNote({ docId: docId!, name: docName }) : undefined}
+          style={{ width: 70 }}
+        >
+          Edit
+        </Button>
+        <Button
+          disabled={multiSelected.length === 0}
+          onClick={multiSelected.length > 0 ? () => setConfirmDelete(true) : undefined}
+          style={{ width: 70 }}
+        >
+          Delete
+        </Button>
+      </div>
+      <TitleBand style={{ marginTop: 4 }}>
+        {multiSelected.length > 1
+          ? `${multiSelected.length} items selected`
+          : singleDoc
+            ? docName
+            : section === 'notes'
+              ? 'No note selected'
+              : 'No copy selected'}
+      </TitleBand>
+      <Layout>
+        <MemoList>
+          {sectionDocs.map((d) => (
+            <MemoRow
+              key={d.id}
+              $active={multiSelected.includes(d.id)}
+              $unread={false}
+              onClick={(e) => rowClick(e, d.id, sectionIds)}
             >
-              {docName}
+              <span>{d.name}</span>
+              <small>{d.meta?.modifiedAt ?? ''}</small>
+            </MemoRow>
+          ))}
+          {sectionDocs.length === 0 && (
+            <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
+              {section === 'notes'
+                ? '(no notes yet — use New Note)'
+                : '(nothing saved yet — right-click any file on the computer and choose Save to Case Files)'}
             </div>
-            {(() => {
-              const src = sectionDocs.find((d) => d.id === docId)?.meta?.sourceId;
-              return src ? (
-                <Button onClick={() => void locateOriginal(src)} style={{ padding: '0 12px' }}>
-                  Locate Original
-                </Button>
-              ) : null;
-            })()}
-            <Button onClick={() => docId && openCaseNote({ docId, name: docName })} style={{ width: 70 }}>
-              Edit
-            </Button>
-            <Button onClick={() => setConfirmDelete(true)} style={{ width: 70 }}>
-              Delete
-            </Button>
-          </div>
-          {/* Reading is read-only — editing happens in the Case Note window. */}
-          <Reading>{docText || <span style={{ color: '#777' }}>(empty)</span>}</Reading>
-        </div>
-      ) : (
+          )}
+        </MemoList>
+        {/* Read-only — editing happens in the Case Note window. */}
         <Reading>
-          <span style={{ color: '#777' }}>
-            {section === 'notes' ? 'Select a note, or use New Note.' : 'Select a copy.'}
-          </span>
+          {multiSelected.length > 1 ? (
+            <span style={{ color: '#777' }}>{multiSelected.length} items selected.</span>
+          ) : singleDoc ? (
+            docText || <span style={{ color: '#777' }}>(empty)</span>
+          ) : (
+            <span style={{ color: '#777' }}>
+              {section === 'notes' ? 'Select a note, or use New Note.' : 'Select a copy.'}
+            </span>
+          )}
         </Reading>
-      )}
-    </Layout>
+      </Layout>
+    </>
   );
 
   return (
