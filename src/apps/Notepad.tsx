@@ -303,40 +303,48 @@ export function Notepad({ windowId, props }: AppWindowProps) {
         <Window style={{ width: 340 }}>
           <WindowHeader style={{ fontSize: 13 }}>Encrypted file</WindowHeader>
           <WindowContent style={{ fontFamily: 'Arial, Helvetica, sans-serif', fontSize: 13 }}>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <Icon name="keys" size={32} />
-              <div style={{ minWidth: 0 }}>
-                <div style={{ marginBottom: 8 }}>
-                  This file is encrypted. Enter the passphrase to decrypt it.
-                </div>
-                <TextInput
-                  value={pass}
-                  onChange={(e) => setPass(e.target.value)}
-                  onKeyDown={(e: React.KeyboardEvent) => {
-                    if (e.key === 'Enter') void tryPassphrase();
-                  }}
-                  placeholder="passphrase"
-                  style={{ width: '100%', WebkitTextSecurity: 'disc' } as React.CSSProperties}
-                  autoFocus
-                />
-                {passNote && (
-                  <div style={{ color: '#a00', marginTop: 6, fontSize: 12 }}>{passNote}</div>
-                )}
-                {passTries >= 2 && lockHint && (
-                  <div style={{ color: '#555', marginTop: 6, fontSize: 12, fontStyle: 'italic' }}>
-                    Hint: {lockHint}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void tryPassphrase();
+              }}
+            >
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <Icon name="keys" size={32} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ marginBottom: 8 }}>
+                    This file is encrypted. Enter the passphrase to decrypt it.
                   </div>
-                )}
+                  <TextInput
+                    value={pass}
+                    onChange={(e) => setPass(e.target.value)}
+                    placeholder="passphrase"
+                    style={{ width: '100%', WebkitTextSecurity: 'disc' } as React.CSSProperties}
+                    autoFocus
+                  />
+                  {passNote && (
+                    <div style={{ color: '#a00', marginTop: 6, fontSize: 12 }}>{passNote}</div>
+                  )}
+                  {passTries >= 2 && lockHint && (
+                    <div style={{ color: '#555', marginTop: 6, fontSize: 12, fontStyle: 'italic' }}>
+                      Hint: {lockHint}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
-              <Button onClick={() => void tryPassphrase()} disabled={!pass.trim()} style={{ width: 90 }}>
-                Decrypt
-              </Button>
-              <Button onClick={() => useWindowStore.getState().close(windowId)} style={{ width: 80 }}>
-                Cancel
-              </Button>
-            </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
+                <Button type="submit" disabled={!pass.trim()} style={{ width: 90 }}>
+                  Decrypt
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => useWindowStore.getState().close(windowId)}
+                  style={{ width: 80 }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
           </WindowContent>
         </Window>
       </div>
