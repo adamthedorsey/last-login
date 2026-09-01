@@ -480,6 +480,10 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   // --- The player's own documents (notes + evidence copies) ---
   const [docs, setDocs] = useState<import('@gamecore/types.ts').ItemSummary[]>([]);
   const [docId, setDocId] = useState<string | null>(null);
+  // Multi-select in the doc list (Win95 model): plain click selects one,
+  // Ctrl/Cmd toggles, Shift ranges from the anchor. Delete acts on the lot.
+  const [selIds, setSelIds] = useState<string[]>([]);
+  const selAnchor = useRef<string | null>(null);
   const [docText, setDocText] = useState('');
   const [docName, setDocName] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -534,9 +538,35 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
     const res = await send({ type: 'open', itemId: id });
     if (res.type === 'open' && res.ok && res.item) {
       setDocId(res.item.id);
+      setSelIds([res.item.id]);
+      selAnchor.current = res.item.id;
       setDocName(res.item.name);
       setDocText(res.item.body?.text ?? '');
     }
+  };
+
+  /** Win95 list selection: plain / Ctrl-Cmd toggle / Shift range. */
+  const rowClick = (e: React.MouseEvent, id: string, ids: string[]) => {
+    if (e.shiftKey && selAnchor.current && ids.includes(selAnchor.current)) {
+      const a = ids.indexOf(selAnchor.current);
+      const b = ids.indexOf(id);
+      const range = ids.slice(Math.min(a, b), Math.max(a, b) + 1);
+      setSelIds(range);
+      if (range.length === 1) void openDoc(range[0]);
+      else void flushSave();
+      return;
+    }
+    if (e.ctrlKey || e.metaKey) {
+      selAnchor.current = id;
+      setSelIds((prev) => {
+        const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+        if (next.length === 1) void openDoc(next[0]);
+        else void flushSave();
+        return next;
+      });
+      return;
+    }
+    void openDoc(id);
   };
 
   const createNote = async () => {
@@ -566,17 +596,19 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
     }
   };
 
-  const deleteDoc = async () => {
+  const deleteDocs = async () => {
     setConfirmDelete(false);
-    if (!docId) return;
+    const targets = selIds.length > 0 ? selIds : docId ? [docId] : [];
+    if (targets.length === 0) return;
     window.clearTimeout(saveTimer.current);
     dirtyRef.current = false;
-    await send({ type: 'deleteDocument', docId });
+    for (const id of targets) await send({ type: 'deleteDocument', docId: id });
+    setSelIds([]);
     setDocId(null);
     setDocName('');
     setDocText('');
     await fetchDocs();
-    setNotice('Deleted.');
+    setNotice(targets.length === 1 ? 'Deleted.' : `Deleted ${targets.length} items.`);
   };
 
   const [playingNoteId, setPlayingNoteId] = useState<string | null>(null);
@@ -848,8 +880,13 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   const switchSection = (to: 'messages' | 'notes' | 'evidence' | 'summary') => {
     setMenuOpen(null);
     void flushSave();
+    setSelIds([]);
+    selAnchor.current = null;
     setSection(to);
   };
+
+  const sectionIds = sectionDocs.map((d) => d.id);
+  const multiSelected = selIds.filter((id) => sectionIds.includes(id));
 
   const docsPane = (
     <Layout>
@@ -857,9 +894,9 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
         {sectionDocs.map((d) => (
           <MemoRow
             key={d.id}
-            $active={d.id === docId}
+            $active={multiSelected.includes(d.id)}
             $unread={false}
-            onClick={() => void openDoc(d.id)}
+            onClick={(e) => rowClick(e, d.id, sectionIds)}
           >
             <span>{d.name}</span>
             <small>{d.meta?.modifiedAt ?? ''}</small>
@@ -873,7 +910,18 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
           </div>
         )}
       </MemoList>
-      {docId && sectionDocs.some((d) => d.id === docId) ? (
+      {multiSelected.length > 1 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: 4 }}>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0, justifyContent: 'flex-end' }}>
+            <Button onClick={() => setConfirmDelete(true)} style={{ width: 70 }}>
+              Delete
+            </Button>
+          </div>
+          <Reading>
+            <span style={{ color: '#777' }}>{multiSelected.length} items selected.</span>
+          </Reading>
+        </div>
+      ) : docId && sectionDocs.some((d) => d.id === docId) ? (
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: 4 }}>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
             <TextInput
@@ -1241,11 +1289,13 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
               <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <Icon name="warning" size={32} />
                 <p style={{ margin: 0 }}>
-                  Delete "{docName}"? This file is yours — the deletion is permanent.
+                  {selIds.length > 1
+                    ? `Delete these ${selIds.length} items? They are yours — the deletion is permanent.`
+                    : `Delete "${docName}"? This file is yours — the deletion is permanent.`}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
-                <Button onClick={() => void deleteDoc()} style={{ width: 80 }}>
+                <Button onClick={() => void deleteDocs()} style={{ width: 80 }}>
                   Yes
                 </Button>
                 <Button onClick={() => setConfirmDelete(false)} style={{ width: 80 }}>
