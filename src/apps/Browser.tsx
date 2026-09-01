@@ -101,7 +101,11 @@ const MenuButton = styled.button<{ $open: boolean }>`
 
 const DropMenu = styled(MenuList)`
   position: absolute;
-  top: 20px;
+  /* Anchor to the menu button's left edge, flush under the bar — without
+     an explicit left, the drop resolves to its static in-flow position
+     and hangs ~20px right of its button. */
+  left: 0;
+  top: 19px;
   z-index: 6000;
   min-width: 180px;
   font-size: 13px;
