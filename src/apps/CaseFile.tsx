@@ -524,6 +524,15 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
     setNotice('Saved.');
   };
 
+  /** The explicit Save button — saves right now, dirty or not. */
+  const saveNow = async () => {
+    if (!docId) return;
+    window.clearTimeout(saveTimer.current);
+    dirtyRef.current = false;
+    await send({ type: 'saveDocument', docId, name: docName, text: docText });
+    setNotice('Saved.');
+  };
+
   const scheduleSave = (id: string, name: string, text: string) => {
     dirtyRef.current = true;
     window.clearTimeout(saveTimer.current);
@@ -941,6 +950,9 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
                 </Button>
               ) : null;
             })()}
+            <Button onClick={() => void saveNow()} style={{ width: 70 }}>
+              Save
+            </Button>
             <Button onClick={() => setConfirmDelete(true)} style={{ width: 70 }}>
               Delete
             </Button>
