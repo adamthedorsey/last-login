@@ -482,7 +482,21 @@ function getDiskBus(ac: AudioContext): BiquadFilterNode {
     diskBus.type = 'lowpass';
     diskBus.frequency.value = 7200;
     diskBus.Q.value = 0.4;
+    // dry straight out...
     diskBus.connect(ac.destination);
+    // ...plus a short generated-IR reverb tail: the room around the box.
+    const IR_SECONDS = 0.45;
+    const len = Math.floor(ac.sampleRate * IR_SECONDS);
+    const ir = ac.createBuffer(1, len, ac.sampleRate);
+    const d = ir.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      d[i] = (Math.random() * 2 - 1) * Math.exp(-4.5 * (i / len));
+    }
+    const verb = ac.createConvolver();
+    verb.buffer = ir;
+    const wet = ac.createGain();
+    wet.gain.value = 0.35;
+    diskBus.connect(verb).connect(wet).connect(ac.destination);
   }
   return diskBus;
 }
@@ -502,7 +516,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   bp.Q.value = 2.2;
   const g = ac.createGain();
   // soft attack (nothing "lands" right at your ear), then decay
-  const peak = 0.0055 + Math.random() * 0.0045; // ~2x the hum floor, like the take
+  const peak = 0.004 + Math.random() * 0.0034;
   g.gain.setValueAtTime(0.0006, at);
   g.gain.linearRampToValueAtTime(peak, at + 0.004);
   g.gain.exponentialRampToValueAtTime(0.0005, at + dur);
@@ -529,7 +543,7 @@ function chatterBurst(): void {
     let at = ac.currentTime + 0.01;
     for (let i = 0; i < chirps; i++) {
       diskChirp(ac, at);
-      at += 0.015 + Math.random() * 0.045;
+      at += 0.021 + Math.random() * 0.06;
     }
   }
   // Rests between runs: ~100-300ms under load, stretching to multi-second
