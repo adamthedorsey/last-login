@@ -520,11 +520,11 @@ function chatterBurst(): void {
   if (ac && !isMuted()) {
     // One seek run, timed like the reference: chirps ~20-60ms apart, more
     // of them (and slightly tighter) the harder the machine thinks.
-    const chirps = 8 + Math.floor((8 + Math.random() * 22) * level);
+    const chirps = 6 + Math.floor((6 + Math.random() * 18) * level);
     let at = ac.currentTime + 0.01;
     for (let i = 0; i < chirps; i++) {
       diskChirp(ac, at);
-      at += 0.010 + Math.random() * (0.032 - 0.014 * level);
+      at += 0.017 + Math.random() * (0.05 - 0.02 * level);
     }
   }
   // Rests between runs: ~100-300ms under load, stretching to multi-second
