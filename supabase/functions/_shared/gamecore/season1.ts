@@ -47,7 +47,7 @@ export const SEASON1: SeasonContent = {
     // after three wrong guesses — the login is the game's first puzzle.
     // (The readme on the desktop still carries J's "i guessed it in one
     // try" — which lands differently once you've needed the hint.)
-    loginHint: 'moms flower + the year',
+    loginHint: 'moms flower + year',
     // Casey set her screen saver text herself. It floats there whenever the
     // machine idles — which means everyone in the house has seen it.
     saverText: 'junebug',

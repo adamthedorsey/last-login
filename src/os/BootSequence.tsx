@@ -402,7 +402,7 @@ export function BootSequence({
                 </Row>
                 {shownHint && (
                   <HintLine>
-                    Password hint (typed by {view?.loginUser ?? 'the owner'}): <b>{shownHint}</b>
+                    Password hint: <b>{shownHint}</b>
                   </HintLine>
                 )}
               </div>
