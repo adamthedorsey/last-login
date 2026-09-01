@@ -42,6 +42,7 @@ const Cell = styled.button<{ $selected: boolean }>`
   span {
     text-align: center;
     word-break: break-word;
+    white-space: normal; /* icon labels wrap by design */
     line-height: 1.15;
   }
 `;

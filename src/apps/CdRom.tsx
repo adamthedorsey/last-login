@@ -60,6 +60,7 @@ const IconSlot = styled.button<{ $active: boolean }>`
     max-width: 92px;
     text-align: center;
     word-break: break-word;
+    white-space: normal; /* icon labels wrap by design */
     line-height: 1.15;
     padding: 0 2px;
     background: ${(p) => (p.$active ? '#000080' : 'transparent')};

@@ -36,6 +36,7 @@ const IconButton = styled.button<{ $selected: boolean; $dragging: boolean }>`
     background: ${(p) => (p.$selected ? '#000080' : 'transparent')};
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.9);
     word-break: break-word;
+    white-space: normal; /* icon labels wrap by design */
   }
 `;
 

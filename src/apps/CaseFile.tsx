@@ -888,7 +888,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
             {(() => {
               const src = sectionDocs.find((d) => d.id === docId)?.meta?.sourceId;
               return src ? (
-                <Button onClick={() => void locateOriginal(src)} style={{ width: 110 }}>
+                <Button onClick={() => void locateOriginal(src)} style={{ padding: '0 12px' }}>
                   Locate Original
                 </Button>
               ) : null;

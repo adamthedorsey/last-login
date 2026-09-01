@@ -78,6 +78,13 @@ const GlobalStyles = createGlobalStyle`
   button, input, textarea, select {
     font-family: inherit;
   }
+  /* Buttons never wrap their labels — a Win95 button was always one line.
+     The few buttons whose labels DO wrap by design (desktop icons,
+     Explorer/CD-ROM icon cells) opt back in with white-space: normal on
+     their label span. */
+  button {
+    white-space: nowrap;
+  }
   body {
     font-family: 'ms_sans_serif', Tahoma, 'Segoe UI', sans-serif;
     font-size: 14px;
