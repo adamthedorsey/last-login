@@ -153,7 +153,7 @@ export function RecycleBin() {
             >
               Save to Case Files
             </MenuListItem>
-            <MenuListItem size="sm" disabled>Delete</MenuListItem>
+            {/* Everything in the bin is seized evidence — no Delete, ever. */}
             <Separator />
             <MenuListItem
               size="sm"

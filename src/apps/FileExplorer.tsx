@@ -681,7 +681,10 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
             >
               Save to Case Files
             </MenuListItem>
-            <MenuListItem size="sm" disabled>Delete</MenuListItem>
+            {/* Evidence is read-only: Delete isn't even on the menu for it. */}
+            {ctxMenu.item.editable && (
+              <MenuListItem size="sm" disabled>Delete</MenuListItem>
+            )}
             <Separator />
             <MenuListItem
               size="sm"
