@@ -419,18 +419,34 @@ function chatterLevel(): number {
   return level;
 }
 
-function diskClick(ac: AudioContext, at: number): void {
-  const src = ac.createBufferSource();
-  src.buffer = noise(ac);
-  const bp = ac.createBiquadFilter();
-  bp.type = 'bandpass';
-  bp.frequency.value = 2200 + Math.random() * 2400;
-  bp.Q.value = 2.5;
+/**
+ * One head CHIRP, tuned against a real drive recording
+ * (src/assets/source-audio/real-computer-loading.m4a — never bundled):
+ * a tonal ping around 3.1-4.3 kHz lasting 12-35 ms with a slight downward
+ * bend, plus a faint 3 ms contact tick at the onset. Filtered-noise clicks
+ * read as shuffled cards; the real thing SINGS a little.
+ */
+function diskChirp(ac: AudioContext, at: number): void {
+  const f0 = 3100 + Math.random() * 1200;
+  const dur = 0.012 + Math.random() * 0.023;
+  const osc = ac.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(f0, at);
+  osc.frequency.exponentialRampToValueAtTime(f0 * 0.82, at + dur);
   const g = ac.createGain();
-  g.gain.setValueAtTime(0.0114 + Math.random() * 0.0171, at);
-  g.gain.exponentialRampToValueAtTime(0.0006, at + 0.012);
-  src.connect(bp).connect(g).connect(ac.destination);
-  src.start(at, Math.random() * 1.5, 0.004 + Math.random() * 0.004);
+  g.gain.setValueAtTime(0.011 + Math.random() * 0.011, at);
+  g.gain.exponentialRampToValueAtTime(0.0004, at + dur);
+  osc.connect(g).connect(ac.destination);
+  osc.start(at);
+  osc.stop(at + dur + 0.01);
+  // the mechanical edge: a whisper of a tick as the head lands
+  const tick = ac.createBufferSource();
+  tick.buffer = noise(ac);
+  const tg = ac.createGain();
+  tg.gain.setValueAtTime(0.004, at);
+  tg.gain.exponentialRampToValueAtTime(0.0003, at + 0.004);
+  tick.connect(tg).connect(ac.destination);
+  tick.start(at, Math.random() * 1.5, 0.003);
 }
 
 function chatterBurst(): void {
@@ -441,19 +457,19 @@ function chatterBurst(): void {
   const level = chatterLevel();
   const ac = ctx;
   if (ac && !isMuted()) {
-    // One seek: a cluster of clicks. Hard thinking = long runs of tight
-    // clicks; light work = a couple of ticks.
-    const clicks = 2 + Math.floor((3 + Math.random() * 11) * level);
+    // One seek run, timed like the reference: chirps ~20-60ms apart, more
+    // of them (and slightly tighter) the harder the machine thinks.
+    const chirps = 3 + Math.floor((2 + Math.random() * 8) * level);
     let at = ac.currentTime + 0.01;
-    for (let i = 0; i < clicks; i++) {
-      diskClick(ac, at);
-      at += 0.008 + Math.random() * (0.014 + 0.02 * (1 - level));
+    for (let i = 0; i < chirps; i++) {
+      diskChirp(ac, at);
+      at += 0.02 + Math.random() * (0.06 - 0.025 * level);
     }
   }
-  // Heads settle before the next seek — brief under load, stretching to
-  // multi-second lazy gaps at idle (quadratic, so busy stays tight).
+  // Rests between runs: ~100-300ms under load, stretching to multi-second
+  // lazy gaps at idle (quadratic, so busy stays tight).
   const idle = (1 - level) * (1 - level);
-  const pause = 60 + Math.random() * 140 + idle * (1500 + Math.random() * 3500);
+  const pause = 100 + Math.random() * 200 + idle * (1500 + Math.random() * 3500);
   chatterTimer = window.setTimeout(chatterBurst, pause);
 }
 
