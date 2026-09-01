@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { getApp } from './appRegistry';
-import { beginLaunchBusy, endLaunchBusy, launchDelayMs } from './launchBusy';
+import { beginLaunchBusy, endLaunchBusy, launchProfile } from './launchBusy';
 import { maybeCrashOnLaunch } from './crash';
 
 export interface OSWindow {
@@ -167,12 +167,17 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       if (pendingSingletons.has(appId)) return;
       pendingSingletons.add(appId);
     }
-    beginLaunchBusy();
+    // The program's footprint (0..1) from its window area — the closest
+    // thing the shell has to an executable size. Bigger program = more fan.
+    const area = def.defaultSize.w * def.defaultSize.h;
+    const sizeWeight = Math.max(0, Math.min(1, (area - 100_000) / 460_000));
+    const profile = launchProfile(appId, sizeWeight);
+    beginLaunchBusy(profile.intensity);
     window.setTimeout(() => {
       endLaunchBusy();
       pendingSingletons.delete(appId);
       spawn();
-    }, launchDelayMs(appId));
+    }, profile.ms);
   },
 
   completeLaunch() {

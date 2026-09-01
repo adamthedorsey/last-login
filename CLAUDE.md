@@ -171,10 +171,18 @@ If not, don't build it that way.
   cuts it at runtime (Shut Down from the login dialog excepted); entering
   MT-DOS mode plays beep -> boot chatter, then the fan holds a
   SEAMLESS WebAudio loop (HTMLAudio's loop gap was audible — never go
-  back to it) with the disk reading layered on top, stopped on exit;
-  and every program launch plays the disk seek under the flickering
-  pointer (launchBusy), cut when the window lands. All quiet
-  (0.12–0.35), mute-aware, deduped (sounds.ts machine section).
+  back to it) with the disk reading layered on top, stopped on exit.
+  All quiet (0.12–0.35), mute-aware, deduped (sounds.ts machine
+  section). SEPARATE from the samples, the machine's ambient voice is
+  SYNTHESIZED (sounds.ts, "machine's voice" section — pure WebAudio,
+  no samples, no noise floor): a constant low fan hum while the
+  desktop is up (filtered noise + a faint motor tone, started/stopped
+  by DesktopShell), a fan SURGE on every launch — spin up quick, wind
+  down slow, intensity scaled by the program's size (window area, cold
+  vs warm — bigger program = more fan), and hard-disk seek CHATTER
+  (irregular synthesized click clusters) under launches and under any
+  engine call slow enough to show the hourglass. Mute kills the hum
+  instantly; unmute brings it back.
   sfx_chime, sfx_notification and sfx_empty_bin are shipped but
   unwired. No other samples. Sound Recorder is a stock Win95 accessory (1995) —
   no story-year change needed for any of this.

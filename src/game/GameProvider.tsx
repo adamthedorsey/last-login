@@ -2,7 +2,15 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { ActionResult, DiscoveryView, GameAction, StateView, WireNotice } from '@gamecore/types.ts';
 import { createGameClient, type GameClient } from './client';
 import { GameContext, type GameContextValue, type Toast } from './gameContext';
-import { playBuddyOff, playBuddyOn, playImMsg, playMailSound, playNotify } from '../os/sounds';
+import {
+  playBuddyOff,
+  playBuddyOn,
+  playImMsg,
+  playMailSound,
+  playNotify,
+  startDiskChatter,
+  stopDiskChatter,
+} from '../os/sounds';
 import { openIm } from '../os/messenger';
 
 /** Generic per-kind toast copy — deliberately spoiler-free client strings.
@@ -163,8 +171,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
       // flips EVERY cursor to the pixel hourglass after a beat, exactly
       // like 1997 did (the .busy rule lives in the global styles).
       pendingSends += 1;
+      // A slow call is the machine THINKING: the hourglass comes with the
+      // hard disk chattering under it (stopped the moment the call lands).
+      let thinking = false;
       const hourglass = window.setTimeout(() => {
         document.documentElement.classList.add('busy');
+        thinking = true;
+        startDiskChatter();
       }, 150);
       let res: ActionResult;
       try {
@@ -172,6 +185,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       } finally {
         pendingSends -= 1;
         window.clearTimeout(hourglass);
+        if (thinking) stopDiskChatter();
         if (pendingSends === 0) document.documentElement.classList.remove('busy');
       }
       if (viewRef.current?.online) setNetActivity((n) => n + 1);

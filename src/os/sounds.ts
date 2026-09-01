@@ -42,6 +42,10 @@ export function setMuted(muted: boolean): void {
   } catch {
     /* ignore */
   }
+  // The ambient machine voice reacts immediately: muting kills the hum,
+  // unmuting brings it back if a surface still wants it.
+  if (muted) killFanHum();
+  else if (humWanted) startFanHum();
 }
 
 function tone(freq: number, startMs: number, durMs: number, type: OscillatorType = 'square', gain = 0.03) {
@@ -158,14 +162,6 @@ function playMachine(
   }
 }
 
-function stopMachine(src: string): void {
-  const a = machineSounds.get(src);
-  if (a) {
-    a.pause();
-    machineSounds.delete(src);
-  }
-}
-
 /** The power button: the fan spins up. */
 export function playPowerOn(): void {
   playMachine(fanSfx, 0.35);
@@ -239,19 +235,182 @@ export function playDosBoot(): void {
   });
 }
 
-/** Program launch: the disk seeks under the flickering pointer. */
-export function playLaunchSeek(): void {
-  playMachine(diskSfx, 0.16);
-}
-
-export function stopLaunchSeek(): void {
-  stopMachine(diskSfx);
-}
-
 export function stopMachineSounds(): void {
   machineSounds.forEach((a) => a.pause());
   machineSounds.clear();
   stopFanLoop();
+  killFanHum();
+  humWanted = false;
+}
+
+// ---------------------------------------------------------------------------
+// The machine's voice, SYNTHESIZED (no samples, no noise floor): a constant
+// low fan hum while the desktop is up, a spin-up surge when the machine
+// works (bigger program = more fan), and hard-disk seek chatter — rapid
+// irregular clicking — under launches and long thinks. All WebAudio, so the
+// hum loops seamlessly and every chatter burst is different.
+// ---------------------------------------------------------------------------
+
+/** One shared 2s white-noise buffer: the fan's air AND the disk's clicks. */
+let noiseBuf: AudioBuffer | null = null;
+function noise(ac: AudioContext): AudioBuffer {
+  if (!noiseBuf) {
+    noiseBuf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  return noiseBuf;
+}
+
+// --- The fan: filtered air noise + a faint motor fundamental -------------
+const FAN_BASE_GAIN = 0.02;
+const FAN_BASE_HZ = 240;
+const MOTOR_HZ = 118;
+const MOTOR_GAIN = 0.006;
+
+interface FanHum {
+  src: AudioBufferSourceNode;
+  filter: BiquadFilterNode;
+  gain: GainNode;
+  motor: OscillatorNode;
+  motorGain: GainNode;
+}
+let hum: FanHum | null = null;
+/** A surface asked for the hum (survives a mute/unmute round trip). */
+let humWanted = false;
+
+export function startFanHum(): void {
+  humWanted = true;
+  if (isMuted() || hum) return;
+  const ac = audio();
+  if (!ac) return;
+  try {
+    const src = ac.createBufferSource();
+    src.buffer = noise(ac);
+    src.loop = true;
+    const filter = ac.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = FAN_BASE_HZ;
+    filter.Q.value = 0.4;
+    const gain = ac.createGain();
+    gain.gain.value = 0;
+    src.connect(filter).connect(gain).connect(ac.destination);
+    const motor = ac.createOscillator();
+    motor.type = 'triangle';
+    motor.frequency.value = MOTOR_HZ;
+    const motorGain = ac.createGain();
+    motorGain.gain.value = 0;
+    motor.connect(motorGain).connect(ac.destination);
+    src.start();
+    motor.start();
+    // Settle in over a beat rather than snapping on.
+    gain.gain.setTargetAtTime(FAN_BASE_GAIN, ac.currentTime, 0.4);
+    motorGain.gain.setTargetAtTime(MOTOR_GAIN, ac.currentTime, 0.4);
+    hum = { src, filter, gain, motor, motorGain };
+    applyFanLevel();
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Tear the nodes down without clearing the "wanted" flag (mute path). */
+function killFanHum(): void {
+  if (!hum) return;
+  try {
+    hum.src.stop();
+    hum.motor.stop();
+  } catch {
+    /* ignore */
+  }
+  hum = null;
+}
+
+export function stopFanHum(): void {
+  humWanted = false;
+  killFanHum();
+}
+
+// --- The spin-up: work makes the fan louder, brighter, slightly faster ---
+let surgeSeq = 0;
+const surges = new Map<number, number>();
+
+function applyFanLevel(): void {
+  if (!hum || !ctx) return;
+  let level = 0;
+  surges.forEach((v) => {
+    if (v > level) level = v;
+  });
+  // Spin up quick, wind down slow — the way real bearings behave.
+  const tc = level > 0 ? 0.18 : 0.55;
+  const t = ctx.currentTime;
+  hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 1400 * level, t, tc);
+  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 2.8 * level), t, tc);
+  hum.motor.frequency.setTargetAtTime(MOTOR_HZ * (1 + 0.22 * level), t, tc);
+  hum.motorGain.gain.setTargetAtTime(MOTOR_GAIN * (1 + 1.5 * level), t, tc);
+}
+
+/** Start a spin-up at the given intensity (0..1). Returns a handle. */
+export function beginFanSurge(intensity: number): number {
+  const id = ++surgeSeq;
+  surges.set(id, Math.max(0, Math.min(1, intensity)));
+  applyFanLevel();
+  return id;
+}
+
+export function endFanSurge(id: number): void {
+  surges.delete(id);
+  applyFanLevel();
+}
+
+// --- The hard disk: irregular clusters of tiny clicks --------------------
+let chatterUsers = 0;
+let chatterTimer: number | null = null;
+
+function diskClick(ac: AudioContext, at: number): void {
+  const src = ac.createBufferSource();
+  src.buffer = noise(ac);
+  const bp = ac.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 2200 + Math.random() * 2400;
+  bp.Q.value = 2.5;
+  const g = ac.createGain();
+  g.gain.setValueAtTime(0.012 + Math.random() * 0.018, at);
+  g.gain.exponentialRampToValueAtTime(0.0006, at + 0.012);
+  src.connect(bp).connect(g).connect(ac.destination);
+  src.start(at, Math.random() * 1.5, 0.004 + Math.random() * 0.004);
+}
+
+function chatterBurst(): void {
+  if (chatterUsers <= 0) {
+    chatterTimer = null;
+    return;
+  }
+  const ac = ctx;
+  if (ac && !isMuted()) {
+    // One seek: a cluster of clicks on an uneven clock.
+    const clicks = 4 + Math.floor(Math.random() * 10);
+    let at = ac.currentTime + 0.01;
+    for (let i = 0; i < clicks; i++) {
+      diskClick(ac, at);
+      at += 0.008 + Math.random() * 0.024;
+    }
+  }
+  // Heads settle, then seek again.
+  chatterTimer = window.setTimeout(chatterBurst, 120 + Math.random() * 180);
+}
+
+/** The disk starts reading (launches, long thinks). Ref-counted. */
+export function startDiskChatter(): void {
+  chatterUsers += 1;
+  if (chatterTimer === null && audio()) chatterBurst();
+}
+
+export function stopDiskChatter(): void {
+  chatterUsers = Math.max(0, chatterUsers - 1);
+  if (chatterUsers === 0 && chatterTimer !== null) {
+    window.clearTimeout(chatterTimer);
+    chatterTimer = null;
+  }
 }
 
 

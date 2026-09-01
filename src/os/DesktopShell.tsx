@@ -5,7 +5,7 @@ import { DosMode } from './DosMode';
 import { RemoteSession } from './RemoteSession';
 import { Bsod } from './Bsod';
 import { Icon } from './icons';
-import { playError } from './sounds';
+import { playError, startFanHum, stopFanHum } from './sounds';
 import { topWindowId, useWindowStore, TASKBAR_HEIGHT } from './windowStore';
 import { getApp } from './appRegistry';
 import { WindowFrame } from './WindowFrame';
@@ -66,9 +66,15 @@ export function DesktopShell() {
 
   // The desktop is the only surface that counts as "in the game" — mail and
   // chat notifications hold until we're here, past the menu/boot/login.
+  // The machine's body wakes with it: the constant low fan hum runs while
+  // the desktop is up (launches surge it; see launchBusy/sounds).
   useEffect(() => {
     setInGame(true);
-    return () => setInGame(false);
+    startFanHum();
+    return () => {
+      setInGame(false);
+      stopFanHum();
+    };
   }, [setInGame]);
   const [shutDown, setShutDown] = useState(false);
   const [shutDialog, setShutDialog] = useState(false);
