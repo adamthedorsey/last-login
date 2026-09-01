@@ -214,8 +214,10 @@ If not, don't build it that way.
   click opens Case Files at the saved copy (revealDocId prop). No other
   action gets a confirmation toast. The one remaining fourth-wall
   surface is the end-of-demo dialog. Player note-taking is diegetic:
-  Notepad edits and saves real player documents to the desktop
-  (saveDocument).
+  Notepad edits real player documents, and NEW notes save into Case
+  Files' Notes section — the desktop is evidence, so Notepad's Save As
+  shows Desktop grayed out with Case Files as the only writable home.
+  Existing player docs keep whatever home they already have.
 - NO first-boot welcome/tips box: this is Casey's long-lived account, not a
   fresh install — the machine greets nobody. Mechanical teaching belongs to
   the Case Files setup wizard (server content) and period-true affordances.

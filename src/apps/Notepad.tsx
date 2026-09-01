@@ -200,12 +200,21 @@ export function Notepad({ windowId, props }: AppWindowProps) {
   };
 
   const doSave = async (name: string, id: string | null): Promise<boolean> => {
-    const res = await send({ type: 'saveDocument', docId: id ?? undefined, name, text });
+    // NEW files save into Case Files (the Notes section) — the desktop is
+    // evidence and notes belong in the player's own workspace. An existing
+    // document keeps whatever home it already has.
+    const res = await send({
+      type: 'saveDocument',
+      docId: id ?? undefined,
+      name,
+      text,
+      ...(id ? {} : { folderId: 'casefile' }),
+    });
     if (res.type === 'document' && res.ok && res.item) {
       setDocId(res.item.id);
       setDocName(res.item.name);
       setDirty(false);
-      setStatus(`Saved to Desktop — ${res.item.name}`);
+      setStatus(id ? `Saved — ${res.item.name}` : `Saved to Case Files — ${res.item.name}`);
       setTitle(windowId, `${res.item.name} - Notepad`);
       if (pendingCloseRef.current) closeNow();
       return true;
@@ -213,7 +222,7 @@ export function Notepad({ windowId, props }: AppWindowProps) {
     pendingCloseRef.current = false;
     setStatus(
       res.type === 'document' && res.error === 'too_many'
-        ? 'Cannot save: too many files on the desktop.'
+        ? 'Cannot save: the Case Files workspace is full.'
         : 'Save failed.',
     );
     return false;
@@ -426,7 +435,28 @@ export function Notepad({ windowId, props }: AppWindowProps) {
           <Window style={{ width: 300 }}>
             <WindowHeader>Save As</WindowHeader>
             <WindowContent>
-              <div style={{ fontSize: 13, marginBottom: 6 }}>File name (saves to Desktop):</div>
+              <div style={{ fontSize: 13, marginBottom: 4 }}>Save in:</div>
+              {/* The desktop is EVIDENCE — the only writable home for the
+                  player's notes is the Case Files workspace. */}
+              <Frame variant="field" style={{ width: '100%', marginBottom: 8, background: '#fff' }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    padding: '3px 8px',
+                    background: '#000080',
+                    color: '#fff',
+                  }}
+                >
+                  Case Files (Notes)
+                </div>
+                <div
+                  title="The desktop is evidence — files on it cannot be modified."
+                  style={{ fontSize: 13, padding: '3px 8px', color: '#9a9a9a' }}
+                >
+                  Desktop
+                </div>
+              </Frame>
+              <div style={{ fontSize: 13, marginBottom: 6 }}>File name:</div>
               <TextInput
                 value={saveAsName}
                 onChange={(e) => setSaveAsName(e.target.value)}
