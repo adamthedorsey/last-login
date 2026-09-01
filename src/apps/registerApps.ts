@@ -32,6 +32,7 @@ import { DosPrompt } from './DosPrompt';
 import { CdRom } from './CdRom';
 import { SolBackdoor } from './SolBackdoor';
 import { CaseFile } from './CaseFile';
+import { CaseNote } from './CaseNote';
 
 export function registerAllApps(): void {
   registerApp({
@@ -131,6 +132,17 @@ export function registerAllApps(): void {
     singleton: true,
     center: true,
     // Title bar matches the wizard banner: black into its teal.
+    titleBar: { from: '#000000', to: '#14636a' },
+  });
+  registerApp({
+    id: 'casenote',
+    name: 'Case Note',
+    icon: 'notes',
+    component: CaseNote,
+    // The note editor rides in its own window — several may be open at
+    // once — and wears the Case Files uniform (same black->teal bar).
+    defaultSize: { w: 520, h: 420 },
+    hidden: true,
     titleBar: { from: '#000000', to: '#14636a' },
   });
   // --- Accessories (the Win95-style default apps) ---

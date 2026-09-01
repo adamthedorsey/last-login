@@ -11,7 +11,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame, MenuList, MenuListItem, Separator, TextInput, Window, WindowContent, WindowHeader } from 'react95';
+import { Button, Frame, MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
 import type { CaseFileView } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { TASKBAR_HEIGHT, useWindowStore } from '../os/windowStore';
@@ -21,6 +21,7 @@ import { StatusGrip } from '../os/StatusGrip';
 import wizardArt from '../assets/images/humble-county-wizard.jpg';
 import sealArt from '../assets/images/sheriff-seal.png';
 import { OfflineAlert } from '../os/OfflineAlert';
+import { openCaseNote } from './CaseNote';
 import { CloseGlyph, TitleBarButton } from '../os/glyphs';
 import { DOC_TEXT } from '../theme';
 
@@ -148,22 +149,6 @@ const NavTab = styled.button<{ $active: boolean }>`
   margin-top: ${(p) => (p.$active ? 0 : 2)}px;
   position: relative;
   top: 2px;
-`;
-
-/** The plain-text note editor — Arial like every reading surface. */
-const NotePaper = styled.textarea`
-  flex: 1;
-  min-height: 0;
-  resize: none;
-  border: 2px inset #888;
-  background: #fff;
-  padding: 8px 10px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 15px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  user-select: text;
-  outline: none;
 `;
 
 const AboutOverlay = styled.div`
@@ -487,8 +472,6 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   const [docText, setDocText] = useState('');
   const [docName, setDocName] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const saveTimer = useRef(0);
-  const dirtyRef = useRef(false);
 
   // An evidence copy keeps its REAL filename — sourceId is the marker.
   const isCopy = (d: import('@gamecore/types.ts').ItemSummary) => !!d.meta?.sourceId;
@@ -501,6 +484,9 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   };
   useEffect(() => {
     void fetchDocs();
+    // A Case Note window saved (or anything else changed): the open doc's
+    // text may be stale — re-read it so the reading pane tracks.
+    if (docId) void openDoc(docId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentEpoch]);
 
@@ -516,34 +502,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealDocId, revealNonce, file === null]);
 
-  const flushSave = async () => {
-    window.clearTimeout(saveTimer.current);
-    if (!dirtyRef.current || !docId) return;
-    dirtyRef.current = false;
-    await send({ type: 'saveDocument', docId, name: docName, text: docText });
-    setNotice('Saved.');
-  };
-
-  /** The explicit Save button — saves right now, dirty or not. */
-  const saveNow = async () => {
-    if (!docId) return;
-    window.clearTimeout(saveTimer.current);
-    dirtyRef.current = false;
-    await send({ type: 'saveDocument', docId, name: docName, text: docText });
-    setNotice('Saved.');
-  };
-
-  const scheduleSave = (id: string, name: string, text: string) => {
-    dirtyRef.current = true;
-    window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => {
-      dirtyRef.current = false;
-      void send({ type: 'saveDocument', docId: id, name, text }).then(() => setNotice('Saved.'));
-    }, 900);
-  };
-
   const openDoc = async (id: string) => {
-    await flushSave();
     const res = await send({ type: 'open', itemId: id });
     if (res.type === 'open' && res.ok && res.item) {
       setDocId(res.item.id);
@@ -562,7 +521,6 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
       const range = ids.slice(Math.min(a, b), Math.max(a, b) + 1);
       setSelIds(range);
       if (range.length === 1) void openDoc(range[0]);
-      else void flushSave();
       return;
     }
     if (e.ctrlKey || e.metaKey) {
@@ -570,7 +528,6 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
       setSelIds((prev) => {
         const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
         if (next.length === 1) void openDoc(next[0]);
-        else void flushSave();
         return next;
       });
       return;
@@ -578,39 +535,10 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
     void openDoc(id);
   };
 
-  const createNote = async () => {
-    setMenuOpen(null);
-    await flushSave();
-    const taken = new Set(docs.map((d) => d.name));
-    let name = 'New Note.txt';
-    for (let n = 2; taken.has(name) && n < 99; n++) name = `New Note (${n}).txt`;
-    const res = await send({ type: 'saveDocument', name, text: '', folderId: 'casefile' });
-    if (res.type === 'document' && res.ok && res.item) {
-      setSection('notes');
-      setDocId(res.item.id);
-      setDocName(res.item.name);
-      setDocText('');
-      await fetchDocs();
-    } else {
-      setNotice('The note could not be created.');
-    }
-  };
-
-  const commitRename = async (name: string) => {
-    if (!docId || !name.trim()) return;
-    const res = await send({ type: 'renameItem', itemId: docId, name: name.trim() });
-    if (res.type === 'document' && res.ok && res.item) {
-      setDocName(res.item.name);
-      await fetchDocs();
-    }
-  };
-
   const deleteDocs = async () => {
     setConfirmDelete(false);
     const targets = selIds.length > 0 ? selIds : docId ? [docId] : [];
     if (targets.length === 0) return;
-    window.clearTimeout(saveTimer.current);
-    dirtyRef.current = false;
     for (const id of targets) await send({ type: 'deleteDocument', docId: id });
     setSelIds([]);
     setDocId(null);
@@ -676,27 +604,10 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
     }
   };
 
-  const editClipboard = (op: 'cut' | 'copy' | 'paste') => {
+  /** Copy the open document's text (the reading pane is not editable). */
+  const copyDoc = () => {
     setMenuOpen(null);
-    const el = document.activeElement;
-    if (!(el instanceof HTMLTextAreaElement)) return;
-    if (op === 'paste') {
-      void navigator.clipboard.readText().then((clip) => {
-        const at = el.selectionStart;
-        const next = docText.slice(0, at) + clip + docText.slice(el.selectionEnd);
-        setDocText(next);
-        if (docId) scheduleSave(docId, docName, next);
-      });
-      return;
-    }
-    document.execCommand(op);
-    if (op === 'cut' && docId) {
-      // execCommand mutated the textarea; sync state on next tick.
-      window.setTimeout(() => {
-        setDocText(el.value);
-        scheduleSave(docId, docName, el.value);
-      }, 0);
-    }
+    if (docText) void navigator.clipboard.writeText(docText);
   };
 
   const [guideOpen, setGuideOpen] = useState(false);
@@ -888,7 +799,6 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
 
   const switchSection = (to: 'messages' | 'notes' | 'evidence' | 'summary') => {
     setMenuOpen(null);
-    void flushSave();
     setSelIds([]);
     selAnchor.current = null;
     setSection(to);
@@ -932,16 +842,21 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
         </div>
       ) : docId && sectionDocs.some((d) => d.id === docId) ? (
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: 4 }}>
-          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-            <TextInput
-              value={docName}
-              onChange={(e) => setDocName(e.target.value)}
-              onBlur={() => void commitRename(docName)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') void commitRename(docName);
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+            <div
+              style={{
+                flex: 1,
+                minWidth: 0,
+                fontFamily: 'Arial, Helvetica, sans-serif',
+                fontSize: 13,
+                fontWeight: 'bold',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
               }}
-              style={{ flex: 1, fontFamily: 'Arial, Helvetica, sans-serif' }}
-            />
+            >
+              {docName}
+            </div>
             {(() => {
               const src = sectionDocs.find((d) => d.id === docId)?.meta?.sourceId;
               return src ? (
@@ -950,21 +865,15 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
                 </Button>
               ) : null;
             })()}
-            <Button onClick={() => void saveNow()} style={{ width: 70 }}>
-              Save
+            <Button onClick={() => docId && openCaseNote({ docId, name: docName })} style={{ width: 70 }}>
+              Edit
             </Button>
             <Button onClick={() => setConfirmDelete(true)} style={{ width: 70 }}>
               Delete
             </Button>
           </div>
-          <NotePaper
-            value={docText}
-            spellCheck={false}
-            onChange={(e) => {
-              setDocText(e.target.value);
-              if (docId) scheduleSave(docId, docName, e.target.value);
-            }}
-          />
+          {/* Reading is read-only — editing happens in the Case Note window. */}
+          <Reading>{docText || <span style={{ color: '#777' }}>(empty)</span>}</Reading>
         </div>
       ) : (
         <Reading>
@@ -992,22 +901,21 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
         ))}
         {menuOpen === 'file' && (
           <Drop $left={0}>
-            <MenuListItem size="sm" onClick={() => void createNote()}>
+            <MenuListItem size="sm" onClick={() => { setMenuOpen(null); openCaseNote(); }}>
               New Note
             </MenuListItem>
             <MenuListItem
               size="sm"
               disabled={!docId}
-              onClick={docId ? () => { setMenuOpen(null); void flushSave(); } : undefined}
+              onClick={docId ? () => { setMenuOpen(null); openCaseNote({ docId, name: docName }); } : undefined}
             >
-              Save
+              Edit Note
             </MenuListItem>
             <Separator />
             <MenuListItem
               size="sm"
               onClick={() => {
                 setMenuOpen(null);
-                void flushSave();
                 useWindowStore.getState().close(windowId);
               }}
             >
@@ -1017,19 +925,15 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
         )}
         {menuOpen === 'edit' && (
           <Drop $left={38}>
-            <MenuListItem size="sm" disabled={section === 'messages' || section === 'summary' || !docId} onClick={() => editClipboard('cut')}>
-              Cut
-            </MenuListItem>
+            <MenuListItem size="sm" disabled>Cut</MenuListItem>
             <MenuListItem
               size="sm"
-              disabled={section === 'summary'}
-              onClick={section === 'messages' ? copyText : () => editClipboard('copy')}
+              disabled={section === 'summary' || (section !== 'messages' && !docId)}
+              onClick={section === 'messages' ? copyText : copyDoc}
             >
               Copy
             </MenuListItem>
-            <MenuListItem size="sm" disabled={section === 'messages' || section === 'summary' || !docId} onClick={() => editClipboard('paste')}>
-              Paste
-            </MenuListItem>
+            <MenuListItem size="sm" disabled>Paste</MenuListItem>
           </Drop>
         )}
         {menuOpen === 'view' && (
@@ -1086,7 +990,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
           Check Server
         </RibbonButton>
         <RibbonSep />
-        <RibbonButton onClick={() => void createNote()}>
+        <RibbonButton onClick={() => openCaseNote()}>
           <Icon name="notepad" size={22} />
           New Note
         </RibbonButton>
