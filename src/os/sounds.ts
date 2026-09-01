@@ -269,8 +269,9 @@ const FAN_BASE_HZ = 240;
 // first filter — brightness is what reads as synthetic.
 const FAN_CAP_HZ = 600;
 const MOTOR_HZ = 118;
-// Nearly subliminal — the hum should read as AIR, the tone only felt.
-const MOTOR_GAIN = 0.0008;
+// Low but present: with no motor body at all, filtered noise reads as
+// wind over a plain, not a machine in a box.
+const MOTOR_GAIN = 0.0016;
 
 interface FanHum {
   src: AudioBufferSourceNode;
@@ -278,6 +279,8 @@ interface FanHum {
   gain: GainNode;
   motor: OscillatorNode;
   motorGain: GainNode;
+  motor2: OscillatorNode;
+  lfo: OscillatorNode;
 }
 let hum: FanHum | null = null;
 /** A surface asked for the hum (survives a mute/unmute round trip). */
@@ -331,18 +334,42 @@ export function startFanHum(): void {
     const gain = ac.createGain();
     gain.gain.value = 0;
     src.connect(filter).connect(cap).connect(gain).connect(ac.destination);
+    // A high-pass floor keeps outdoor rumble out of the box.
+    const hpf = ac.createBiquadFilter();
+    hpf.type = 'highpass';
+    hpf.frequency.value = 90;
+    src.disconnect();
+    src.connect(hpf).connect(filter);
     const motor = ac.createOscillator();
     motor.type = 'triangle';
     motor.frequency.value = MOTOR_HZ;
     const motorGain = ac.createGain();
     motorGain.gain.value = 0;
     motor.connect(motorGain).connect(ac.destination);
+    // The motor's second partial — the enclosure singing along, faintly.
+    const motor2 = ac.createOscillator();
+    motor2.type = 'sine';
+    motor2.frequency.value = MOTOR_HZ * 2;
+    const motor2Gain = ac.createGain();
+    motor2Gain.gain.value = 0;
+    motor2.connect(motor2Gain).connect(ac.destination);
+    // Mechanical roughness: a slow flutter on the air (blade wobble), so
+    // the noise reads as a fan in a box, not wind over a plain.
+    const lfo = ac.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 43;
+    const lfoDepth = ac.createGain();
+    lfoDepth.gain.value = FAN_BASE_GAIN * 0.22;
+    lfo.connect(lfoDepth).connect(gain.gain);
     src.start();
     motor.start();
+    motor2.start();
+    lfo.start();
     // Settle in over a beat rather than snapping on.
     gain.gain.setTargetAtTime(FAN_BASE_GAIN, ac.currentTime, 0.4);
     motorGain.gain.setTargetAtTime(MOTOR_GAIN, ac.currentTime, 0.4);
-    hum = { src, filter, gain, motor, motorGain };
+    motor2Gain.gain.setTargetAtTime(MOTOR_GAIN * 0.45, ac.currentTime, 0.4);
+    hum = { src, filter, gain, motor, motorGain, motor2, lfo };
     applyFanLevel();
     // The disk sits SILENT at idle — but wakes now and then for a short
     // unprompted housekeeping burst (the ambient life of an old PC).
@@ -359,6 +386,8 @@ function killFanHum(): void {
   try {
     hum.src.stop();
     hum.motor.stop();
+    hum.motor2.stop();
+    hum.lfo.stop();
   } catch {
     /* ignore */
   }
@@ -434,7 +463,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   osc.frequency.setValueAtTime(f0, at);
   osc.frequency.exponentialRampToValueAtTime(f0 * 0.82, at + dur);
   const g = ac.createGain();
-  g.gain.setValueAtTime(0.011 + Math.random() * 0.011, at);
+  g.gain.setValueAtTime(0.0065 + Math.random() * 0.006, at);
   g.gain.exponentialRampToValueAtTime(0.0004, at + dur);
   osc.connect(g).connect(ac.destination);
   osc.start(at);
@@ -443,7 +472,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   const tick = ac.createBufferSource();
   tick.buffer = noise(ac);
   const tg = ac.createGain();
-  tg.gain.setValueAtTime(0.004, at);
+  tg.gain.setValueAtTime(0.0028, at);
   tg.gain.exponentialRampToValueAtTime(0.0003, at + 0.004);
   tick.connect(tg).connect(ac.destination);
   tick.start(at, Math.random() * 1.5, 0.003);
