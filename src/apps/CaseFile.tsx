@@ -634,10 +634,14 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
     setMenuOpen(null);
     setChecking(true);
     try {
-      // Hold the hourglass a beat even on a fast line — the era's rhythm.
+      // The case server takes as long as it takes: usually a quick beat,
+      // sometimes a slow one (still under the ~2.5s ceiling, never eased).
+      const hold = Math.random() < 0.25
+        ? 1600 + Math.random() * 800   // a slow answer
+        : 500 + Math.random() * 700;   // a normal one
       const [res] = await Promise.all([
         send({ type: 'checkMail' }),
-        new Promise((r) => window.setTimeout(r, 700)),
+        new Promise((r) => window.setTimeout(r, hold)),
       ]);
       if (res.type === 'net' && !res.online) {
         setOfflineWarn(true);
