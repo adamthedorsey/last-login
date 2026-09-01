@@ -13,6 +13,8 @@ export interface Toast {
   variant?: 'case';
   /** For 'case': the player-document id the click should reveal. */
   docId?: string;
+  /** For 'case': a saved bookmark id the click should reveal (Bookmarks tab). */
+  bookmarkId?: string;
 }
 
 export interface GameContextValue {

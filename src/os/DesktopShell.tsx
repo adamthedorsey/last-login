@@ -272,6 +272,10 @@ export function DesktopShell() {
                 useWindowStore.getState().open('casefile', {
                   props: { revealDocId: t.docId, revealNonce: t.id },
                 });
+              } else if (t.variant === 'case' && t.bookmarkId) {
+                useWindowStore.getState().open('casefile', {
+                  props: { revealBookmarkId: t.bookmarkId, revealNonce: t.id },
+                });
               }
             }}
           >

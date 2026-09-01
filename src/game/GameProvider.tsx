@@ -232,6 +232,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
       ) {
         setContentEpoch((e) => e + 1);
       }
+      // Bookmarking a page files it with the case — same sheriff-sealed
+      // receipt as an evidence copy, click-through to the Bookmarks tab.
+      if (action.type === 'saveBookmark' && res.type === 'casefile') {
+        const key = action.url.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '');
+        const filed =
+          res.view.bookmarks?.find(
+            (b) => b.url.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '') === key,
+          ) ?? res.view.bookmarks?.[0];
+        if (filed) {
+          playNotify();
+          setToasts((prev) => [
+            ...prev,
+            {
+              id: ++toastId,
+              variant: 'case' as const,
+              title: 'CASE FILES',
+              description: `Filed to Bookmarks:\n"${filed.title}"`,
+              bookmarkId: filed.id,
+            },
+          ]);
+        }
+      }
       if (res.type === 'document' && res.ok) {
         // A player file was created/renamed — desktop views should refetch.
         setContentEpoch((e) => e + 1);

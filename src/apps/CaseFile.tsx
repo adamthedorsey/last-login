@@ -595,13 +595,19 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   // through it lands directly on the saved copy in Evidence Copies. The
   // nonce makes each receipt click land, even for the same document.
   const revealDocId = props?.revealDocId as string | undefined;
+  const revealBookmarkId = props?.revealBookmarkId as string | undefined;
   const revealNonce = props?.revealNonce as number | undefined;
   useEffect(() => {
-    if (!revealDocId || !file || (file.setup?.length ?? 0) > 0) return;
-    setSection('evidence');
-    void openDoc(revealDocId); // full open — name + text, like a row click
+    if (!file || (file.setup?.length ?? 0) > 0) return;
+    if (revealDocId) {
+      setSection('evidence');
+      void openDoc(revealDocId); // full open — name + text, like a row click
+    } else if (revealBookmarkId) {
+      setSection('bookmarks');
+      setBmId(revealBookmarkId);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [revealDocId, revealNonce, file === null]);
+  }, [revealDocId, revealBookmarkId, revealNonce, file === null]);
 
   const openDoc = async (id: string) => {
     const res = await send({ type: 'open', itemId: id });

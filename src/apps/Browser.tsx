@@ -1209,12 +1209,10 @@ export function Browser({ windowId, props }: AppWindowProps) {
           title="Save this page's address to Case Files"
           onClick={() => {
             if (viewState.kind !== 'page' || !address) return;
+            // Success throws the Case Files receipt toast (GameProvider);
+            // only surface a status line if it could NOT be filed.
             void send({ type: 'saveBookmark', url: address }).then((res) => {
-              setStatus(
-                res.type === 'casefile'
-                  ? 'Bookmarked to Case Files.'
-                  : 'This page could not be bookmarked.',
-              );
+              if (res.type !== 'casefile') setStatus('This page could not be bookmarked.');
             });
           }}
         >
