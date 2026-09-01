@@ -32,7 +32,7 @@ const SPLASH_LINES = [
   'Verifying workstation credentials...',
   'Reading evidence index...',
   'Checking case server connection...',
-  'Loading CASE 97-0244...',
+  'Loading assigned case...',
 ];
 
 export function CaseFileSplash({ onDone }: { onDone: () => void }) {
