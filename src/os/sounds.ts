@@ -280,7 +280,9 @@ interface FanHum {
   motor: OscillatorNode;
   motorGain: GainNode;
   motor2: OscillatorNode;
+  motor2Gain: GainNode;
   lfo: OscillatorNode;
+  lfoDepth: GainNode;
 }
 let hum: FanHum | null = null;
 /** A surface asked for the hum (survives a mute/unmute round trip). */
@@ -369,7 +371,7 @@ export function startFanHum(): void {
     gain.gain.setTargetAtTime(FAN_BASE_GAIN, ac.currentTime, 0.4);
     motorGain.gain.setTargetAtTime(MOTOR_GAIN, ac.currentTime, 0.4);
     motor2Gain.gain.setTargetAtTime(MOTOR_GAIN * 0.45, ac.currentTime, 0.4);
-    hum = { src, filter, gain, motor, motorGain, motor2, lfo };
+    hum = { src, filter, gain, motor, motorGain, motor2, motor2Gain, lfo, lfoDepth };
     applyFanLevel();
     // The disk sits SILENT at idle — but wakes now and then for a short
     // unprompted housekeeping burst (the ambient life of an old PC).
@@ -417,13 +419,25 @@ function applyFanLevel(): void {
   const t = ctx.currentTime;
   hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 180 * level, t, tc);
   hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 1.3 * level), t, tc);
+  // The whole machine gets louder, not just the air — motor, enclosure
+  // partial, and blade flutter all scale, so a spin-up churns rather than
+  // turning back into wind.
+  hum.motorGain.gain.setTargetAtTime(MOTOR_GAIN * (1 + 1.1 * level), t, tc);
+  hum.motor2Gain.gain.setTargetAtTime(MOTOR_GAIN * 0.45 * (1 + 1.1 * level), t, tc);
+  hum.lfoDepth.gain.setTargetAtTime(FAN_BASE_GAIN * 0.22 * (1 + 1.3 * level), t, tc);
 }
 
-/** Start a spin-up at the given intensity (0..1). Returns a handle. */
+/** Start a spin-up at the given intensity (0..1). Returns a handle. The
+ * fan winds up, holds a beat scaled to how big the job is (plus some
+ * randomness), then chills out ON ITS OWN — endFanSurge on a surge that
+ * already relaxed is a harmless no-op. */
 export function beginFanSurge(intensity: number): number {
   const id = ++surgeSeq;
-  surges.set(id, Math.max(0, Math.min(1, intensity)));
+  const level = Math.max(0, Math.min(1, intensity));
+  surges.set(id, level);
   applyFanLevel();
+  const hold = 500 + level * (1100 + Math.random() * 2300);
+  window.setTimeout(() => endFanSurge(id), hold);
   return id;
 }
 
@@ -463,7 +477,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   osc.frequency.setValueAtTime(f0, at);
   osc.frequency.exponentialRampToValueAtTime(f0 * 0.82, at + dur);
   const g = ac.createGain();
-  g.gain.setValueAtTime(0.0065 + Math.random() * 0.006, at);
+  g.gain.setValueAtTime(0.0046 + Math.random() * 0.0042, at);
   g.gain.exponentialRampToValueAtTime(0.0004, at + dur);
   osc.connect(g).connect(ac.destination);
   osc.start(at);
@@ -472,7 +486,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   const tick = ac.createBufferSource();
   tick.buffer = noise(ac);
   const tg = ac.createGain();
-  tg.gain.setValueAtTime(0.0028, at);
+  tg.gain.setValueAtTime(0.002, at);
   tg.gain.exponentialRampToValueAtTime(0.0003, at + 0.004);
   tick.connect(tg).connect(ac.destination);
   tick.start(at, Math.random() * 1.5, 0.003);
