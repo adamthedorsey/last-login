@@ -82,18 +82,19 @@ describe('computer login', () => {
     expect(after.result).toMatchObject({ type: 'login', ok: true });
   });
 
-  it('reveals the owner-typed hint only after three failed attempts, then permanently', () => {
+  it('reveals the owner-typed hint only after two failed attempts, then permanently', () => {
     let s = newPlayerState();
-    for (let i = 0; i < 2; i++) {
-      const r = run(s, { type: 'login', password: `wrong${i}` });
-      s = r.state;
-      if (r.result.type !== 'login') throw new Error('bad result');
-      expect(r.result.hint).toBeUndefined();
-    }
-    const third = run(s, { type: 'login', password: 'wrong3' });
-    s = third.state;
-    if (third.result.type !== 'login') throw new Error('bad result');
-    expect(third.result.hint).toContain('flower');
+    // First wrong attempt — the hint stays withheld.
+    const first = run(s, { type: 'login', password: 'wrong0' });
+    s = first.state;
+    if (first.result.type !== 'login') throw new Error('bad result');
+    expect(first.result.hint).toBeUndefined();
+
+    // The second wrong attempt earns it.
+    const second = run(s, { type: 'login', password: 'wrong1' });
+    s = second.state;
+    if (second.result.type !== 'login') throw new Error('bad result');
+    expect(second.result.hint).toContain('flower');
 
     // Earned once, served always — including in the pre-login state view.
     const st = run(s, { type: 'getState' }).result;

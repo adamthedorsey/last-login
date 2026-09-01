@@ -236,7 +236,7 @@ function toDiscoveryView(d: Discovery): DiscoveryView {
  * many failed login attempts (and then stays revealed, across lockouts and
  * reloads, via a server-side flag).
  */
-const HINT_AFTER_ATTEMPTS = 3;
+const HINT_AFTER_ATTEMPTS = 2;
 const HINT_REVEALED_FLAG = 'login-hint-revealed';
 
 /** Set by caseFileSync when Case Files first-run setup completes. Handler
