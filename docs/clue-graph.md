@@ -2,8 +2,8 @@
 
 > GENERATED — do not edit. Source of truth: `season1.ts`. Regenerate: `npm run graph`
 >
-> In-world date: 1997-10-18 · 131 items
-> (12 gated · 11 granting · ~108 mundane camouflage) ·
+> In-world date: 1997-10-18 · 199 items
+> (12 gated · 11 granting · ~176 mundane camouflage) ·
 > 8 discoveries
 
 ```mermaid
@@ -54,7 +54,7 @@ flowchart TD
   i_trash_diary["diary.doc<br/><i>recycle bin</i>"]:::item
   i_trash_diary ==>|grants| d_the_house
   d_who_shaped -->|requires| i_trash_diary
-  i_web_register_timeline["The Humble Register: Timeline of Oct. 10<br/><i>web</i>"]:::item
+  i_web_register_timeline["The Humble Times: Timeline of Oct. 10<br/><i>web</i>"]:::item
   i_web_register_timeline ==>|grants| d_chads_window
   d_stolen_intimacy -->|requires| i_web_register_timeline
   i_web_mapfinder_bend["MapFinder: Route 9 river bend<br/><i>web</i>"]:::item

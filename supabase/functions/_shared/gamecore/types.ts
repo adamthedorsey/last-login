@@ -392,6 +392,13 @@ export interface SeasonContent {
    * — they serve as name-only dead shortcuts until earned. Max 15.
    */
   recentDocuments?: string[];
+  /**
+   * NetVoyager's history menu, FROZEN at Casey's last session — what she
+   * browsed before she went missing, newest first. A quiet clue trail:
+   * entries may point at gated pages (visit still enforces gating; the page
+   * simply "won't load" until earned). Titles/urls/timestamps only.
+   */
+  browserHistory?: Array<{ url: string; title: string; at: string }>;
   discoveries: Discovery[];
   buddies: Buddy[];
   /** Live prompt-tree conversations (see ChatConversation). SERVER ONLY. */
@@ -682,6 +689,8 @@ export interface StateView {
   remotePending?: boolean;
   wallpaper: string;
   homeUrl: string;
+  /** NetVoyager's history, frozen at Casey's last session (newest first). */
+  browserHistory?: Array<{ url: string; title: string; at: string }>;
   loggedIn: boolean;
   ended: boolean;
   discoveries: DiscoveryView[];

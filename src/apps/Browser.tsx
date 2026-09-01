@@ -934,6 +934,19 @@ export function Browser({ windowId, props }: AppWindowProps) {
         { label: 'Back', action: goBack, disabled: backStack.current.length === 0 },
         { label: 'Forward', action: goForward, disabled: fwdStack.current.length === 0 },
         { label: 'Home', action: () => void navigate(homeUrl) },
+        // The history below is the machine's, not the player's: what Casey
+        // browsed before she went missing, frozen — served by the engine,
+        // exactly where Netscape kept it. Entries may point at pages that
+        // "won't load" (the server enforces its own gating).
+        ...(gameView?.browserHistory?.length
+          ? ([
+              'sep',
+              ...gameView.browserHistory.map((h) => ({
+                label: `${h.title}  (${h.at})`,
+                action: () => void navigate(h.url),
+              })),
+            ] as MenuSpec['items'])
+          : []),
       ],
     },
     {

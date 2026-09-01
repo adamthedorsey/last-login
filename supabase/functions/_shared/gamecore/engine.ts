@@ -338,6 +338,7 @@ export function toStateView(
     dosVolume: content.computer.dosVolume,
     wallpaper: content.wallpaper,
     homeUrl: content.homeUrl,
+    browserHistory: content.browserHistory,
     loggedIn: state.loggedIn,
     ended: state.ended,
     discoveries: state.discoveries
