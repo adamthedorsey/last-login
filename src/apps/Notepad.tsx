@@ -228,19 +228,13 @@ export function Notepad({ windowId, props }: AppWindowProps) {
     return false;
   };
 
-  const onSave = () => {
+  const onSaveToCaseFiles = () => {
     setMenuOpen(null);
     if (docId) void doSave(docName, docId);
     else {
       setSaveAsName(docName);
       setSaveAsOpen(true);
     }
-  };
-
-  const onSaveAs = () => {
-    setMenuOpen(null);
-    setSaveAsName(docName);
-    setSaveAsOpen(true);
   };
 
   const onNew = () => {
@@ -288,11 +282,17 @@ export function Notepad({ windowId, props }: AppWindowProps) {
             <MenuListItem size="sm" onClick={onNew}>
               New
             </MenuListItem>
-            <MenuListItem size="sm" disabled={readOnly} onClick={readOnly ? undefined : onSave}>
-              Save
-            </MenuListItem>
-            <MenuListItem size="sm" disabled={readOnly} onClick={readOnly ? undefined : onSaveAs}>
-              Save As...
+            {/* The machine is evidence: writing to its disk is off the
+                table, so the stock Save entries sit grayed like Print does.
+                The player's one write path is their own workspace. */}
+            <MenuListItem size="sm" disabled>Save</MenuListItem>
+            <MenuListItem size="sm" disabled>Save As...</MenuListItem>
+            <MenuListItem
+              size="sm"
+              disabled={readOnly}
+              onClick={readOnly ? undefined : onSaveToCaseFiles}
+            >
+              Save to Case Files
             </MenuListItem>
             <Separator />
             <MenuListItem size="sm" disabled>Page Setup...</MenuListItem>
@@ -433,29 +433,8 @@ export function Notepad({ windowId, props }: AppWindowProps) {
       {saveAsOpen && (
         <DialogOverlay>
           <Window style={{ width: 300 }}>
-            <WindowHeader>Save As</WindowHeader>
+            <WindowHeader>Save to Case Files</WindowHeader>
             <WindowContent>
-              <div style={{ fontSize: 13, marginBottom: 4 }}>Save in:</div>
-              {/* The desktop is EVIDENCE — the only writable home for the
-                  player's notes is the Case Files workspace. */}
-              <Frame variant="field" style={{ width: '100%', marginBottom: 8, background: '#fff' }}>
-                <div
-                  style={{
-                    fontSize: 13,
-                    padding: '3px 8px',
-                    background: '#000080',
-                    color: '#fff',
-                  }}
-                >
-                  Case Files (Notes)
-                </div>
-                <div
-                  title="The desktop is evidence — files on it cannot be modified."
-                  style={{ fontSize: 13, padding: '3px 8px', color: '#9a9a9a' }}
-                >
-                  Desktop
-                </div>
-              </Frame>
               <div style={{ fontSize: 13, marginBottom: 6 }}>File name:</div>
               <TextInput
                 value={saveAsName}
