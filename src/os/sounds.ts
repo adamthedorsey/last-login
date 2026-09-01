@@ -269,7 +269,8 @@ const FAN_BASE_HZ = 240;
 // first filter — brightness is what reads as synthetic.
 const FAN_CAP_HZ = 600;
 const MOTOR_HZ = 118;
-const MOTOR_GAIN = 0.0025;
+// Nearly subliminal — the hum should read as AIR, the tone only felt.
+const MOTOR_GAIN = 0.0008;
 
 interface FanHum {
   src: AudioBufferSourceNode;
@@ -386,7 +387,7 @@ function applyFanLevel(): void {
   const tc = level > 0 ? 0.45 : 0.6;
   const t = ctx.currentTime;
   hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 180 * level, t, tc);
-  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 0.7 * level), t, tc);
+  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 1.3 * level), t, tc);
 }
 
 /** Start a spin-up at the given intensity (0..1). Returns a handle. */
