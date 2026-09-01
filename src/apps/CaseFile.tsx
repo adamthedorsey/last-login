@@ -15,7 +15,7 @@ import { Button, Frame, Hourglass, MenuList, MenuListItem, Separator, Window, Wi
 import type { CaseFileView } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { TASKBAR_HEIGHT, useWindowStore } from '../os/windowStore';
-import { isMuted } from '../os/sounds';
+import { isMuted, startDiskChatter, stopDiskChatter } from '../os/sounds';
 import { Icon } from '../os/icons';
 import { StatusGrip } from '../os/StatusGrip';
 import wizardArt from '../assets/images/humble-county-wizard.jpg';
@@ -633,12 +633,12 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   const checkServer = async () => {
     setMenuOpen(null);
     setChecking(true);
+    // The disk works the whole time the county's server is thinking.
+    const chatter = startDiskChatter(0.7);
     try {
-      // The case server takes as long as it takes: usually a quick beat,
-      // sometimes a slow one (still under the ~2.5s ceiling, never eased).
-      const hold = Math.random() < 0.25
-        ? 1600 + Math.random() * 800   // a slow answer
-        : 500 + Math.random() * 700;   // a normal one
+      // The case server takes as long as it takes: 2-5 seconds, different
+      // every call (owner call — this wait may exceed the usual ceiling).
+      const hold = 2000 + Math.random() * 3000;
       const [res] = await Promise.all([
         send({ type: 'checkMail' }),
         new Promise((r) => window.setTimeout(r, hold)),
@@ -650,6 +650,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
       await refetch();
       setNotice('Case server checked.');
     } finally {
+      stopDiskChatter(chatter);
       setChecking(false);
     }
   };
