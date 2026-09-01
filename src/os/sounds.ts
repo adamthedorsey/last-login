@@ -417,14 +417,17 @@ function applyFanLevel(): void {
   // filter keeps the character identical at every level.
   const tc = level > 0 ? 0.45 : 0.6;
   const t = ctx.currentTime;
-  hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 180 * level, t, tc);
-  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 1.3 * level), t, tc);
-  // The whole machine gets louder, not just the air — motor, enclosure
-  // partial, and blade flutter all scale, so a spin-up churns rather than
-  // turning back into wind.
-  hum.motorGain.gain.setTargetAtTime(MOTOR_GAIN * (1 + 1.1 * level), t, tc);
-  hum.motor2Gain.gain.setTargetAtTime(MOTOR_GAIN * 0.45 * (1 + 1.1 * level), t, tc);
-  hum.lfoDepth.gain.setTargetAtTime(FAN_BASE_GAIN * 0.22 * (1 + 1.3 * level), t, tc);
+  hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 140 * level, t, tc);
+  // The AIR rises only modestly — a big noise swell reads as a wind gust.
+  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 0.6 * level), t, tc);
+  // The MOTOR carries the spin-up: markedly louder, a touch higher, with
+  // the blade flutter speeding up — RPM rising, not weather arriving.
+  hum.motor.frequency.setTargetAtTime(MOTOR_HZ * (1 + 0.08 * level), t, tc);
+  hum.motor2.frequency.setTargetAtTime(MOTOR_HZ * 2 * (1 + 0.08 * level), t, tc);
+  hum.motorGain.gain.setTargetAtTime(MOTOR_GAIN * (1 + 2.4 * level), t, tc);
+  hum.motor2Gain.gain.setTargetAtTime(MOTOR_GAIN * 0.45 * (1 + 2.4 * level), t, tc);
+  hum.lfo.frequency.setTargetAtTime(43 * (1 + 0.4 * level), t, tc);
+  hum.lfoDepth.gain.setTargetAtTime(FAN_BASE_GAIN * 0.30 * (1 + 1.6 * level), t, tc);
 }
 
 /** Start a spin-up at the given intensity (0..1). Returns a handle. The
@@ -489,7 +492,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   // NOISE through a resonant bandpass — static's texture with a chirp's
   // contour. A pure tone sings like a bird; the real thing crackles.
   const f0 = 1500 + Math.random() * 800;
-  const dur = 0.014 + Math.random() * 0.026;
+  const dur = 0.010 + Math.random() * 0.016;
   const src = ac.createBufferSource();
   src.buffer = noise(ac);
   const bp = ac.createBiquadFilter();
@@ -521,7 +524,7 @@ function chatterBurst(): void {
     let at = ac.currentTime + 0.01;
     for (let i = 0; i < chirps; i++) {
       diskChirp(ac, at);
-      at += 0.02 + Math.random() * (0.06 - 0.025 * level);
+      at += 0.014 + Math.random() * (0.045 - 0.02 * level);
     }
   }
   // Rests between runs: ~100-300ms under load, stretching to multi-second
