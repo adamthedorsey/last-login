@@ -477,7 +477,7 @@ function getDiskBus(ac: AudioContext): BiquadFilterNode {
   if (!diskBus) {
     diskBus = ac.createBiquadFilter();
     diskBus.type = 'lowpass';
-    diskBus.frequency.value = 1700;
+    diskBus.frequency.value = 1450;
     diskBus.Q.value = 0.4;
     diskBus.connect(ac.destination);
   }
@@ -488,7 +488,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   const bus = getDiskBus(ac);
   // NOISE through a resonant bandpass — static's texture with a chirp's
   // contour. A pure tone sings like a bird; the real thing crackles.
-  const f0 = 1700 + Math.random() * 900;
+  const f0 = 1500 + Math.random() * 800;
   const dur = 0.014 + Math.random() * 0.026;
   const src = ac.createBufferSource();
   src.buffer = noise(ac);
@@ -496,10 +496,10 @@ function diskChirp(ac: AudioContext, at: number): void {
   bp.type = 'bandpass';
   bp.frequency.setValueAtTime(f0, at);
   bp.frequency.exponentialRampToValueAtTime(f0 * 0.8, at + dur);
-  bp.Q.value = 5;
+  bp.Q.value = 3.2;
   const g = ac.createGain();
   // soft attack (nothing "lands" right at your ear), then decay
-  const peak = 0.011 + Math.random() * 0.01; // bandpassed noise needs more drive
+  const peak = 0.013 + Math.random() * 0.011; // wider band + deeper muffle need more drive
   g.gain.setValueAtTime(0.0006, at);
   g.gain.linearRampToValueAtTime(peak, at + 0.004);
   g.gain.exponentialRampToValueAtTime(0.0005, at + dur);
