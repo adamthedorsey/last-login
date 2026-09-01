@@ -34,6 +34,7 @@ import { SolBackdoor } from './SolBackdoor';
 import { CaseFile } from './CaseFile';
 import { CaseNote } from './CaseNote';
 import { caseTheme } from '../os/caseTheme';
+import { CaseFileSplash } from './CaseFileSplash';
 
 export function registerAllApps(): void {
   registerApp({
@@ -136,6 +137,7 @@ export function registerAllApps(): void {
     // whole window wears the county-issue manila tint.
     titleBar: { from: '#000000', to: '#14636a' },
     theme: caseTheme,
+    splash: CaseFileSplash,
   });
   registerApp({
     id: 'casenote',

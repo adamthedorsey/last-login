@@ -74,7 +74,15 @@ const warm = new Set<string>();
 export function launchProfile(appId: string, sizeWeight: number): { ms: number; intensity: number } {
   const cold = !warm.has(appId);
   warm.add(appId);
+  // The bigger the program, the longer the load: size stretches the delay
+  // (a big app cold-loads ~2x a small one), and cold always beats warm.
   return cold
-    ? { ms: 950 + Math.floor(Math.random() * 450), intensity: 0.45 + 0.55 * sizeWeight }
-    : { ms: 450 + Math.floor(Math.random() * 250), intensity: 0.12 + 0.28 * sizeWeight };
+    ? {
+        ms: 800 + Math.floor(sizeWeight * 1000) + Math.floor(Math.random() * 400),
+        intensity: 0.45 + 0.55 * sizeWeight,
+      }
+    : {
+        ms: 380 + Math.floor(sizeWeight * 380) + Math.floor(Math.random() * 220),
+        intensity: 0.12 + 0.28 * sizeWeight,
+      };
 }

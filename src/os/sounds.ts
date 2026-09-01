@@ -420,28 +420,24 @@ function applyFanLevel(): void {
   const t = ctx.currentTime;
   hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 140 * level, t, tc);
   // The AIR rises only modestly — a big noise swell reads as a wind gust.
-  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 0.6 * level), t, tc);
+  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 0.95 * level), t, tc);
   // The MOTOR carries the spin-up: markedly louder, a touch higher, with
   // the blade flutter speeding up — RPM rising, not weather arriving.
   hum.motor.frequency.setTargetAtTime(MOTOR_HZ * (1 + 0.08 * level), t, tc);
   hum.motor2.frequency.setTargetAtTime(MOTOR_HZ * 2 * (1 + 0.08 * level), t, tc);
-  hum.motorGain.gain.setTargetAtTime(MOTOR_GAIN * (1 + 2.4 * level), t, tc);
-  hum.motor2Gain.gain.setTargetAtTime(MOTOR_GAIN * 0.45 * (1 + 2.4 * level), t, tc);
+  hum.motorGain.gain.setTargetAtTime(MOTOR_GAIN * (1 + 3.2 * level), t, tc);
+  hum.motor2Gain.gain.setTargetAtTime(MOTOR_GAIN * 0.45 * (1 + 3.2 * level), t, tc);
   hum.lfo.frequency.setTargetAtTime(43 * (1 + 0.4 * level), t, tc);
-  hum.lfoDepth.gain.setTargetAtTime(FAN_BASE_GAIN * 0.30 * (1 + 1.6 * level), t, tc);
+  hum.lfoDepth.gain.setTargetAtTime(FAN_BASE_GAIN * 0.30 * (1 + 2.2 * level), t, tc);
 }
 
 /** Start a spin-up at the given intensity (0..1). Returns a handle. The
- * fan winds up, holds a beat scaled to how big the job is (plus some
- * randomness), then chills out ON ITS OWN — endFanSurge on a surge that
- * already relaxed is a harmless no-op. */
+ * fan holds for the LIFE of the job (endFanSurge releases it and the fan
+ * winds down over a couple of seconds on its own). */
 export function beginFanSurge(intensity: number): number {
   const id = ++surgeSeq;
-  const level = Math.max(0, Math.min(1, intensity));
-  surges.set(id, level);
+  surges.set(id, Math.max(0, Math.min(1, intensity)));
   applyFanLevel();
-  const hold = 500 + level * (1100 + Math.random() * 2300);
-  window.setTimeout(() => endFanSurge(id), hold);
   return id;
 }
 
