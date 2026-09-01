@@ -142,7 +142,9 @@ const NavTab = styled.button<{ $active: boolean }>`
   background: #d4d0c8;
   padding: ${(p) => (p.$active ? '4px 14px 6px' : '3px 12px')};
   font-size: 13px;
-  font-family: inherit;
+  /* Owner call: Case Files CONTENT and NAV read in Arial (app chrome —
+     menus, ribbon, status — stays bitmap). */
+  font-family: Arial, Helvetica, sans-serif;
   margin-top: ${(p) => (p.$active ? 0 : 2)}px;
   position: relative;
   top: 2px;
@@ -177,6 +179,7 @@ const AboutOverlay = styled.div`
 const TitleBand = styled(Frame).attrs({ variant: 'well' })`
   padding: 4px 8px;
   font-size: 13px;
+  font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
   flex-shrink: 0;
   overflow: hidden;
@@ -196,6 +199,7 @@ const Layout = styled.div`
 const MemoList = styled(Frame).attrs({ variant: 'well' })`
   overflow: auto;
   padding: 4px;
+  font-family: Arial, Helvetica, sans-serif;
 `;
 
 const MemoRow = styled.button<{ $active: boolean; $unread: boolean }>`
@@ -207,6 +211,7 @@ const MemoRow = styled.button<{ $active: boolean; $unread: boolean }>`
   color: ${(p) => (p.$active ? '#fff' : 'inherit')};
   padding: 3px 6px;
   font-size: 13px;
+  font-family: Arial, Helvetica, sans-serif;
   font-weight: ${(p) => (p.$unread ? 'bold' : 'normal')};
   cursor: var(--cursor-arrow);
   span {
@@ -878,7 +883,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
               onKeyDown={(e) => {
                 if (e.key === 'Enter') void commitRename(docName);
               }}
-              style={{ flex: 1 }}
+              style={{ flex: 1, fontFamily: 'Arial, Helvetica, sans-serif' }}
             />
             {(() => {
               const src = sectionDocs.find((d) => d.id === docId)?.meta?.sourceId;

@@ -72,7 +72,6 @@ const ContextMenu = styled(MenuList)`
   z-index: 100005;
   min-width: 180px;
   font-size: 13px;
-  font-family: Arial, Helvetica, sans-serif; /* owner call: menus read in Arial */
 `;
 
 const RenameInput = styled.input`

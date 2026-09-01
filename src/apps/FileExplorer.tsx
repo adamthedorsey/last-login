@@ -181,7 +181,6 @@ const ItemMenu = styled(MenuList)`
   z-index: 100007;
   min-width: 150px;
   font-size: 13px;
-  font-family: Arial, Helvetica, sans-serif; /* owner call: menus read in Arial */
 `;
 
 /** The Win95 rubber-band: a dotted rectangle, nothing fancier. */
