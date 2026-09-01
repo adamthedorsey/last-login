@@ -290,6 +290,35 @@ const Reading = styled(Frame).attrs({ variant: 'field' })`
   min-height: 0;
 `;
 
+/** The empty sheet: centered, institutional, with the one next step. */
+const EmptyPane = styled(Frame).attrs({ variant: 'field' })`
+  flex: 1;
+  min-height: 0;
+  margin-top: 4px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #5c574a;
+  padding: 24px;
+`;
+
+const EmptyTitle = styled.div`
+  font-size: 15px;
+  font-weight: bold;
+  color: #3d3a30;
+`;
+
+const EmptyBody = styled.div`
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 360px;
+`;
+
 const MemoHead = styled.div`
   border-bottom: 1px solid #ccc;
   margin-bottom: 8px;
@@ -913,7 +942,22 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   const singleDoc = multiSelected.length <= 1 && docId && sectionDocs.some((d) => d.id === docId);
   const docSrc = singleDoc ? sectionDocs.find((d) => d.id === docId)?.meta?.sourceId : undefined;
   const selectedBm = (file?.bookmarks ?? []).find((b) => b.id === bmId);
-  const docsPane = (
+  const docsPane = sectionDocs.length === 0 ? (
+    <EmptyPane>
+      <Icon name={section === 'notes' ? 'notepad' : 'notes'} size={40} />
+      <EmptyTitle>{section === 'notes' ? 'No notes on file' : 'No evidence copies on file'}</EmptyTitle>
+      <EmptyBody>
+        {section === 'notes'
+          ? 'Anything you write is kept with the case, not on the machine.'
+          : 'Right-click any file, message, photo, or web page on the computer and choose Save to Case Files to take a working copy.'}
+      </EmptyBody>
+      {section === 'notes' && (
+        <Button onClick={() => openCaseNote()} style={{ padding: '0 16px' }}>
+          New Note
+        </Button>
+      )}
+    </EmptyPane>
+  ) : (
     <>
       <Layout $wide={section === 'evidence'}>
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -939,11 +983,6 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
                   ))}
                 </TableBody>
               </Table>
-              {sectionDocs.length === 0 && (
-                <div style={{ padding: 8, color: '#777', fontSize: 13, fontFamily: 'Arial, Helvetica, sans-serif' }}>
-                  (nothing saved yet — right-click any file on the computer and choose Save to Case Files)
-                </div>
-              )}
             </div>
           ) : (
         <MemoList>
@@ -958,11 +997,6 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
               <small>{d.meta?.modifiedAt ?? ''}</small>
             </MemoRow>
           ))}
-          {sectionDocs.length === 0 && (
-            <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
-              (no notes yet — use New Note)
-            </div>
-          )}
         </MemoList>
           )}
         </div>
@@ -1306,7 +1340,22 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
 
       {(section === 'notes' || section === 'evidence') && docsPane}
 
-      {section === 'bookmarks' && (
+      {section === 'bookmarks' && (file.bookmarks ?? []).length === 0 && (
+        <EmptyPane>
+          <Icon name="browser" size={40} />
+          <EmptyTitle>No saved addresses</EmptyTitle>
+          <EmptyBody>
+            Use the Bookmark button in NetVoyager to file a web address with the case.
+          </EmptyBody>
+          <Button
+            onClick={() => useWindowStore.getState().open('browser')}
+            style={{ padding: '0 16px' }}
+          >
+            Open NetVoyager
+          </Button>
+        </EmptyPane>
+      )}
+      {section === 'bookmarks' && (file.bookmarks ?? []).length > 0 && (
         <Layout>
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <MemoList>
@@ -1321,11 +1370,6 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
                   <small>{b.url}</small>
                 </MemoRow>
               ))}
-              {(file.bookmarks ?? []).length === 0 && (
-                <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
-                  (nothing bookmarked yet — use the Bookmark button in NetVoyager)
-                </div>
-              )}
             </MemoList>
           </div>
           <Reading>
