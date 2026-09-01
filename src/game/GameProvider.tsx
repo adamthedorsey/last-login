@@ -171,13 +171,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       // flips EVERY cursor to the pixel hourglass after a beat, exactly
       // like 1997 did (the .busy rule lives in the global styles).
       pendingSends += 1;
-      // A slow call is the machine THINKING: the hourglass comes with the
-      // hard disk chattering under it (stopped the moment the call lands).
-      let thinking = false;
+      // A slow call is the machine THINKING HARD: the hourglass comes with
+      // dense disk chatter under it (stopped the moment the call lands).
+      let chatterId: number | null = null;
       const hourglass = window.setTimeout(() => {
         document.documentElement.classList.add('busy');
-        thinking = true;
-        startDiskChatter();
+        chatterId = startDiskChatter(0.85);
       }, 150);
       let res: ActionResult;
       try {
@@ -185,7 +184,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       } finally {
         pendingSends -= 1;
         window.clearTimeout(hourglass);
-        if (thinking) stopDiskChatter();
+        if (chatterId !== null) stopDiskChatter(chatterId);
         if (pendingSends === 0) document.documentElement.classList.remove('busy');
       }
       if (viewRef.current?.online) setNetActivity((n) => n + 1);

@@ -263,10 +263,10 @@ function noise(ac: AudioContext): AudioBuffer {
 }
 
 // --- The fan: filtered air noise + a faint motor fundamental -------------
-const FAN_BASE_GAIN = 0.02;
+const FAN_BASE_GAIN = 0.013;
 const FAN_BASE_HZ = 240;
 const MOTOR_HZ = 118;
-const MOTOR_GAIN = 0.006;
+const MOTOR_GAIN = 0.004;
 
 interface FanHum {
   src: AudioBufferSourceNode;
@@ -340,13 +340,15 @@ function applyFanLevel(): void {
   surges.forEach((v) => {
     if (v > level) level = v;
   });
-  // Spin up quick, wind down slow — the way real bearings behave.
-  const tc = level > 0 ? 0.18 : 0.55;
+  // A fan spinning up is mostly MORE AIR — a swell of noise, slightly
+  // brighter, with barely any tonal shift (a pitch rise reads as an engine
+  // revving, which this is not). Swell in over a beat, wind down slower.
+  const tc = level > 0 ? 0.32 : 0.6;
   const t = ctx.currentTime;
-  hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 1400 * level, t, tc);
-  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 2.8 * level), t, tc);
-  hum.motor.frequency.setTargetAtTime(MOTOR_HZ * (1 + 0.22 * level), t, tc);
-  hum.motorGain.gain.setTargetAtTime(MOTOR_GAIN * (1 + 1.5 * level), t, tc);
+  hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 420 * level, t, tc);
+  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 1.1 * level), t, tc);
+  hum.motor.frequency.setTargetAtTime(MOTOR_HZ * (1 + 0.05 * level), t, tc);
+  hum.motorGain.gain.setTargetAtTime(MOTOR_GAIN * (1 + 0.5 * level), t, tc);
 }
 
 /** Start a spin-up at the given intensity (0..1). Returns a handle. */
@@ -363,8 +365,20 @@ export function endFanSurge(id: number): void {
 }
 
 // --- The hard disk: irregular clusters of tiny clicks --------------------
-let chatterUsers = 0;
+// Chatter is VARIABLE: how hard the machine is thinking sets the density.
+// Thinking hard = long busy click runs with short settles; a light read =
+// a few clicks, then a long spaced-out pause before the heads move again.
+let chatterSeq = 0;
+const chatters = new Map<number, number>();
 let chatterTimer: number | null = null;
+
+function chatterLevel(): number {
+  let level = 0;
+  chatters.forEach((v) => {
+    if (v > level) level = v;
+  });
+  return level;
+}
 
 function diskClick(ac: AudioContext, at: number): void {
   const src = ac.createBufferSource();
@@ -381,33 +395,41 @@ function diskClick(ac: AudioContext, at: number): void {
 }
 
 function chatterBurst(): void {
-  if (chatterUsers <= 0) {
+  if (chatters.size === 0) {
     chatterTimer = null;
     return;
   }
+  const level = chatterLevel();
   const ac = ctx;
   if (ac && !isMuted()) {
-    // One seek: a cluster of clicks on an uneven clock.
-    const clicks = 4 + Math.floor(Math.random() * 10);
+    // One seek: a cluster of clicks. Hard thinking = long runs of tight
+    // clicks; light work = a couple of ticks.
+    const clicks = 2 + Math.floor((3 + Math.random() * 11) * level);
     let at = ac.currentTime + 0.01;
     for (let i = 0; i < clicks; i++) {
       diskClick(ac, at);
-      at += 0.008 + Math.random() * 0.024;
+      at += 0.008 + Math.random() * (0.014 + 0.02 * (1 - level));
     }
   }
-  // Heads settle, then seek again.
-  chatterTimer = window.setTimeout(chatterBurst, 120 + Math.random() * 180);
+  // Heads settle before the next seek — briefly under load, with long
+  // lazy gaps when the machine is barely working.
+  const pause = 60 + Math.random() * 120 + (1 - level) * (300 + Math.random() * 500);
+  chatterTimer = window.setTimeout(chatterBurst, pause);
 }
 
-/** The disk starts reading (launches, long thinks). Ref-counted. */
-export function startDiskChatter(): void {
-  chatterUsers += 1;
+/** The disk starts reading at the given think-hardness (0..1). Returns a
+ * handle for stopDiskChatter. Overlapping readers stack; density follows
+ * the busiest one. */
+export function startDiskChatter(intensity = 0.6): number {
+  const id = ++chatterSeq;
+  chatters.set(id, Math.max(0.1, Math.min(1, intensity)));
   if (chatterTimer === null && audio()) chatterBurst();
+  return id;
 }
 
-export function stopDiskChatter(): void {
-  chatterUsers = Math.max(0, chatterUsers - 1);
-  if (chatterUsers === 0 && chatterTimer !== null) {
+export function stopDiskChatter(id: number): void {
+  chatters.delete(id);
+  if (chatters.size === 0 && chatterTimer !== null) {
     window.clearTimeout(chatterTimer);
     chatterTimer = null;
   }

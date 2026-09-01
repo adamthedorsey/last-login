@@ -25,6 +25,7 @@ let pending = 0;
 let timer: number | null = null;
 let idx = 0;
 const surgeIds: number[] = [];
+const chatterIds: number[] = [];
 
 function tick() {
   const [cursor, hold] = SCHEDULE[idx % SCHEDULE.length];
@@ -36,7 +37,8 @@ function tick() {
 export function beginLaunchBusy(intensity = 0.4): void {
   pending += 1;
   surgeIds.push(beginFanSurge(intensity));
-  startDiskChatter(); // the disk seeks under the flickering pointer
+  // The disk seeks under the flickering pointer — as hard as the fan works.
+  chatterIds.push(startDiskChatter(intensity));
   if (pending > 1) return;
   idx = 0;
   document.documentElement.classList.add('launching');
@@ -47,7 +49,8 @@ export function endLaunchBusy(): void {
   pending = Math.max(0, pending - 1);
   const id = surgeIds.pop();
   if (id !== undefined) endFanSurge(id);
-  stopDiskChatter();
+  const cid = chatterIds.pop();
+  if (cid !== undefined) stopDiskChatter(cid);
   if (pending > 0) return;
   if (timer !== null) window.clearTimeout(timer);
   timer = null;
