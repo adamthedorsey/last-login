@@ -486,29 +486,25 @@ function getDiskBus(ac: AudioContext): BiquadFilterNode {
 
 function diskChirp(ac: AudioContext, at: number): void {
   const bus = getDiskBus(ac);
-  const f0 = 1900 + Math.random() * 900;
-  const dur = 0.014 + Math.random() * 0.024;
-  const osc = ac.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(f0, at);
-  osc.frequency.exponentialRampToValueAtTime(f0 * 0.8, at + dur);
+  // NOISE through a resonant bandpass — static's texture with a chirp's
+  // contour. A pure tone sings like a bird; the real thing crackles.
+  const f0 = 1700 + Math.random() * 900;
+  const dur = 0.014 + Math.random() * 0.026;
+  const src = ac.createBufferSource();
+  src.buffer = noise(ac);
+  const bp = ac.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.setValueAtTime(f0, at);
+  bp.frequency.exponentialRampToValueAtTime(f0 * 0.8, at + dur);
+  bp.Q.value = 5;
   const g = ac.createGain();
   // soft attack (nothing "lands" right at your ear), then decay
-  const peak = 0.0046 + Math.random() * 0.0042;
-  g.gain.setValueAtTime(0.0004, at);
+  const peak = 0.011 + Math.random() * 0.01; // bandpassed noise needs more drive
+  g.gain.setValueAtTime(0.0006, at);
   g.gain.linearRampToValueAtTime(peak, at + 0.004);
-  g.gain.exponentialRampToValueAtTime(0.0004, at + dur);
-  osc.connect(g).connect(bus);
-  osc.start(at);
-  osc.stop(at + dur + 0.01);
-  // the mechanical edge: a whisper of a tick as the head lands
-  const tick = ac.createBufferSource();
-  tick.buffer = noise(ac);
-  const tg = ac.createGain();
-  tg.gain.setValueAtTime(0.0016, at);
-  tg.gain.exponentialRampToValueAtTime(0.0003, at + 0.004);
-  tick.connect(tg).connect(bus);
-  tick.start(at, Math.random() * 1.5, 0.003);
+  g.gain.exponentialRampToValueAtTime(0.0005, at + dur);
+  src.connect(bp).connect(g).connect(bus);
+  src.start(at, Math.random() * 1.5, dur + 0.01);
 }
 
 function chatterBurst(): void {
