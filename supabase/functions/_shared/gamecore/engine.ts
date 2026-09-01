@@ -1135,6 +1135,8 @@ export function handleAction(
           createdAt: nowDate,
           modifiedAt: nowDate,
           folderId: source.folderId,
+          // A duplicate of an evidence copy is still an evidence copy.
+          sourceId: source.sourceId,
         };
         docs.push(copy);
         events.push({ type: 'copy_item', payload: { source: source.id, docId: copy.id } });
@@ -1158,7 +1160,9 @@ export function handleAction(
       const { newDiscoveries, ended } = applyOpenEffects(content, state, item, events);
       const copy: PlayerDocument = {
         id: `playerdoc.${nextDoc()}`,
-        name: copyDocName(item.name),
+        // Evidence keeps its REAL filename in Case Files — sourceId is the
+        // marker that it's a copy, not a "Copy of " prefix.
+        name: sanitizeDocName(item.name),
         text: text.slice(0, MAX_DOC_TEXT),
         createdAt: nowDate,
         modifiedAt: nowDate,

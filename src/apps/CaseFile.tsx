@@ -481,7 +481,8 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   const saveTimer = useRef(0);
   const dirtyRef = useRef(false);
 
-  const isCopy = (name: string) => name.startsWith('Copy of ');
+  // An evidence copy keeps its REAL filename — sourceId is the marker.
+  const isCopy = (d: import('@gamecore/types.ts').ItemSummary) => !!d.meta?.sourceId;
 
   const fetchDocs = async () => {
     const res = await send({ type: 'listChildren', parentId: 'casefile' });
@@ -836,7 +837,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   }
 
   const open = file.messages.find((m) => m.id === openId) ?? null;
-  const sectionDocs = docs.filter((d) => (section === 'evidence') === isCopy(d.name));
+  const sectionDocs = docs.filter((d) => (section === 'evidence') === isCopy(d));
   const online = gameView?.online === true;
 
   const switchSection = (to: 'messages' | 'notes' | 'evidence' | 'summary') => {

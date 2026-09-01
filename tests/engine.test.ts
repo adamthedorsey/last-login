@@ -833,7 +833,9 @@ describe('workspace copies', () => {
     const { state, result } = run(s, { type: 'copyItem', itemId: 'email.chad.sorry' });
     expect(result).toMatchObject({ type: 'document', ok: true });
     const doc = (state.documents ?? [])[0];
-    expect(doc?.name).toBe('Copy of im sorry ok.txt');
+    // Evidence keeps its real filename; sourceId marks it as a copy.
+    expect(doc?.name).toBe('im sorry ok.txt');
+    expect(doc?.sourceId).toBe('email.chad.sorry');
     expect(doc?.text).toContain('From: chad daniels');
     expect(doc?.text).toContain('Subject: im sorry ok');
     const renamed = run(state, { type: 'renameItem', itemId: doc!.id, name: 'chad alibi.txt' });
@@ -997,9 +999,9 @@ describe('save to case files', () => {
     let s = offlineState();
     s = run(s, { type: 'copyItem', itemId: 'file.lists' }).state;
     const desk = run(s, { type: 'getDesktop' }).result;
-    expect(desk.type === 'desktop' && desk.items.some((i) => i.name.startsWith('Copy of'))).toBe(false);
+    expect(desk.type === 'desktop' && desk.items.some((i) => i.id.startsWith('playerdoc.'))).toBe(false);
     const cf = run(s, { type: 'listChildren', parentId: 'casefile' }).result;
-    expect(cf.type === 'children' && cf.items.some((i) => i.name === 'Copy of lists.txt')).toBe(true);
+    expect(cf.type === 'children' && cf.items.some((i) => i.name === 'lists.txt')).toBe(true);
   });
 
   it('notes can be created directly in Case Files', () => {
@@ -1020,8 +1022,11 @@ describe('evidence copy links', () => {
     if (cf.type !== 'children') throw new Error('bad result');
     expect(cf.items[0]?.meta?.sourceId).toBe('file.lists');
 
-    const found = run(s, { type: 'findFiles', query: 'Copy of' }).result;
-    expect(found.type === 'find' && found.items).toHaveLength(0);
+    // Case Files docs never surface in Find — the original does, the copy
+    // (same filename now) never.
+    const found = run(s, { type: 'findFiles', query: 'lists' }).result;
+    if (found.type !== 'find') throw new Error('bad result');
+    expect(found.items.every((i) => !i.id.startsWith('playerdoc.'))).toBe(true);
   });
 });
 

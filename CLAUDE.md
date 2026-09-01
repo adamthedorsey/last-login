@@ -371,8 +371,10 @@ If not, don't build it that way.
   for important moments — routine handler traffic is text; the message
   lines double as the transcript and playback must degrade to them
   gracefully). The app's four sections: Messages (handler), Notes and
-  Evidence Copies (both are the player's own documents — copies carry the
-  "Copy of " name prefix; deleteDocument works ONLY on player documents),
+  Evidence Copies (both are the player's own documents — evidence copies
+  KEEP the original filename, `sourceId` is the copy marker; only
+  duplicating a player doc adds "Copy of "; deleteDocument works ONLY on
+  player documents),
   and Case Summary — handler content, OFFICIAL BACKGROUND ONLY: facts the
   case already gave the player, never conclusions, never clue-tracking.
 - Workspace copies (`copyItem`) snapshot only the REDACTED text the player

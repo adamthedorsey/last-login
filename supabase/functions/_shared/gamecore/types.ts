@@ -551,7 +551,8 @@ export type GameAction =
   | { type: 'caseFileSync' }
   | { type: 'saveDocument'; docId?: string; name: string; text: string; folderId?: string }
   /** Copy a readable text-bearing item into the player workspace as an
-   * editable snapshot ("Copy of ..."), or duplicate a player document. */
+   * editable snapshot (keeps the original filename; sourceId marks it as a
+   * copy), or duplicate a player document ("Copy of ..."). */
   | { type: 'copyItem'; itemId: string }
   | { type: 'createFolder'; name: string }
   | { type: 'moveDocument'; docId: string; folderId?: string }
