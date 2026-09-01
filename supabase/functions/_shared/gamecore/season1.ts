@@ -1158,7 +1158,7 @@ so. about that.`,
         modifiedAt: '1997-09-21',
         sizeKb: 447,
         audioSrc: '/audio/dont-listen-to-this.m4a',
-        audioSeconds: 42,
+        audioSeconds: 39,
       },
       body: {
         text: `[sound recording — dont listen to this.wav]

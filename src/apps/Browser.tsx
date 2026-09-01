@@ -259,6 +259,73 @@ function PendingGlyph() {
 }
 
 /**
+ * A real image "coming down the wire," 1997-style: progressive-JPEG passes.
+ * The first paint is a blocky 1/10-resolution pass, then 1/4, then the full
+ * picture — each pass SNAPS in on a stepped clock (no fades, no easing).
+ * Mounted the moment the staged loader delivers the image ordinal.
+ */
+function ProgressiveImg({ src, alt }: { src: string; alt: string }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
+  const [pass, setPass] = useState(0);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      imgRef.current = img;
+      setDims({ w: img.naturalWidth, h: img.naturalHeight });
+    };
+    return () => {
+      img.onload = null;
+    };
+  }, [src]);
+
+  useEffect(() => {
+    if (!dims || pass >= 2) return;
+    const t = window.setTimeout(() => setPass((p) => p + 1), 420);
+    return () => window.clearTimeout(t);
+  }, [dims, pass]);
+
+  useEffect(() => {
+    const img = imgRef.current;
+    const cv = canvasRef.current;
+    if (!img || !cv || !dims) return;
+    const div = pass === 0 ? 10 : pass === 1 ? 4 : 1;
+    const w = Math.max(1, Math.floor(dims.w / div));
+    const h = Math.max(1, Math.floor(dims.h / div));
+    const off = document.createElement('canvas');
+    off.width = w;
+    off.height = h;
+    const octx = off.getContext('2d');
+    if (!octx) return;
+    octx.drawImage(img, 0, 0, w, h);
+    cv.width = dims.w;
+    cv.height = dims.h;
+    const ctx = cv.getContext('2d');
+    if (!ctx) return;
+    ctx.imageSmoothingEnabled = false; // blocky, the way partial JPEGs looked
+    ctx.drawImage(off, 0, 0, dims.w, dims.h);
+  }, [dims, pass]);
+
+  if (!dims) {
+    return (
+      <ImgPending>
+        <PendingGlyph />
+      </ImgPending>
+    );
+  }
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-label={alt}
+      style={{ maxWidth: '100%', margin: '4px 0', imageRendering: 'pixelated' }}
+    />
+  );
+}
+
+/**
  * Staged page load: which leading blocks are on screen, and how many of the
  * page's images have "arrived". `null` means fully loaded (the default for
  * everything that isn't a freshly-visited page).
@@ -576,7 +643,7 @@ function Block({
       return <hr style={{ margin: '14px 0', borderStyle: 'inset' }} />;
     case 'img':
       return b.src ? (
-        <img src={b.src} alt={b.caption} style={{ maxWidth: '100%', margin: '4px 0' }} />
+        <ProgressiveImg src={b.src} alt={b.caption} />
       ) : (
         <ImgPlaceholder>{b.caption}</ImgPlaceholder>
       );
