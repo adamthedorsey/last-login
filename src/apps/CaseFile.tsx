@@ -11,7 +11,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame, Handle, Hourglass, MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
+import { Button, Frame, Handle, Hourglass, MenuList, MenuListItem, Separator, Table, TableBody, TableDataCell, TableHead, TableHeadCell, TableRow, Window, WindowContent, WindowHeader } from 'react95';
 import type { CaseFileView } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { TASKBAR_HEIGHT, useWindowStore } from '../os/windowStore';
@@ -65,6 +65,13 @@ function loadSeen(): string[] {
   } catch {
     return [];
   }
+}
+
+/** '1997-10-18' -> '10/18/97', the way a Win95 file list wrote dates. */
+function shortDate(iso: string | undefined): string {
+  if (!iso) return '';
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${Number(m[2])}/${Number(m[3])}/${m[1].slice(2)}` : iso;
 }
 
 function loadSetupDone(): boolean {
@@ -225,13 +232,26 @@ const TitleBand = styled(Frame).attrs({ variant: 'well' })`
   text-overflow: ellipsis;
 `;
 
-const Layout = styled.div`
+const Layout = styled.div<{ $wide?: boolean }>`
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 190px 1fr;
+  grid-template-columns: ${(p) => (p.$wide ? '260px' : '190px')} 1fr;
   gap: 4px;
   margin-top: 4px;
+`;
+
+/** Evidence rows in the react95 Table — selectable, Win95 highlight. */
+const EvRow = styled(TableRow)<{ $active: boolean }>`
+  cursor: var(--cursor-arrow);
+  ${(p) => (p.$active ? 'background: #000080 !important; color: #fff;' : '')}
+  td {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 `;
 
 const MemoList = styled(Frame).attrs({ variant: 'well' })`
@@ -920,9 +940,38 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
               ? 'No note selected'
               : 'No copy selected'}
       </TitleBand>
-      <Layout>
+      <Layout $wide={section === 'evidence'}>
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <SideLabel>{section === 'notes' ? 'MY NOTES' : 'SAVED COPIES'}</SideLabel>
+          {section === 'evidence' ? (
+            <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeadCell style={{ textAlign: 'left', fontSize: 12 }}>Name</TableHeadCell>
+                    <TableHeadCell style={{ textAlign: 'left', fontSize: 12, width: 74 }}>Date</TableHeadCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {sectionDocs.map((d) => (
+                    <EvRow
+                      key={d.id}
+                      $active={multiSelected.includes(d.id)}
+                      onClick={(e: React.MouseEvent) => rowClick(e, d.id, sectionIds)}
+                    >
+                      <TableDataCell>{d.name}</TableDataCell>
+                      <TableDataCell>{shortDate(d.meta?.modifiedAt)}</TableDataCell>
+                    </EvRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {sectionDocs.length === 0 && (
+                <div style={{ padding: 8, color: '#777', fontSize: 13, fontFamily: 'Arial, Helvetica, sans-serif' }}>
+                  (nothing saved yet — right-click any file on the computer and choose Save to Case Files)
+                </div>
+              )}
+            </div>
+          ) : (
         <MemoList>
           {sectionDocs.map((d) => (
             <MemoRow
@@ -937,12 +986,11 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
           ))}
           {sectionDocs.length === 0 && (
             <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
-              {section === 'notes'
-                ? '(no notes yet — use New Note)'
-                : '(nothing saved yet — right-click any file on the computer and choose Save to Case Files)'}
+              (no notes yet — use New Note)
             </div>
           )}
         </MemoList>
+          )}
         </div>
         {/* Read-only — editing happens in the Case Note window. */}
         <Reading>
