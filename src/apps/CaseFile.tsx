@@ -11,7 +11,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Frame, MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
+import { Button, Frame, Hourglass, MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
 import type { CaseFileView } from '@gamecore/types.ts';
 import { useGame } from '../game/gameContext';
 import { TASKBAR_HEIGHT, useWindowStore } from '../os/windowStore';
@@ -483,6 +483,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   const [docName, setDocName] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [bmId, setBmId] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
 
   // An evidence copy keeps its REAL filename — sourceId is the marker.
   const isCopy = (d: import('@gamecore/types.ts').ItemSummary) => !!d.meta?.sourceId;
@@ -631,13 +632,22 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   /** The ribbon's Check Server: real wire sweep, then a fresh case file. */
   const checkServer = async () => {
     setMenuOpen(null);
-    const res = await send({ type: 'checkMail' });
-    if (res.type === 'net' && !res.online) {
-      setOfflineWarn(true);
-      return;
+    setChecking(true);
+    try {
+      // Hold the hourglass a beat even on a fast line — the era's rhythm.
+      const [res] = await Promise.all([
+        send({ type: 'checkMail' }),
+        new Promise((r) => window.setTimeout(r, 700)),
+      ]);
+      if (res.type === 'net' && !res.online) {
+        setOfflineWarn(true);
+        return;
+      }
+      await refetch();
+      setNotice('Case server checked.');
+    } finally {
+      setChecking(false);
     }
-    await refetch();
-    setNotice('Case server checked.');
   };
 
   const openMessage = () => file?.messages.find((m) => m.id === openId) ?? null;
@@ -1015,10 +1025,19 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
           <Icon name="audio" size={22} />
           Record Note
         </RibbonButton>
+        <RibbonButton onClick={() => switchSection('summary')}>
+          <Icon name="notes" size={22} />
+          Case Summary
+        </RibbonButton>
         <RibbonButton disabled>
           <Icon name="printer" size={22} />
           Print
         </RibbonButton>
+        {checking && (
+          <span style={{ marginLeft: 'auto', alignSelf: 'center', paddingRight: 10 }}>
+            <Hourglass size={28} />
+          </span>
+        )}
       </Ribbon>
 
       <TitleBand>{file.title || '...'}</TitleBand>
@@ -1030,7 +1049,6 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
             ['notes', 'Notes'],
             ['evidence', 'Evidence Copies'],
             ['bookmarks', 'Bookmarks'],
-            ['summary', 'Case Summary'],
           ] as const
         ).map(([id, label]) => (
           <NavTab key={id} $active={section === id} onClick={() => switchSection(id)}>
