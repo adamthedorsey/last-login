@@ -171,13 +171,15 @@ const Agency = styled.div`
   white-space: nowrap;
 `;
 
-/** The section tabs, folder-tab style. */
+/** The section tabs, folder-tab style — sharing one row with the pane's
+ * action buttons (tabs left, buttons right, bottoms aligned). */
 const NavRow = styled.div`
   display: flex;
   gap: 2px;
   flex-shrink: 0;
-  margin-top: 4px;
+  margin-top: 6px;
   padding: 0 2px;
+  align-items: flex-end;
 `;
 
 /** Manila folder tabs — the active one sits taller, bold, and fuses into
@@ -187,7 +189,7 @@ const NavTab = styled.button<{ $active: boolean }>`
   border-color: #fbf8ee #6a6552 ${(p) => (p.$active ? CASE_TINT : '#6a6552')} #fbf8ee;
   border-bottom-width: ${(p) => (p.$active ? 0 : 2)}px;
   background: ${(p) => (p.$active ? CASE_TINT : '#d0c9ad')};
-  padding: ${(p) => (p.$active ? '5px 16px 8px' : '4px 13px 2px')};
+  padding: ${(p) => (p.$active ? '9px 20px 12px' : '7px 16px 6px')};
   font-size: 13px;
   /* Owner call: Case Files CONTENT and NAV read in Arial (app chrome —
      menus, ribbon, status — stays bitmap). */
@@ -897,29 +899,9 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   // other tabs.
   const singleDoc = multiSelected.length <= 1 && docId && sectionDocs.some((d) => d.id === docId);
   const docSrc = singleDoc ? sectionDocs.find((d) => d.id === docId)?.meta?.sourceId : undefined;
+  const selectedBm = (file?.bookmarks ?? []).find((b) => b.id === bmId);
   const docsPane = (
     <>
-      <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 4, flexShrink: 0 }}>
-        {docSrc && (
-          <Button onClick={() => void locateOriginal(docSrc)} style={{ padding: '0 12px' }}>
-            Locate Original
-          </Button>
-        )}
-        <Button
-          disabled={!singleDoc}
-          onClick={singleDoc ? () => openCaseNote({ docId: docId!, name: docName }) : undefined}
-          style={{ width: 70 }}
-        >
-          Edit
-        </Button>
-        <Button
-          disabled={multiSelected.length === 0 && !singleDoc}
-          onClick={multiSelected.length > 0 || singleDoc ? () => setConfirmDelete(true) : undefined}
-          style={{ width: 70 }}
-        >
-          Delete
-        </Button>
-      </div>
       <Layout $wide={section === 'evidence'}>
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {section === 'evidence' ? (
@@ -1141,6 +1123,76 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
             {label}
           </NavTab>
         ))}
+        <span
+          style={{
+            marginLeft: 'auto',
+            display: 'flex',
+            gap: 6,
+            alignItems: 'center',
+            paddingBottom: 3,
+          }}
+        >
+          {(section === 'notes' || section === 'evidence') && (
+            <>
+              {docSrc && (
+                <Button onClick={() => void locateOriginal(docSrc)} style={{ padding: '0 12px' }}>
+                  Locate Original
+                </Button>
+              )}
+              <Button
+                disabled={!singleDoc}
+                onClick={singleDoc ? () => openCaseNote({ docId: docId!, name: docName }) : undefined}
+                style={{ width: 70 }}
+              >
+                Edit
+              </Button>
+              <Button
+                disabled={multiSelected.length === 0 && !singleDoc}
+                onClick={multiSelected.length > 0 || singleDoc ? () => setConfirmDelete(true) : undefined}
+                style={{ width: 70 }}
+              >
+                Delete
+              </Button>
+            </>
+          )}
+          {section === 'bookmarks' && (
+            <>
+              <Button
+                disabled={!selectedBm}
+                onClick={
+                  selectedBm
+                    ? () =>
+                        useWindowStore.getState().open('browser', {
+                          props: { url: selectedBm.url, urlNonce: Date.now() },
+                        })
+                    : undefined
+                }
+                style={{ padding: '0 12px' }}
+              >
+                Open in NetVoyager
+              </Button>
+              <Button
+                disabled={!selectedBm}
+                onClick={
+                  selectedBm
+                    ? () => {
+                        void send({ type: 'deleteBookmark', bookmarkId: selectedBm.id }).then((res) => {
+                          if (res.type === 'casefile') {
+                            setFile(res.view);
+                            setBmId(null);
+                            setNotice('Bookmark removed.');
+                          }
+                        });
+                      }
+                    : undefined
+                }
+                style={{ width: 70 }}
+              >
+                Delete
+              </Button>
+            </>
+          )}
+        </span>
       </NavRow>
 
       {section === 'messages' && (
@@ -1242,82 +1294,38 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
       {(section === 'notes' || section === 'evidence') && docsPane}
 
       {section === 'bookmarks' && (
-        <>
-          {(() => {
-            const bm = (file.bookmarks ?? []).find((b) => b.id === bmId);
-            return (
-              <>
-                <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 4, flexShrink: 0 }}>
-                  <Button
-                    disabled={!bm}
-                    onClick={
-                      bm
-                        ? () =>
-                            useWindowStore.getState().open('browser', {
-                              props: { url: bm.url, urlNonce: Date.now() },
-                            })
-                        : undefined
-                    }
-                    style={{ padding: '0 12px' }}
-                  >
-                    Open in NetVoyager
-                  </Button>
-                  <Button
-                    disabled={!bm}
-                    onClick={
-                      bm
-                        ? () => {
-                            void send({ type: 'deleteBookmark', bookmarkId: bm.id }).then((res) => {
-                              if (res.type === 'casefile') {
-                                setFile(res.view);
-                                setBmId(null);
-                                setNotice('Bookmark removed.');
-                              }
-                            });
-                          }
-                        : undefined
-                    }
-                    style={{ width: 70 }}
-                  >
-                    Delete
-                  </Button>
+        <Layout>
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <MemoList>
+              {(file.bookmarks ?? []).map((b) => (
+                <MemoRow
+                  key={b.id}
+                  $active={b.id === bmId}
+                  $unread={false}
+                  onClick={() => setBmId(b.id)}
+                >
+                  <span>{b.title}</span>
+                  <small>{b.url}</small>
+                </MemoRow>
+              ))}
+              {(file.bookmarks ?? []).length === 0 && (
+                <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
+                  (nothing bookmarked yet — use the Bookmark button in NetVoyager)
                 </div>
-                <Layout>
-                  <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                    <MemoList>
-                      {(file.bookmarks ?? []).map((b) => (
-                        <MemoRow
-                          key={b.id}
-                          $active={b.id === bmId}
-                          $unread={false}
-                          onClick={() => setBmId(b.id)}
-                        >
-                          <span>{b.title}</span>
-                          <small>{b.url}</small>
-                        </MemoRow>
-                      ))}
-                      {(file.bookmarks ?? []).length === 0 && (
-                        <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
-                          (nothing bookmarked yet — use the Bookmark button in NetVoyager)
-                        </div>
-                      )}
-                    </MemoList>
-                  </div>
-                  <Reading>
-                    {bm ? (
-                      <span style={{ color: '#555' }}>
-                        {bm.url}
-                        {'\n'}Saved {bm.addedAt}
-                      </span>
-                    ) : (
-                      <span style={{ color: '#777' }}>Select a bookmark.</span>
-                    )}
-                  </Reading>
-                </Layout>
-              </>
-            );
-          })()}
-        </>
+              )}
+            </MemoList>
+          </div>
+          <Reading>
+            {selectedBm ? (
+              <span style={{ color: '#555' }}>
+                {selectedBm.url}
+                {'\n'}Saved {selectedBm.addedAt}
+              </span>
+            ) : (
+              <span style={{ color: '#777' }}>Select a bookmark.</span>
+            )}
+          </Reading>
+        </Layout>
       )}
 
       {section === 'summary' && (
