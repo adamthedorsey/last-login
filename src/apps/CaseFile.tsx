@@ -117,7 +117,7 @@ const Ribbon = styled(Frame).attrs({ variant: 'well' })`
 `;
 
 const RibbonButton = styled(Button)`
-  width: 76px;
+  width: 96px;
   height: 52px;
   display: inline-flex;
   flex-direction: column;
@@ -917,7 +917,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
                   {sectionDocs.map((d) => (
                     <EvRow
                       key={d.id}
-                      $active={multiSelected.includes(d.id)}
+                      $active={multiSelected.includes(d.id) || d.id === docId}
                       onClick={(e: React.MouseEvent) => rowClick(e, d.id, sectionIds)}
                     >
                       <TableDataCell>{d.name}</TableDataCell>
@@ -937,7 +937,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
           {sectionDocs.map((d) => (
             <MemoRow
               key={d.id}
-              $active={multiSelected.includes(d.id)}
+              $active={multiSelected.includes(d.id) || d.id === docId}
               $unread={false}
               onClick={(e) => rowClick(e, d.id, sectionIds)}
             >
