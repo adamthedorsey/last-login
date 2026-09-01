@@ -100,6 +100,31 @@ function isUnlocked(state: PlayerState, item: ContentItem): boolean {
 }
 
 /**
+ * The handler notices the player's work: once first-run setup is done, any
+ * handler message that becomes VISIBLE while the line is up announces
+ * itself exactly once — a 'casefile' wire notice, the client's cue to blink
+ * the tray (no text ever rides in it; the memo itself is the message).
+ * A state from before this field seeds silently, so old progress doesn't
+ * arrive as a burst of news.
+ */
+function sweepCaseFile(content: SeasonContent, state: PlayerState, wire: WireNotice[]): void {
+  const handler = content.handler;
+  if (!handler || !state.online || !state.flags[CASE_SETUP_FLAG]) return;
+  const visible = handler.messages
+    .filter((m) => meetsRequirement(state, m.requires))
+    .map((m) => m.id);
+  const announced = state.announcedCase;
+  if (!announced) {
+    state.announcedCase = visible;
+    return;
+  }
+  const fresh = visible.filter((id) => !announced.includes(id));
+  if (fresh.length === 0) return;
+  announced.push(...fresh);
+  wire.push({ kind: 'casefile' });
+}
+
+/**
  * A locked ANCESTOR seals everything inside it. Explorer and Find never
  * hand out ids from locked folders, but shortcuts (the Documents menu)
  * can — so `open` checks the whole chain, not just the item.
@@ -780,6 +805,7 @@ export function handleAction(
   sweepSchedule(content, state, nowMs, wire, events);
   sweepRemote(content, state, nowMs, wire, events);
   const arrived = state.online ? deliverPending(content, state) : 0;
+  sweepCaseFile(content, state, wire);
 
   switch (action.type) {
     case 'connect': {
@@ -792,6 +818,7 @@ export function handleAction(
       sweepSchedule(content, state, nowMs, wire, events);
       sweepRemote(content, state, nowMs, wire, events);
       const newMail = deliverPending(content, state);
+      sweepCaseFile(content, state, wire);
       return done({ type: 'net', online: true, newMail });
     }
 
@@ -1325,6 +1352,11 @@ export function handleAction(
       }
       if (!state.flags[CASE_SETUP_FLAG]) {
         state.flags[CASE_SETUP_FLAG] = true;
+        // Everything visible at setup is what the wizard itself lands on —
+        // seed the announce ledger so none of it blinks the tray later.
+        state.announcedCase = (content.handler?.messages ?? [])
+          .filter((m) => meetsRequirement(state, m.requires))
+          .map((m) => m.id);
         events.push({ type: 'case_setup_done' });
       }
       return done({ type: 'casefile', view: caseFileView(content, state) });

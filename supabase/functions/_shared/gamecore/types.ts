@@ -254,7 +254,7 @@ export interface ChatConversation {
  * chirp and toast about it. All text here is server-authored.
  */
 export interface WireNotice {
-  kind: 'mail' | 'im' | 'buddy-on' | 'buddy-off' | 'roster' | 'system' | 'remote';
+  kind: 'mail' | 'im' | 'buddy-on' | 'buddy-off' | 'roster' | 'system' | 'remote' | 'casefile';
   /** Toast title/body. Optional — the client has generic per-kind fallbacks. */
   title?: string;
   text?: string;
@@ -487,6 +487,8 @@ export interface PlayerState {
   folderSeq?: number;
   /** Per-buddy list of prompt ids the player has said, in order. */
   chats?: Record<string, string[]>;
+  /** Handler messages already announced over the wire (tray blinker). */
+  announcedCase?: string[];
   /** Dial-up state: the machine starts offline every session-of-record. */
   online?: boolean;
   /** Real epoch ms when the current connection was established. */

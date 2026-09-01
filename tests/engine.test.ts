@@ -1132,3 +1132,56 @@ describe('locked-ancestor sealing', () => {
     expect(opened).toMatchObject({ type: 'open', ok: true });
   });
 });
+
+describe('handler announcements', () => {
+  const hasCaseNotice = (r: { result: { wire?: Array<{ kind: string }> } }) =>
+    r.result.wire?.some((w) => w.kind === 'casefile') ?? false;
+
+  it('announces a newly-visible handler message once, after setup, online', () => {
+    let s = loggedInState();
+    // First-run setup completes (and seeds the ledger with the briefing).
+    s = run(s, { type: 'caseFileSync' }).state;
+
+    // Nothing new: quiet sweep.
+    let r = run(s, { type: 'checkMail' });
+    s = r.state;
+    expect(hasCaseNotice(r)).toBe(false);
+
+    // Earn the discovery hm.river reacts to.
+    s = run(s, { type: 'open', itemId: 'email.sadie.please' }).state;
+
+    // The next online sweep announces the handler's reaction — exactly once.
+    r = run(s, { type: 'checkMail' });
+    s = r.state;
+    expect(hasCaseNotice(r)).toBe(true);
+    r = run(s, { type: 'checkMail' });
+    expect(hasCaseNotice(r)).toBe(false);
+  });
+
+  it('never announces before setup, and seeds silently for old saves', () => {
+    // Pre-setup: the discovery lands but no casefile notice ever rides.
+    let s = loggedInState();
+    s = run(s, { type: 'open', itemId: 'email.sadie.please' }).state;
+    const r = run(s, { type: 'checkMail' });
+    expect(hasCaseNotice(r)).toBe(false);
+
+    // An old save that finished setup before this feature existed: the first
+    // sweep seeds the ledger without announcing the backlog.
+    let old = loggedInState();
+    old = run(old, { type: 'caseFileSync' }).state;
+    old = run(old, { type: 'open', itemId: 'email.sadie.please' }).state;
+    delete old.announcedCase;
+    const first = run(old, { type: 'checkMail' });
+    expect(hasCaseNotice(first)).toBe(false);
+    // ...but genuinely NEW reactions after that still announce.
+    let s2 = first.state;
+    // Walk the chain in order up to the ledger (grants 'the-pipeline',
+    // which hm.careful reacts to).
+    s2 = run(s2, { type: 'open', itemId: 'trash.bl-log' }).state;
+    s2 = run(s2, { type: 'open', itemId: 'email.sadie.notchad' }).state;
+    s2 = run(s2, { type: 'open', itemId: 'email.ruth.yourdad' }).state;
+    s2 = run(s2, { type: 'open', itemId: 'file.ledger-copy' }).state;
+    const later = run(s2, { type: 'checkMail' });
+    expect(hasCaseNotice(later)).toBe(true);
+  });
+});

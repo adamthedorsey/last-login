@@ -12,6 +12,7 @@ import { WindowFrame } from './WindowFrame';
 import { Taskbar } from './Taskbar';
 import { DesktopIcons } from './DesktopIcons';
 import { AltTabSwitcher } from './AltTabSwitcher';
+import sealArt from '../assets/images/sheriff-seal.png';
 import { useBootCursor } from './bootCursor';
 import { rebootFromCrash } from './crash';
 import { useGame } from '../game/gameContext';
@@ -262,8 +263,31 @@ export function DesktopShell() {
 
       <ToastStack>
         {toasts.map((t) => (
-          <ToastCard key={t.id} onClick={() => dismissToast(t.id)}>
-            <WindowHeader style={{ fontSize: 13 }}>{t.title}</WindowHeader>
+          <ToastCard
+            key={t.id}
+            onClick={() => {
+              dismissToast(t.id);
+              // The Case Files receipt is a shortcut: straight to the copy.
+              if (t.variant === 'case' && t.docId) {
+                useWindowStore.getState().open('casefile', {
+                  props: { revealDocId: t.docId, revealNonce: t.id },
+                });
+              }
+            }}
+          >
+            <WindowHeader
+              style={
+                t.variant === 'case'
+                  ? {
+                      fontSize: 13,
+                      background: 'linear-gradient(90deg, #000000, #14636a)',
+                      color: '#fff',
+                    }
+                  : { fontSize: 13 }
+              }
+            >
+              {t.title}
+            </WindowHeader>
             <WindowContent
               style={{
                 padding: 8,
@@ -272,12 +296,23 @@ export function DesktopShell() {
                 display: 'flex',
                 gap: 8,
                 alignItems: 'flex-start',
+                whiteSpace: 'pre-line',
               }}
             >
-              {t.icon && (
-                <span style={{ flexShrink: 0 }}>
-                  <Icon name={t.icon} size={26} />
-                </span>
+              {t.variant === 'case' ? (
+                <img
+                  src={sealArt}
+                  alt=""
+                  width={30}
+                  height={30}
+                  style={{ flexShrink: 0, imageRendering: 'pixelated' }}
+                />
+              ) : (
+                t.icon && (
+                  <span style={{ flexShrink: 0 }}>
+                    <Icon name={t.icon} size={26} />
+                  </span>
+                )
               )}
               <span>{t.description}</span>
             </WindowContent>

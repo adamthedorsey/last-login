@@ -300,8 +300,8 @@ const SYNC_LINES = [
 ];
 const SYNC_STEP_MS = 700;
 
-export function CaseFile({ windowId }: { windowId: string }) {
-  const { send, view: gameView, contentEpoch } = useGame();
+export function CaseFile({ windowId, props }: { windowId: string; props?: Record<string, unknown> }) {
+  const { send, view: gameView, contentEpoch, clearCaseAlert } = useGame();
   const openApp = useWindowStore((s) => s.open);
   const [file, setFile] = useState<CaseFileView | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -364,6 +364,8 @@ export function CaseFile({ windowId }: { windowId: string }) {
     void send({ type: 'getCaseFile' }).then((res) => {
       if (canceled || res.type !== 'casefile') return;
       setFile(res.view);
+      // The messages are on screen (or will be) — the tray stops blinking.
+      clearCaseAlert();
       if (!res.view.setup?.length) {
         markSetupDone();
         // Newest memo opens by default the first time it exists.
@@ -377,6 +379,7 @@ export function CaseFile({ windowId }: { windowId: string }) {
     return () => {
       canceled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clearCaseAlert is stable
   }, [send, contentEpoch]);
 
   // Stop any playing recording when the window content changes/unmounts.
@@ -490,6 +493,18 @@ export function CaseFile({ windowId }: { windowId: string }) {
     void fetchDocs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentEpoch]);
+
+  // The Case Files receipt toast is a shortcut: opening (or refocusing)
+  // through it lands directly on the saved copy in Evidence Copies. The
+  // nonce makes each receipt click land, even for the same document.
+  const revealDocId = props?.revealDocId as string | undefined;
+  const revealNonce = props?.revealNonce as number | undefined;
+  useEffect(() => {
+    if (!revealDocId || !file || (file.setup?.length ?? 0) > 0) return;
+    setSection('evidence');
+    void openDoc(revealDocId); // full open — name + text, like a row click
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealDocId, revealNonce, file === null]);
 
   const flushSave = async () => {
     window.clearTimeout(saveTimer.current);

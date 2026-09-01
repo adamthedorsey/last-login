@@ -17,7 +17,7 @@ something should behave, the answer is "whatever Windows 95 actually did."
 as the boundary, Win95 exactness as the reference — not the law.** When a
 playability, legibility, or fun improvement conflicts with Win95 fidelity,
 take the improvement if a consumer PC of 1997 could plausibly have shipped
-it (precedents: the discovery toasts, Arial reading surfaces, the earned
+it (precedents: Arial reading surfaces, the earned
 login hint). What never bends: nothing post-1997 in concept, aesthetic, or
 interaction idiom.
 
@@ -199,9 +199,23 @@ If not, don't build it that way.
 - Dialogue/writing style: era-authentic and human — typos, abbreviations,
   chain letters, guestbooks. Mundane beats suspicious; never add game-y UI
   (no glowing clues, no objective markers).
-- The one sanctioned fourth-wall surface is quiet system feedback: the small
-  discovery toast and the end-of-demo dialog. Player note-taking is diegetic:
-  Notepad edits and saves real player documents to the desktop (saveDocument).
+- Discoveries are SILENT — no toast, no chirp, ever (owner call; the old
+  discovery toast is retired). The world responding IS the feedback: new
+  mail arrives, a page loads, a buddy's status shifts. The reward channel
+  is DIEGETIC — the handler reacts in Case Files: a handler message that
+  becomes visible while the line is up announces itself once via a
+  'casefile' wire notice (engine `sweepCaseFile`, announce ledger in
+  PlayerState.announcedCase, seeded at caseFileSync so the wizard's own
+  memos never blink), and the client's tell is an ICQ-style blinking tray
+  glyph + a quiet chirp — never a toast, never text in client code.
+  ONE action-confirmation toast exists (owner call — "ahead of its time
+  but the acknowledgment matters"): the Case Files RECEIPT when the
+  player saves evidence (copyItem) — black->teal band, sheriff seal,
+  click opens Case Files at the saved copy (revealDocId prop). No other
+  action gets a confirmation toast. The one remaining fourth-wall
+  surface is the end-of-demo dialog. Player note-taking is diegetic:
+  Notepad edits and saves real player documents to the desktop
+  (saveDocument).
 - NO first-boot welcome/tips box: this is Casey's long-lived account, not a
   fresh install — the machine greets nobody. Mechanical teaching belongs to
   the Case Files setup wizard (server content) and period-true affordances.
