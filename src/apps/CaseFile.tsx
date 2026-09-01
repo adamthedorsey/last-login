@@ -607,6 +607,19 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
     void openDoc(id);
   };
 
+  // A section with files never sits unselected: entering it (or deleting
+  // the selection) auto-opens the first item, like a Win95 list view.
+  useEffect(() => {
+    if (section === 'notes' || section === 'evidence') {
+      const list = docs.filter((d) => (section === 'evidence') === isCopy(d));
+      if (list.length > 0 && !list.some((d) => d.id === docId)) void openDoc(list[0].id);
+    } else if (section === 'bookmarks') {
+      const list = file?.bookmarks ?? [];
+      if (list.length > 0 && !list.some((b) => b.id === bmId)) setBmId(list[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [section, docs, file?.bookmarks]);
+
   const deleteDocs = async () => {
     setConfirmDelete(false);
     const targets = selIds.length > 0 ? selIds : docId ? [docId] : [];
