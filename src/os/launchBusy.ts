@@ -50,7 +50,11 @@ export function endLaunchBusy(): void {
   const id = surgeIds.pop();
   if (id !== undefined) endFanSurge(id);
   const cid = chatterIds.pop();
-  if (cid !== undefined) stopDiskChatter(cid);
+  // The disk settles AFTER the window lands — caching, the way real
+  // drives kept muttering — then goes quiet 1-2 seconds later.
+  if (cid !== undefined) {
+    window.setTimeout(() => stopDiskChatter(cid), 1000 + Math.random() * 1000);
+  }
   if (pending > 0) return;
   if (timer !== null) window.clearTimeout(timer);
   timer = null;

@@ -516,7 +516,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   bp.Q.value = 2.2;
   const g = ac.createGain();
   // soft attack (nothing "lands" right at your ear), then decay
-  const peak = 0.004 + Math.random() * 0.0034;
+  const peak = 0.0029 + Math.random() * 0.0025;
   g.gain.setValueAtTime(0.0006, at);
   g.gain.linearRampToValueAtTime(peak, at + 0.004);
   g.gain.exponentialRampToValueAtTime(0.0005, at + dur);
@@ -538,12 +538,12 @@ function chatterBurst(): void {
     // often the heads just GO — a sustained crackle of 40-130 grains.
     const longRun = Math.random() < 0.12 + 0.15 * level;
     const chirps = longRun
-      ? 40 + Math.floor(Math.random() * 90 * level + Math.random() * 20)
-      : 4 + Math.floor((3 + Math.random() * 6) * level);
+      ? 30 + Math.floor(Math.random() * 70 * level + Math.random() * 15)
+      : 3 + Math.floor((2 + Math.random() * 5) * level);
     let at = ac.currentTime + 0.01;
     for (let i = 0; i < chirps; i++) {
       diskChirp(ac, at);
-      at += 0.021 + Math.random() * 0.06;
+      at += 0.028 + Math.random() * 0.075;
     }
   }
   // Rests between runs: ~100-300ms under load, stretching to multi-second
