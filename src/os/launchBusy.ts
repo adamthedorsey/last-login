@@ -53,7 +53,7 @@ export function endLaunchBusy(): void {
   // The disk settles AFTER the window lands — caching, the way real
   // drives kept muttering — then goes quiet 1-2 seconds later.
   if (cid !== undefined) {
-    window.setTimeout(() => stopDiskChatter(cid), 1000 + Math.random() * 1000);
+    window.setTimeout(() => stopDiskChatter(cid), 700 + Math.random() * 600);
   }
   if (pending > 0) return;
   if (timer !== null) window.clearTimeout(timer);

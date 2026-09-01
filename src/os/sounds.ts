@@ -297,14 +297,15 @@ let idleEpisodeStop: number | null = null;
 
 function scheduleIdleDisk(): void {
   idleDiskTimer = window.setTimeout(() => {
-    idleEpisodeId = startDiskChatter(0.35 + Math.random() * 0.3);
+    // Light housekeeping only: a few sparse grains, then quiet again.
+    idleEpisodeId = startDiskChatter(0.12 + Math.random() * 0.15);
     idleEpisodeStop = window.setTimeout(() => {
       if (idleEpisodeId !== null) stopDiskChatter(idleEpisodeId);
       idleEpisodeId = null;
       idleEpisodeStop = null;
-    }, 800 + Math.random() * 1700);
+    }, 500 + Math.random() * 900);
     scheduleIdleDisk();
-  }, 15_000 + Math.random() * 35_000);
+  }, 25_000 + Math.random() * 45_000);
 }
 
 function stopIdleDisk(): void {
@@ -524,32 +525,49 @@ function diskChirp(ac: AudioContext, at: number): void {
   src.start(at, Math.random() * 1.5, dur + 0.01);
 }
 
+/** Grains left in the run currently being played out. Runs are scheduled
+ * in SHORT SLICES (a few grains at a time) so a stop takes effect within
+ * ~half a second — never minutes of pre-scheduled audio. */
+let runRemaining = 0;
+
 function chatterBurst(): void {
   if (chatters.size === 0) {
     chatterTimer = null;
+    runRemaining = 0;
     return;
   }
   const level = chatterLevel();
   const ac = ctx;
-  if (ac && !isMuted()) {
-    // One seek run, timed like the reference: chirps ~20-60ms apart, more
-    // of them (and slightly tighter) the harder the machine thinks.
-    // Measured from the boot take: median run ~6 grains, but every so
-    // often the heads just GO — a sustained crackle of 40-130 grains.
+  if (!ac || isMuted()) {
+    chatterTimer = window.setTimeout(chatterBurst, 300);
+    return;
+  }
+  if (runRemaining <= 0) {
+    // Start a new run. Measured from the boot take: usually a handful of
+    // grains; every so often the heads just GO for a sustained crackle.
     const longRun = Math.random() < 0.12 + 0.15 * level;
-    const chirps = longRun
+    runRemaining = longRun
       ? 30 + Math.floor(Math.random() * 70 * level + Math.random() * 15)
       : 3 + Math.floor((2 + Math.random() * 5) * level);
-    let at = ac.currentTime + 0.01;
-    for (let i = 0; i < chirps; i++) {
-      diskChirp(ac, at);
-      at += 0.028 + Math.random() * 0.075;
-    }
   }
-  // Rests between runs: ~100-300ms under load, stretching to multi-second
+  // Play one SLICE of the run (≤5 grains, ~half a second at most).
+  const slice = Math.min(runRemaining, 5);
+  runRemaining -= slice;
+  let at = ac.currentTime + 0.01;
+  for (let i = 0; i < slice; i++) {
+    diskChirp(ac, at);
+    at += 0.028 + Math.random() * 0.075;
+  }
+  const sliceMs = (at - ac.currentTime) * 1000;
+  if (runRemaining > 0) {
+    // The run continues — next slice lands right on the tail of this one.
+    chatterTimer = window.setTimeout(chatterBurst, sliceMs);
+    return;
+  }
+  // Run finished: rest. ~100-250ms under load, stretching to multi-second
   // lazy gaps at idle (quadratic, so busy stays tight).
   const idle = (1 - level) * (1 - level);
-  const pause = 90 + Math.random() * 130 + idle * (1500 + Math.random() * 3500);
+  const pause = sliceMs + 90 + Math.random() * 130 + idle * (1500 + Math.random() * 3500);
   chatterTimer = window.setTimeout(chatterBurst, pause);
 }
 
@@ -565,9 +583,12 @@ export function startDiskChatter(intensity = 0.6): number {
 
 export function stopDiskChatter(id: number): void {
   chatters.delete(id);
-  if (chatters.size === 0 && chatterTimer !== null) {
-    window.clearTimeout(chatterTimer);
-    chatterTimer = null;
+  if (chatters.size === 0) {
+    runRemaining = 0;
+    if (chatterTimer !== null) {
+      window.clearTimeout(chatterTimer);
+      chatterTimer = null;
+    }
   }
 }
 
