@@ -480,7 +480,7 @@ function getDiskBus(ac: AudioContext): BiquadFilterNode {
   if (!diskBus) {
     diskBus = ac.createBiquadFilter();
     diskBus.type = 'lowpass';
-    diskBus.frequency.value = 1450;
+    diskBus.frequency.value = 7200;
     diskBus.Q.value = 0.4;
     diskBus.connect(ac.destination);
   }
@@ -491,7 +491,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   const bus = getDiskBus(ac);
   // NOISE through a resonant bandpass — static's texture with a chirp's
   // contour. A pure tone sings like a bird; the real thing crackles.
-  const f0 = 1500 + Math.random() * 800;
+  const f0 = 3800 + Math.random() * 2600;
   const dur = 0.006 + Math.random() * 0.008;
   const src = ac.createBufferSource();
   src.buffer = noise(ac);
@@ -502,7 +502,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   bp.Q.value = 2.2;
   const g = ac.createGain();
   // soft attack (nothing "lands" right at your ear), then decay
-  const peak = 0.009 + Math.random() * 0.007;
+  const peak = 0.0055 + Math.random() * 0.0045; // ~2x the hum floor, like the take
   g.gain.setValueAtTime(0.0006, at);
   g.gain.linearRampToValueAtTime(peak, at + 0.004);
   g.gain.exponentialRampToValueAtTime(0.0005, at + dur);
@@ -520,17 +520,22 @@ function chatterBurst(): void {
   if (ac && !isMuted()) {
     // One seek run, timed like the reference: chirps ~20-60ms apart, more
     // of them (and slightly tighter) the harder the machine thinks.
-    const chirps = 6 + Math.floor((6 + Math.random() * 18) * level);
+    // Measured from the boot take: median run ~6 grains, but every so
+    // often the heads just GO — a sustained crackle of 40-130 grains.
+    const longRun = Math.random() < 0.12 + 0.15 * level;
+    const chirps = longRun
+      ? 40 + Math.floor(Math.random() * 90 * level + Math.random() * 20)
+      : 4 + Math.floor((3 + Math.random() * 6) * level);
     let at = ac.currentTime + 0.01;
     for (let i = 0; i < chirps; i++) {
       diskChirp(ac, at);
-      at += 0.017 + Math.random() * (0.05 - 0.02 * level);
+      at += 0.015 + Math.random() * 0.045;
     }
   }
   // Rests between runs: ~100-300ms under load, stretching to multi-second
   // lazy gaps at idle (quadratic, so busy stays tight).
   const idle = (1 - level) * (1 - level);
-  const pause = 100 + Math.random() * 200 + idle * (1500 + Math.random() * 3500);
+  const pause = 90 + Math.random() * 130 + idle * (1500 + Math.random() * 3500);
   chatterTimer = window.setTimeout(chatterBurst, pause);
 }
 
