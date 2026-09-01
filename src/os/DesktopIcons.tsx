@@ -36,6 +36,7 @@ const IconButton = styled.button<{ $selected: boolean; $dragging: boolean }>`
     background: ${(p) => (p.$selected ? '#000080' : 'transparent')};
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.9);
     word-break: break-word;
+    white-space: normal; /* icon labels wrap by design */
   }
 `;
 
@@ -618,21 +619,20 @@ export function DesktopIcons() {
             <Separator />
             <MenuListItem size="sm" disabled>Cut</MenuListItem>
             <MenuListItem size="sm" disabled>Copy</MenuListItem>
-            <MenuListItem
-              size="sm"
-              disabled={!itemMenu.item.editable}
-              onClick={
-                itemMenu.item.editable
-                  ? () => {
-                      const it = itemMenu.item;
-                      setItemMenu(null);
-                      setConfirmDelete(it);
-                    }
-                  : undefined
-              }
-            >
-              Delete
-            </MenuListItem>
+            {/* Evidence is read-only: Delete only exists for the player's
+                own files, never on story items. */}
+            {itemMenu.item.editable && (
+              <MenuListItem
+                size="sm"
+                onClick={() => {
+                  const it = itemMenu.item;
+                  setItemMenu(null);
+                  setConfirmDelete(it);
+                }}
+              >
+                Delete
+              </MenuListItem>
+            )}
             <Separator />
             <MenuListItem
               size="sm"

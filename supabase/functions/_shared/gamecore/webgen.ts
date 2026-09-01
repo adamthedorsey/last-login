@@ -73,6 +73,48 @@ const IDENTITIES: Identity[] = [
   { username: 'poet_of_the_pines', display: 'R.W.' },
   { username: 'the_hubcap_king', display: 'Hubcap King' },
   { username: 'sk8_or_dye', display: 'Chip' },
+  { username: 'valley_vhs', display: 'Vern' },
+  { username: 'peggy_sue_crafts', display: 'Peggy Sue' },
+  { username: 'bassmaster_bill', display: 'Bill' },
+  { username: 'dixie_darlin_64', display: 'Dixie' },
+  { username: 'the_real_stretch', display: 'Stretch' },
+  { username: 'aunt_carols_kitchen', display: 'Aunt Carol' },
+  { username: 'nightowl_ned', display: 'Ned' },
+  { username: 'glitterqueen_amy', display: 'Amy' },
+  { username: 'coalcamp_kid', display: 'Junior' },
+  { username: 'mothman_saw_me', display: 'Perry' },
+  { username: 'crick_walker', display: 'Delmar' },
+  { username: 'blue_ridge_betty', display: 'Betty' },
+  { username: 'zzguitarzz', display: 'Row' },
+  { username: 'the_soap_report', display: 'Fran' },
+  { username: 'hoot_owl_holler', display: 'Orville' },
+  { username: 'kaylas_korner_97', display: 'Kayla' },
+  { username: 'scanner_land', display: 'Big Ear' },
+  { username: 'muffler_man_mel', display: 'Mel' },
+  { username: 'pixel_prairie', display: 'Lou' },
+  { username: 'grandpa_dobbs', display: 'Grandpa Dobbs' },
+  { username: 'tape_trader_tina', display: 'Tina' },
+  { username: 'holler_hoops', display: 'Coach D.' },
+  { username: 'wanda_of_the_woods', display: 'Wanda' },
+  { username: 'the_bug_guy', display: 'Bug Guy' },
+  { username: 'quilt_till_you_wilt', display: 'Ruthanne' },
+  { username: 'roadkill_cafe_fan', display: 'Skeeter' },
+  { username: 'midnight_bowler', display: 'Curtis' },
+  { username: 'ferretmom4', display: 'Sharon' },
+  { username: 'wv_train_watcher', display: 'Albert' },
+  { username: 'sallys_seashells', display: 'Sally' },
+  { username: 'the_last_arcade', display: 'Pinball Paul' },
+  { username: 'garden_gal_gail', display: 'Gail' },
+  { username: 'ham_radio_hank', display: 'Hank' },
+  { username: 'clip_art_cathy', display: 'Cathy' },
+  { username: 'deerstand_dan', display: 'Dan' },
+  { username: 'polka_all_night', display: 'Stanley' },
+  { username: 'root_cellar_recipes', display: 'Maybelle' },
+  { username: 'vcr_repair_vic', display: 'Vic' },
+  { username: 'stargazer_susie', display: 'Susie' },
+  { username: 'the_whittler', display: 'Emmett' },
+  { username: 'lucky_horseshoe_lil', display: 'Lil' },
+  { username: 'dialtone_dennis', display: 'Dennis H.' },
 ];
 
 const TILES: NonNullable<PageStyle['bgTile']>[] = ['stars', 'clouds', 'plaid', 'marble', 'hearts', 'grid'];
@@ -268,7 +310,59 @@ const poetry: Builder = (rng, id) => ({
   ],
 });
 
-const BUILDERS: Builder[] = [personal, fanshrine, petpage, weird, business, poetry];
+const recipes: Builder = (rng, id) => ({
+  title: `${id.display}'s recipe box`,
+  siteTitle: `${id.display}'s Recipe Box (from the valley)`,
+  searchText: `${id.username} recipes cooking casserole valley kitchen`,
+  blocks: [
+    { t: 'h', text: `${id.display}'s Recipe Box` },
+    { t: 'small', text: 'family recipes, typed up one at a time. measurements approximate. so was grandma.' },
+    { t: 'divider', kind: rng.pick(DIVIDERS) },
+    { t: 'sub', text: rng.pick(['THIS WEEK: funeral potatoes', 'THIS WEEK: apple stack cake', 'THIS WEEK: brown beans & cornbread', 'THIS WEEK: church-window cookies']) },
+    { t: 'p', text: rng.pick([
+      'Start with a can of cream of mushroom. Honestly most of these start with a can of cream of mushroom.',
+      'Bake at 350 until it looks right. You know what right looks like. Your mother showed you.',
+      'Double it if company is coming. Company is always coming.',
+    ]) },
+    { t: 'list', items: rng.shuffle([
+      'do NOT use the store-brand crackers, we tried it once',
+      'the secret ingredient is a longer bake than the box says',
+      'this one won a ribbon in 1989 and we do not let anyone forget it',
+      'freezes fine, thaws suspicious',
+    ]).slice(0, 3) },
+    { t: 'guestbook', count: rng.int(6, 120) },
+    { t: 'counter', value: rng.int(300, 8000) },
+    { t: 'updated', date: rng.pick(UPDATED) },
+  ],
+});
+
+const huntfish: Builder = (rng, id) => ({
+  title: `${id.display}'s outdoor page`,
+  siteTitle: `${id.display}'s Hunting & Fishing Report`,
+  searchText: `${id.username} hunting fishing river bass deer season report`,
+  blocks: [
+    { t: 'h', text: `${id.display}'s Hunting & Fishing Report` },
+    { t: 'blink', text: rng.pick(['THE CRAPPIE ARE BITING', 'BOW SEASON IS OPEN', 'RIVER IS UP. BE SMART.']) },
+    { t: 'divider', kind: rng.pick(DIVIDERS) },
+    { t: 'p', text: rng.pick([
+      'Water was low this week so we walked in past the second gate. Do not tell everybody about the second gate.',
+      'Took the boy out Saturday. He caught more than me and has been informed he is walking home next time.',
+      'Nothing moving before noon. Everything moving at dusk. Same as it ever was.',
+    ]) },
+    { t: 'img', caption: `[ photo: a stringer of ${rng.int(3, 9)} fish, one thumb partially over the lens ]` },
+    { t: 'list', items: rng.shuffle([
+      'spot report: the bend past the trailhead (crowded now, thanks a lot)',
+      'lure of the month: whatever is dented',
+      'reminder: license renews in january, learned that the hard way',
+      'the game warden reads this page. hi Roy.',
+    ]).slice(0, 3) },
+    { t: 'badges', labels: rng.shuffle(BADGES).slice(0, rng.int(2, 4)) },
+    { t: 'counter', value: rng.int(500, 15000) },
+    { t: 'updated', date: rng.pick(UPDATED) },
+  ],
+});
+
+const BUILDERS: Builder[] = [personal, fanshrine, petpage, weird, business, poetry, recipes, huntfish];
 
 // ---------------------------------------------------------------------------
 // Neighborhood generation

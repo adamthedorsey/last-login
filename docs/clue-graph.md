@@ -2,9 +2,9 @@
 
 > GENERATED — do not edit. Source of truth: `season1.ts`. Regenerate: `npm run graph`
 >
-> In-world date: 1997-10-18 · 131 items
-> (12 gated · 11 granting · ~108 mundane camouflage) ·
-> 8 discoveries
+> In-world date: 1997-10-18 · 201 items
+> (12 gated · 12 granting · ~177 mundane camouflage) ·
+> 9 discoveries
 
 ```mermaid
 flowchart TD
@@ -21,8 +21,11 @@ flowchart TD
   d_the_clean_truck(["The clean dark truck"]):::discovery
   d_the_pipeline(["The pipeline"]):::discovery
   d_the_watcher(["The watcher"]):::discovery
+  d_the_source(["The source"]):::discovery
   d_who_shaped(["A familiar shape"]):::discovery
   d_the_house(["The house<br/><b>END OF SEASON</b>"]):::finale
+  i_a_page["PDNT-RAW.PGP<br/><i>file</i>"]:::locked
+  i_a_page ==>|grants| d_the_source
   i_file_ledger_copy["wv history extra notes.txt<br/><i>file</i>"]:::item
   i_file_ledger_copy ==>|grants| d_the_pipeline
   d_the_clean_truck -->|requires| i_file_ledger_copy
@@ -54,7 +57,7 @@ flowchart TD
   i_trash_diary["diary.doc<br/><i>recycle bin</i>"]:::item
   i_trash_diary ==>|grants| d_the_house
   d_who_shaped -->|requires| i_trash_diary
-  i_web_register_timeline["The Humble Register: Timeline of Oct. 10<br/><i>web</i>"]:::item
+  i_web_register_timeline["The Humble Times: Timeline of Oct. 10<br/><i>web</i>"]:::item
   i_web_register_timeline ==>|grants| d_chads_window
   d_stolen_intimacy -->|requires| i_web_register_timeline
   i_web_mapfinder_bend["MapFinder: Route 9 river bend<br/><i>web</i>"]:::item

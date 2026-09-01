@@ -8,6 +8,13 @@ export interface Toast {
   description: string;
   /** Icon name (src/os/icons.tsx) shown beside the description. */
   icon?: string;
+  /** 'case': the Case Files receipt — sheriff seal, black->teal band,
+   * clicking opens Case Files at the saved copy. */
+  variant?: 'case';
+  /** For 'case': the player-document id the click should reveal. */
+  docId?: string;
+  /** For 'case': a saved bookmark id the click should reveal (Bookmarks tab). */
+  bookmarkId?: string;
 }
 
 export interface GameContextValue {
@@ -31,6 +38,10 @@ export interface GameContextValue {
    * (past the menu/boot/login). Ambient mail & chat notifications — and the
    * wire heartbeat — hold until then. */
   setInGame(active: boolean): void;
+  /** The handler wrote back (a 'casefile' wire notice): the tray blinks
+   * until Case Files shows the messages and clears it. */
+  caseAlert: boolean;
+  clearCaseAlert(): void;
   client: GameClient | null;
 }
 

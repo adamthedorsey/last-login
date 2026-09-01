@@ -254,7 +254,7 @@ export interface ChatConversation {
  * chirp and toast about it. All text here is server-authored.
  */
 export interface WireNotice {
-  kind: 'mail' | 'im' | 'buddy-on' | 'buddy-off' | 'roster' | 'system' | 'remote';
+  kind: 'mail' | 'im' | 'buddy-on' | 'buddy-off' | 'roster' | 'system' | 'remote' | 'casefile';
   /** Toast title/body. Optional — the client has generic per-kind fallbacks. */
   title?: string;
   text?: string;
@@ -392,6 +392,13 @@ export interface SeasonContent {
    * — they serve as name-only dead shortcuts until earned. Max 15.
    */
   recentDocuments?: string[];
+  /**
+   * NetVoyager's history menu, FROZEN at Casey's last session — what she
+   * browsed before she went missing, newest first. A quiet clue trail:
+   * entries may point at gated pages (visit still enforces gating; the page
+   * simply "won't load" until earned). Titles/urls/timestamps only.
+   */
+  browserHistory?: Array<{ url: string; title: string; at: string }>;
   discoveries: Discovery[];
   buddies: Buddy[];
   /** Live prompt-tree conversations (see ChatConversation). SERVER ONLY. */
@@ -482,11 +489,17 @@ export interface PlayerState {
   documents?: PlayerDocument[];
   /** Microphone notes recorded through Sound Recorder / Case Files. */
   audioNotes?: PlayerAudioNote[];
+  /** Web pages the player bookmarked into Case Files (title snapshotted
+   * server-side from the page — the client never supplies it). */
+  bookmarks?: Array<{ id: string; url: string; title: string; addedAt: string }>;
+  bookmarkSeq?: number;
   docSeq?: number;
   folders?: PlayerFolder[];
   folderSeq?: number;
   /** Per-buddy list of prompt ids the player has said, in order. */
   chats?: Record<string, string[]>;
+  /** Handler messages already announced over the wire (tray blinker). */
+  announcedCase?: string[];
   /** Dial-up state: the machine starts offline every session-of-record. */
   online?: boolean;
   /** Real epoch ms when the current connection was established. */
@@ -549,7 +562,8 @@ export type GameAction =
   | { type: 'caseFileSync' }
   | { type: 'saveDocument'; docId?: string; name: string; text: string; folderId?: string }
   /** Copy a readable text-bearing item into the player workspace as an
-   * editable snapshot ("Copy of ..."), or duplicate a player document. */
+   * editable snapshot (keeps the original filename; sourceId marks it as a
+   * copy), or duplicate a player document ("Copy of ..."). */
   | { type: 'copyItem'; itemId: string }
   | { type: 'createFolder'; name: string }
   | { type: 'moveDocument'; docId: string; folderId?: string }
@@ -560,6 +574,10 @@ export type GameAction =
   /** Save a microphone recording as a Case Files audio note. */
   | { type: 'saveAudioNote'; name?: string; dataUrl: string }
   | { type: 'deleteAudioNote'; noteId: string }
+  /** Bookmark the page at `url` into Case Files (only pages the player can
+   * currently visit; the engine snapshots the title). */
+  | { type: 'saveBookmark'; url: string }
+  | { type: 'deleteBookmark'; bookmarkId: string }
   | { type: 'resetSeason' };
 
 /**
@@ -605,6 +623,8 @@ export const ACTION_TYPES = [
   'deleteDocument',
   'saveAudioNote',
   'deleteAudioNote',
+  'saveBookmark',
+  'deleteBookmark',
   'resetSeason',
 ] as const;
 
@@ -679,6 +699,8 @@ export interface StateView {
   remotePending?: boolean;
   wallpaper: string;
   homeUrl: string;
+  /** NetVoyager's history, frozen at Casey's last session (newest first). */
+  browserHistory?: Array<{ url: string; title: string; at: string }>;
   loggedIn: boolean;
   ended: boolean;
   discoveries: DiscoveryView[];
@@ -736,6 +758,8 @@ export interface CaseFileView {
     text: string;
     audioSrc?: string;
   }>;
+  /** The player's saved web bookmarks (the Bookmarks tab). */
+  bookmarks?: Array<{ id: string; url: string; title: string; addedAt: string }>;
   /** Present (with the wizard pages) until first-run setup completes. */
   setup?: HandlerSetupPage[];
   /** The same pages, always served — the Help menu's Getting Started. */

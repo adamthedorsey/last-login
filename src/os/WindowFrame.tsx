@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import { MenuList, MenuListItem, Separator, Window, WindowContent, WindowHeader } from 'react95';
 import { getApp } from './appRegistry';
 import { TASKBAR_HEIGHT, useWindowStore, type OSWindow } from './windowStore';
@@ -192,7 +192,7 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
     ? { left: 0, top: 0, width: '100vw', height: `calc(100vh - ${TASKBAR_HEIGHT}px)` }
     : { left: win.x, top: win.y, width: win.w, height: win.h };
 
-  return (
+  const frame = (
     <Shell
       ref={shellRef}
       $maximized={win.maximized}
@@ -329,4 +329,7 @@ export function WindowFrame({ win, focused }: { win: OSWindow; focused: boolean 
       )}
     </Shell>
   );
+
+  // A per-app theme (the Case Files manila) retints the entire window.
+  return def.theme ? <ThemeProvider theme={def.theme}>{frame}</ThemeProvider> : frame;
 }

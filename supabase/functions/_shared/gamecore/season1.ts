@@ -30,7 +30,7 @@ import { generateNeighborhood } from './webgen.ts';
 
 // Procedurally generated GeoCities-style filler web (fixed seed = stable
 // world). Casey's and Sadie's hand-authored pages headline the directory.
-const GENERATED_WEB = generateNeighborhood(19971018, 8, [
+const GENERATED_WEB = generateNeighborhood(19971018, 50, [
   { title: "~*~ casey's corner ~*~", url: 'www.citypages.net/~sunflwrc81' },
   { title: "sadie draws (sometimes)", url: 'www.citypages.net/~sadiedraws77' },
 ]);
@@ -73,7 +73,26 @@ export const SEASON1: SeasonContent = {
     'backdoor.sol': { password: 'lowtide' },
   },
   wallpaper: 'teal',
-  homeUrl: 'www.searchhound.net',
+  homeUrl: 'www.humbletimes.com',
+  // NetVoyager's Go-menu history, FROZEN at Casey's last session — what she
+  // browsed before she went missing, newest first. The last entries run past
+  // 2 AM on Oct 11 (the session the boot warning stamps at 2:31 AM): she was
+  // home, and online, hours after she was "last seen." The 1:52 AM MapFinder
+  // entry points at a gated page — it simply won't load until earned.
+  browserHistory: [
+    { url: 'www.purdontpharma.com/board', title: 'Purdont — Board of Directors', at: '10/11 2:19 AM' },
+    { url: 'www.purdontpharma.com/products', title: 'Purdont — Our Medicines', at: '10/11 2:08 AM' },
+    { url: 'www.mapfinder.net/maps/route9-bend', title: 'MapFinder — Route 9 River Bend', at: '10/11 1:52 AM' },
+    { url: 'www.citypages.net/~sadiedraws77', title: 'sadie draws (sometimes)', at: '10/10 11:34 PM' },
+    { url: 'www.solarflareband.net', title: 'SOLAR FLARE — official site', at: '10/10 11:21 PM' },
+    { url: 'www.purdontpharma.com', title: 'Purdont Pharmaceutical', at: '10/10 10:58 PM' },
+    { url: 'www.searchhound.net', title: 'SearchHound — Fetch the Web!', at: '10/10 10:41 PM' },
+    { url: 'www.humbletimes.com', title: 'The Humble Times — Online Edition', at: '10/9 8:12 PM' },
+    { url: 'www.valuemed.com', title: 'Value-Med Discount Pharmacy', at: '10/9 7:58 PM' },
+    { url: 'www.citypages.net/~sunflwrc81', title: "~*~ casey's corner ~*~", at: '10/8 9:30 PM' },
+    { url: 'www.westwind.net', title: 'WestWind Online — Your Local Internet', at: '10/8 9:05 PM' },
+    { url: 'www.citypages.net', title: 'CityPages member directory', at: '10/8 8:47 PM' },
+  ],
   // Six strikes and the machine freezes you out for a minute and a half.
   // What the phone line reaches when the modem ISN'T holding it. Flavor,
   // not clues — but the time line reads the frozen clock back to you, and
@@ -160,6 +179,12 @@ export const SEASON1: SeasonContent = {
       title: 'The watcher',
       description:
         'Someone just dialed into this machine like they’d done it a hundred times — no guessing, no fumbling, straight to her private folder, looking for one file that is no longer there. That is how you know things nobody posted, and quote files that live nowhere else. It was never magic. It was access.',
+    },
+    {
+      id: 'the-source',
+      title: 'The source',
+      description:
+        'The floppy wasn’t homework. Behind her own secret word sat Purdont’s own paper — a field bulletin naming Dr. Sparks a top prescriber to be rewarded, and a memo telling reps not to say the word "addiction" out loud. The pipeline doesn’t start at the pharmacy. It starts at the company that makes the pills, and Casey had it in their own words.',
     },
     {
       id: 'who-shaped',
@@ -699,8 +724,91 @@ export const SEASON1: SeasonContent = {
       name: '3½ Floppy (A:)',
       icon: 'floppy',
       parentId: 'folder.computer',
-      // No disk in the drive — the Explorer shows the classic refusal.
+      // There IS a disk in the drive: her cover homework and, behind a
+      // passphrase, "the page" nightshift kept asking about (trash.bl-log).
       meta: { path: 'A:\\' },
+    },
+    {
+      // The cover. A real, dull essay so the disk looks like nothing — the
+      // way you hide a floppy is you make it boring. Free to open.
+      id: 'a.decoy',
+      kind: 'document',
+      name: 'HIST-CH7.doc',
+      icon: 'doc',
+      parentId: 'drive.a',
+      meta: { createdAt: '1997-09-29', modifiedAt: '1997-09-29', sizeKb: 6, path: 'A:\\HIST-CH7.doc' },
+      searchText: 'history homework essay industrial revolution casey decoy floppy',
+      body: {
+        text: `Chapter 7 — The Industrial Revolution
+Casey Taylor, 3rd period
+
+The Industrial Revolution changed how people worked. Before, most
+people made things at home or on farms. After, they went to factories
+where machines did the work faster. This was good for making cheap
+goods but bad for the workers, who worked long hours for low pay in
+dangerous conditions.
+
+[the rest is three more paragraphs of the same, copied mostly from the
+textbook, with one doodle in the margin: a junebug, six legs, the way a
+kid draws one. under it, small, in her hand: "for S. — jbug 4ever"]`,
+      },
+    },
+    {
+      // "The page." Purdont's own material — the raw dump nightshift walked
+      // her through pulling from their web infrastructure (story/canon.md).
+      // Locked with the one word that was ever really hers. junebug is her
+      // secret with Sadie (web.sadie-page, the childhood sketch), the word
+      // nightshift stole to prove himself (trash.bl-log), and the word that
+      // drifts across her screen saver the whole time (saverText). Opening
+      // it is the gut-punch: her safe word is what she used as a vault.
+      id: 'a.page',
+      kind: 'document',
+      name: 'PDNT-RAW.PGP',
+      icon: 'doc',
+      parentId: 'drive.a',
+      password: 'junebug',
+      passwordHint: 'A word only two people on Earth were ever supposed to know.',
+      onOpen: { discover: ['the-source'] },
+      meta: { createdAt: '1997-10-09', modifiedAt: '1997-10-09', sizeKb: 214, path: 'A:\\PDNT-RAW.PGP', mono: true },
+      searchText: 'purdont pgp encrypted the page oxytera internal nightshift stolen source',
+      body: {
+        text: `-----BEGIN PGP MESSAGE-----
+[decrypted 10/09/97 — contents of PDNT-RAW]
+
+>> PURDONT PHARMACEUTICAL — FIELD SALES BULLETIN
+>> NOT FOR DISTRIBUTION OUTSIDE THE SALES ORGANIZATION
+>> Region 4 (Appalachia) — Q3 1996
+
+Representatives are reminded that Oxytera CR is indicated for
+moderate to severe persistent pain. "Persistent" is the operative
+word. A patient who has hurt for three weeks has persistent pain.
+Do not let a physician's caution about "just a back" cost that
+patient relief — or cost you the script.
+
+TOP DECILE PRESCRIBERS, REGION 4 (partial):
+  ...
+  SPARKS, R. — Humble, WV .......... 412 scripts (Q3) ...... ^ 71%
+  ...
+Rep servicing this territory: note the growth. Reward it. Dr.
+Sparks is a believer. Believers get the speaker-program invitations,
+the honoraria, the trip to the Scottsdale meeting. Keep him close.
+
+>> INTERNAL MEMO — excerpt (do NOT forward)
+Re: the "abuse" question at the Charleston dinner
+
+We are hearing the addiction word more this year, mostly from
+pharmacists and a few ER people. Guidance has not changed. The
+delayed-release language is approved; the "less than one percent"
+figure is approved. Field staff are NOT to volunteer the county
+overdose numbers. If a prescriber raises them, redirect to
+undertreated pain. We do not have a Humble problem. We have an
+undertreatment problem that happens to be visible in Humble.
+
+>> and there's a spreadsheet under this, casey. numbers by county.
+>> ours is not the worst one. ours is just the one you live in.
+>> — the note in her own hand, at the bottom
+-----END PGP MESSAGE-----`,
+      },
     },
     {
       id: 'folder.c',
@@ -729,6 +837,43 @@ export const SEASON1: SeasonContent = {
       icon: 'dialup',
       parentId: 'folder.computer',
       meta: { appId: 'dialup' },
+    },
+    // --- C:\Windows\Profiles\casey\Desktop — the desktop IS a folder, like
+    // real Win95 with user profiles enabled (the machine has a logon). The
+    // items whose home is the desktop live here; browsing to it mirrors the
+    // desktop exactly. (My Computer / Recycle Bin were virtual namespace
+    // objects and correctly do NOT appear.)
+    {
+      id: 'folder.windows',
+      kind: 'folder',
+      name: 'Windows',
+      icon: 'folder',
+      parentId: 'folder.c',
+      meta: { path: 'C:\\Windows' },
+    },
+    {
+      id: 'folder.profiles',
+      kind: 'folder',
+      name: 'Profiles',
+      icon: 'folder',
+      parentId: 'folder.windows',
+      meta: { path: 'C:\\Windows\\Profiles' },
+    },
+    {
+      id: 'folder.profile-casey',
+      kind: 'folder',
+      name: 'casey',
+      icon: 'folder',
+      parentId: 'folder.profiles',
+      meta: { path: 'C:\\Windows\\Profiles\\casey' },
+    },
+    {
+      id: 'folder.desktop',
+      kind: 'folder',
+      name: 'Desktop',
+      icon: 'folder',
+      parentId: 'folder.profile-casey',
+      meta: { path: 'C:\\Windows\\Profiles\\casey\\Desktop' },
     },
     {
       // A real Control Panel folder of applets — all machine chrome.
@@ -1102,7 +1247,7 @@ so. about that.`,
         modifiedAt: '1997-09-21',
         sizeKb: 447,
         audioSrc: '/audio/dont-listen-to-this.m4a',
-        audioSeconds: 42,
+        audioSeconds: 38,
       },
       body: {
         text: `[sound recording — dont listen to this.wav]
@@ -1332,7 +1477,7 @@ he boy arrived on a Tuesday, soaked through, holding a shoebox.
       // filename stays personal on purpose (re-read it after the end).
       name: 'from j.txt',
       icon: 'doc',
-      parentId: 'folder.c',
+      parentId: 'folder.desktop',
       meta: {
         createdAt: '1997-06-30',
         modifiedAt: '1997-06-30',
@@ -2279,6 +2424,7 @@ and things go back to nor
     {
       id: 'shortcut.mail',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'Mail',
       icon: 'mail-app',
       meta: { appId: 'mail', desktop: { x: 120, y: 120 } },
@@ -2286,6 +2432,7 @@ and things go back to nor
     {
       id: 'shortcut.buddyline',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'Messenger',
       icon: 'im-app',
       meta: { appId: 'buddyline', desktop: { x: 120, y: 216 } },
@@ -2293,6 +2440,7 @@ and things go back to nor
     {
       id: 'shortcut.browser',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'NetVoyager',
       icon: 'browser',
       meta: { appId: 'browser', desktop: { x: 120, y: 24 } },
@@ -2300,6 +2448,7 @@ and things go back to nor
     {
       id: 'shortcut.notepad',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'Notepad',
       icon: 'notepad',
       meta: { appId: 'notepad', desktop: { x: 216, y: 24 } },
@@ -2307,6 +2456,7 @@ and things go back to nor
     {
       id: 'shortcut.solitaire',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'Solitaire',
       icon: 'game',
       meta: { appId: 'solitaire', desktop: { x: 216, y: 120 } },
@@ -2314,6 +2464,7 @@ and things go back to nor
     {
       id: 'shortcut.dialup',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'WestWind Online',
       icon: 'dialup',
       meta: { appId: 'dialup', desktop: { x: 216, y: 216 } },
@@ -2325,6 +2476,7 @@ and things go back to nor
       kind: 'document',
       name: 'README.txt',
       icon: 'doc',
+      parentId: 'folder.desktop',
       meta: {
         createdAt: '1997-10-18',
         modifiedAt: '1997-10-18',
@@ -2367,7 +2519,7 @@ then open CASE FILES.
     { id: 'bm.mypage', kind: 'bookmark', name: 'my page!!', parentId: 'folder.bookmarks', meta: { url: 'www.citypages.net/~sunflwrc81' } },
     { id: 'bm.sadiepage', kind: 'bookmark', name: "sadie's page", parentId: 'folder.bookmarks', meta: { url: 'www.citypages.net/~sadiedraws77' } },
     { id: 'bm.solarflare', kind: 'bookmark', name: 'SOLAR FLARE official', parentId: 'folder.bookmarks', meta: { url: 'www.solarflareband.net' } },
-    { id: 'bm.register', kind: 'bookmark', name: 'Humble Register', parentId: 'folder.bookmarks', meta: { url: 'www.humbleregister.net' } },
+    { id: 'bm.register', kind: 'bookmark', name: 'Humble Times', parentId: 'folder.bookmarks', meta: { url: 'www.humbletimes.com' } },
     { id: 'bm.citypages', kind: 'bookmark', name: 'CityPages directory', parentId: 'folder.bookmarks', meta: { url: 'www.citypages.net' } },
 
     // =====================================================================
@@ -2471,28 +2623,48 @@ then open CASE FILES.
         ],
       },
     },
+    // =====================================================================
+    // THE HUMBLE TIMES — the county paper, and the browser's home page.
+    // Period news site: masthead, weather strip, sections. The Casey
+    // coverage is OFFICIAL/PUBLIC information only (Case Summary rules).
+    // =====================================================================
     {
       id: 'web.register',
       kind: 'webpage',
-      name: 'The Humble Register',
-      meta: { url: 'www.humbleregister.net', siteTitle: 'The Humble Register — Online Edition' },
-      searchText: 'humble register news casey taylor missing search route 9 river bend',
+      name: 'The Humble Times',
+      meta: { url: 'www.humbletimes.com', siteTitle: 'The Humble Times — Online Edition' },
+      searchText: 'humble times news casey taylor missing search route 9 river weather county',
       body: {
         style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
         blocks: [
-          { t: 'h', text: 'The Humble Register' },
-          { t: 'small', text: 'Online Edition — Updated Wednesdays (usually) — Oct. 15, 1997' },
+          { t: 'h', text: 'The Humble Times' },
+          { t: 'small', text: 'Serving Humble County since 1951 — Online Edition — Wednesday, Oct. 15, 1997' },
+          { t: 'small', text: 'TODAY: Partly cloudy, high 61, low 44. River at 4.2 ft and falling.' },
+          { t: 'link', text: 'Full forecast and river gauge', url: 'www.humbletimes.com/weather' },
           { t: 'hr' },
           { t: 'sub', text: 'SEARCH FOR MISSING TEEN ENTERS SECOND WEEK' },
+          { t: 'img', caption: 'Casey Taylor, 16, in a photograph provided by the family.', src: '/photos/casey_at_computer.jpg' },
           { t: 'p', text: 'The search for Casey Taylor, 16, of Humble, continued this week with volunteers walking the fire roads along the river. Taylor was last seen the evening of Friday, Oct. 10. Her bicycle was recovered near the Route 9 trailhead the following morning.' },
           { t: 'p', text: 'Sheriff Dale Purvis urged residents with information to come forward. "Somebody saw something," Purvis said. "In a county this size, somebody always has."' },
           { t: 'p', text: 'A joint vigil is planned Friday evening at St. Mark\'s. The family has asked for privacy. Value-Med Discount Pharmacy has donated flashlights and batteries for the volunteer search teams.' },
+          { t: 'link', text: 'SPECIAL REPORT: A timeline of Friday, Oct. 10 — what we can pin down', url: 'www.humbletimes.com/timeline' },
+          { t: 'link', text: 'How to help: volunteer sign-up and the tip line', url: 'www.humbletimes.com/news/volunteers' },
           { t: 'hr' },
           { t: 'sub', text: 'ALSO THIS WEEK' },
-          { t: 'list', items: ['County board delays Route 9 guardrail project a third time', 'Wildcats fall to Man 21-14; Logan up next', 'Harvest Festival parking: what to know (bring quarters)'] },
-          { t: 'link', text: 'SPECIAL REPORT: A timeline of Friday, Oct. 10 — what we can pin down', url: 'www.humbleregister.net/timeline' },
+          { t: 'link', text: 'County board delays Route 9 guardrail project a third time', url: 'www.humbletimes.com/news/guardrail' },
+          { t: 'link', text: 'Wildcats fall to Man 21-14; Logan up next', url: 'www.humbletimes.com/sports' },
+          { t: 'link', text: 'Harvest Festival this weekend: parking, pie, what to know', url: 'www.humbletimes.com/news/festival' },
           { t: 'hr' },
-          { t: 'small', text: 'The Register Online is a service of Humble Printing & Copy. Story tips: tips@humbleregister.net' },
+          { t: 'sub', text: 'SECTIONS' },
+          { t: 'link', text: 'Weather & River', url: 'www.humbletimes.com/weather' },
+          { t: 'link', text: 'Sports', url: 'www.humbletimes.com/sports' },
+          { t: 'link', text: 'Obituaries', url: 'www.humbletimes.com/obituaries' },
+          { t: 'link', text: 'Classifieds', url: 'www.humbletimes.com/classifieds' },
+          { t: 'link', text: 'Letters to the Editor', url: 'www.humbletimes.com/letters' },
+          { t: 'link', text: 'Recent editions (archive)', url: 'www.humbletimes.com/archive' },
+          { t: 'hr' },
+          { t: 'small', text: 'The Times Online is a service of Humble Printing & Copy. Story tips: tips@humbletimes.com. Best viewed at 800x600.' },
+          { t: 'counter', value: 15207 },
         ],
       },
     },
@@ -2500,30 +2672,248 @@ then open CASE FILES.
       // PATH B for chads-window: the barstool alibi, on the record.
       id: 'web.register-timeline',
       kind: 'webpage',
-      name: 'The Humble Register: Timeline of Oct. 10',
-      meta: { url: 'www.humbleregister.net/timeline', siteTitle: 'The Humble Register — A Timeline of Friday, Oct. 10' },
+      name: 'The Humble Times: Timeline of Oct. 10',
+      meta: { url: 'www.humbletimes.com/timeline', siteTitle: 'The Humble Times — A Timeline of Friday, Oct. 10' },
       searchText: 'chad daniels timeline genes bar alibi barstool last day friday october 10 casey taylor',
       requires: { discovery: 'stolen-intimacy' },
       onOpen: { discover: ['chads-window'] },
       body: {
         style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
         blocks: [
-          { t: 'h', text: 'The Humble Register' },
+          { t: 'h', text: 'The Humble Times' },
           { t: 'small', text: 'Online Edition — SPECIAL REPORT, posted Oct. 17, 1997' },
           { t: 'hr' },
           { t: 'sub', text: 'THE LAST DAY: WHAT WE CAN PIN DOWN' },
-          { t: 'p', text: 'The Register has assembled the following from public statements and our own interviews. Times are approximate except where noted.' },
+          { t: 'p', text: 'The Times has assembled the following from public statements and our own interviews. Times are approximate except where noted.' },
           { t: 'list', items: [
             '3:30 PM — Franklin Walker lets out. Multiple students describe an argument in the parking lot between Casey Taylor and her boyfriend, Chad Daniels, 19.',
             '4 to 7 PM — Taylor is with a friend; investigators say her movements in this window are now accounted for.',
             'About 7 PM — Taylor is dropped off at home. A neighbor recalls seeing her at the mailbox.',
-            '6 PM to closing — Daniels is at Gene’s Bar. "That boy was on the same stool from six until we shut the kitchen," said Earl Prater, who tends bar there. "Used the bar phone twice trying to call the Taylor girl’s house. I dialed it for him the second time." The bar’s phone records are consistent with that account, the sheriff’s office confirmed Thursday.',
+            '6 PM to closing — Daniels is at Gene\u2019s Bar. "That boy was on the same stool from six until we shut the kitchen," said Earl Prater, who tends bar there. "Used the bar phone twice trying to call the Taylor girl\u2019s house. I dialed it for him the second time." The bar\u2019s phone records are consistent with that account, the sheriff\u2019s office confirmed Thursday.',
             'About 9:50 PM — A resident along Route 9 reports hearing a single vehicle on the fire road. The report is unverified.',
-            '7:05 AM Saturday — Taylor’s bicycle is found at the Route 9 trailhead.',
+            '7:05 AM Saturday — Taylor\u2019s bicycle is found at the Route 9 trailhead.',
           ] },
           { t: 'p', text: 'Sheriff Dale Purvis declined to name any person of interest. "Folks want it to be simple," Purvis said. "Simple has an alibi."' },
           { t: 'hr' },
-          { t: 'small', text: 'The Register Online is a service of Humble Printing & Copy. Story tips: tips@humbleregister.net' },
+          { t: 'small', text: 'The Times Online is a service of Humble Printing & Copy. Story tips: tips@humbletimes.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.times-weather',
+      kind: 'webpage',
+      name: 'Humble Times: Weather & River',
+      meta: { url: 'www.humbletimes.com/weather', siteTitle: 'The Humble Times — Weather & River' },
+      searchText: 'weather forecast river gauge humble county frost sunrise sunset',
+      body: {
+        style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Weather & River' },
+          { t: 'small', text: 'Readings from the co-op station at the fairgrounds, 6 AM Wednesday.' },
+          { t: 'hr' },
+          { t: 'list', items: [
+            'WEDNESDAY: Partly cloudy. High 61, low 44.',
+            'THURSDAY: Clouds thicken. High 58, low 41. Chance of showers after dark.',
+            'FRIDAY: Showers early, clearing. High 55, low 38. First frost possible in the hollows.',
+            'WEEKEND OUTLOOK: Fair and cool for the Harvest Festival. Bring a coat, leave the umbrella.',
+          ] },
+          { t: 'hr' },
+          { t: 'sub', text: 'RIVER GAUGE' },
+          { t: 'p', text: 'The river stood at 4.2 feet Wednesday morning and falling — down from 5.1 after last week\u2019s rain. Flood stage is 11 feet. The low water has aided search teams working the banks below the Route 9 bend.' },
+          { t: 'list', items: ['Sunrise 7:38 AM — Sunset 6:44 PM', 'Frost advisory: tender plants in low ground', 'Burn ban remains LIFTED'] },
+          { t: 'hr' },
+          { t: 'link', text: 'Back to front page', url: 'www.humbletimes.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.times-sports',
+      kind: 'webpage',
+      name: 'Humble Times: Sports',
+      meta: { url: 'www.humbletimes.com/sports', siteTitle: 'The Humble Times — Sports' },
+      searchText: 'wildcats football sports man logan volleyball franklin walker high school',
+      body: {
+        style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Sports' },
+          { t: 'hr' },
+          { t: 'sub', text: 'WILDCATS FALL TO MAN, 21-14' },
+          { t: 'p', text: 'Franklin Walker had the ball at the Man 30 with ninety seconds left and could not punch it in. Coach Ferrell called it "a game we gave away twice." The Wildcats drop to 4-3 with Logan coming Friday — a game the region will be watching.' },
+          { t: 'p', text: 'Junior tailback D. Combs carried 22 times for 141 yards. "He ran angry," Ferrell said. "Wish the rest of us had."' },
+          { t: 'sub', text: 'AROUND THE COUNTY' },
+          { t: 'list', items: [
+            'Volleyball: Lady Wildcats sweep Gilbert, host sectionals Saturday morning.',
+            'Cross country: regionals moved to the golf course again. Runners advised the fifth hole is still soggy.',
+            'JV football Thursday cancelled; both teams at the vigil.',
+          ] },
+          { t: 'hr' },
+          { t: 'link', text: 'Back to front page', url: 'www.humbletimes.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.times-obits',
+      kind: 'webpage',
+      name: 'Humble Times: Obituaries',
+      meta: { url: 'www.humbletimes.com/obituaries', siteTitle: 'The Humble Times — Obituaries' },
+      searchText: 'obituaries deaths funeral notices humble county',
+      body: {
+        style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Obituaries' },
+          { t: 'hr' },
+          { t: 'sub', text: 'VIRGIL T. HANSHAW, 84' },
+          { t: 'p', text: 'Virgil T. Hanshaw, 84, of Beech Fork, died Sunday at home, in the chair by the window, which is where he would have wanted it. He worked thirty-one years at the tipple and never once was late. Survived by his wife Opal, four children, eleven grandchildren, and a garden the neighbors have promised to see through to frost. Services Thursday at Beech Fork Freewill Baptist.' },
+          { t: 'sub', text: 'IRENE (POLLY) MCCOMAS, 77' },
+          { t: 'p', text: 'Irene "Polly" McComas, 77, of Humble, died Friday at Valley General. For forty years her pound cake closed the bidding at every church auction in the county; the recipe, per her instructions, goes with her. Donations to the library bookmobile in lieu of flowers.' },
+          { t: 'hr' },
+          { t: 'small', text: 'Notices are published free of charge. The Times regrets it cannot return photographs.' },
+          { t: 'link', text: 'Back to front page', url: 'www.humbletimes.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.times-classifieds',
+      kind: 'webpage',
+      name: 'Humble Times: Classifieds',
+      meta: { url: 'www.humbletimes.com/classifieds', siteTitle: 'The Humble Times — Classifieds' },
+      searchText: 'classifieds for sale help wanted free kittens truck firewood',
+      body: {
+        style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Classifieds' },
+          { t: 'small', text: '25 words for $3. Deadline Monday noon. No refunds, even if it sells Tuesday.' },
+          { t: 'hr' },
+          { t: 'sub', text: 'FOR SALE' },
+          { t: 'list', items: [
+            'Truck cap, fits long bed, green-ish. You haul. $40 OBO. 555-0141.',
+            'Seasoned firewood, mixed hardwood. Delivery inside county. Ask for Delmar.',
+            'Upright piano, FREE to anyone who can move an upright piano.',
+            'Wedding dress, size 8, worn once, long story. $75. 555-0188.',
+          ] },
+          { t: 'sub', text: 'HELP WANTED' },
+          { t: 'list', items: [
+            'Value-Med Discount Pharmacy seeks evening stocker, Rt. 3 location. Apply within.',
+            'Gene\u2019s Bar: weekend kitchen help. Must be 18. Must actually show up.',
+            'The Times seeks a paper carrier for the Beech Fork route. Early hours, loyal dogs.',
+          ] },
+          { t: 'sub', text: 'FREE' },
+          { t: 'list', items: ['Kittens, barn-raised, mouser stock, 6 wks. Gray ones spoken for.', 'Hay bales, rained on once. Good for something surely.'] },
+          { t: 'hr' },
+          { t: 'link', text: 'Back to front page', url: 'www.humbletimes.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.times-letters',
+      kind: 'webpage',
+      name: 'Humble Times: Letters',
+      meta: { url: 'www.humbletimes.com/letters', siteTitle: 'The Humble Times — Letters to the Editor' },
+      searchText: 'letters editor opinion guardrail internet computer door',
+      body: {
+        style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Letters to the Editor' },
+          { t: 'small', text: 'The Times prints letters as space allows. Keep it civil; we know your mother.' },
+          { t: 'hr' },
+          { t: 'sub', text: 'GUARDRAIL: HOW MANY TIMES' },
+          { t: 'p', text: 'To the Editor: The board has now delayed the Route 9 guardrail longer than it took to build Route 9. When it finally goes up it should have a plaque with all their names on it. — G. Sturgill, Humble' },
+          { t: 'sub', text: 'THE COMPUTER IS A DOOR' },
+          { t: 'p', text: 'To the Editor: Folks buy their children a computer like it\u2019s an encyclopedia. It is not an encyclopedia. It is a door into your home, open all night, and you don\u2019t know who\u2019s on the porch. Ask your kids what they do on that thing. Make them show you. — Mrs. E. Coyner, Beech Fork' },
+          { t: 'sub', text: 'THANK YOU' },
+          { t: 'p', text: 'To the Editor: To every neighbor who has walked a fire road, poured a thermos, or lent a flashlight these two weeks: this county\u2019s heart is not lost. — The volunteer coordinators, St. Mark\u2019s' },
+          { t: 'hr' },
+          { t: 'link', text: 'Back to front page', url: 'www.humbletimes.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.times-volunteers',
+      kind: 'webpage',
+      name: 'Humble Times: How to Help',
+      meta: { url: 'www.humbletimes.com/news/volunteers', siteTitle: 'The Humble Times — How to Help' },
+      searchText: 'volunteer search casey taylor tip line st marks flashlight sign up',
+      body: {
+        style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'How to Help' },
+          { t: 'small', text: 'Updated Oct. 15 with the sheriff\u2019s office.' },
+          { t: 'hr' },
+          { t: 'list', items: [
+            'TIP LINE: 555-0199, staffed 7 AM to 11 PM. Callers may remain anonymous.',
+            'SEARCH VOLUNTEERS: sign up at the St. Mark\u2019s fellowship hall, 8 AM daily. Wear boots. Teams walk in threes.',
+            'DO NOT search the riverbank alone or after dark. The sheriff asks this plainly.',
+            'DONATIONS: batteries, bottled water, and coffee to St. Mark\u2019s. No more flashlights — Value-Med has that covered.',
+          ] },
+          { t: 'p', text: '"People keep asking what they can do," said volunteer coordinator Ruth Bowen. "Show up at eight. That\u2019s the whole list."' },
+          { t: 'hr' },
+          { t: 'link', text: 'Back to front page', url: 'www.humbletimes.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.times-guardrail',
+      kind: 'webpage',
+      name: 'Humble Times: Guardrail delayed',
+      meta: { url: 'www.humbletimes.com/news/guardrail', siteTitle: 'The Humble Times — Guardrail Project Delayed Again' },
+      searchText: 'route 9 guardrail county board delay bend',
+      body: {
+        style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'County board delays Route 9 guardrail a third time' },
+          { t: 'small', text: 'Oct. 15, 1997' },
+          { t: 'hr' },
+          { t: 'p', text: 'The county board voted 3-2 Tuesday to table the Route 9 guardrail project until spring, citing the cost of winter road salt. The stretch above the river bend has been on the improvement list since 1994.' },
+          { t: 'p', text: '"The rail will get built," said board president C. Aldridge. "The river\u2019s not going anywhere." Board member F. Tackett, who voted against tabling, replied that neither was the drop.' },
+          { t: 'hr' },
+          { t: 'link', text: 'Back to front page', url: 'www.humbletimes.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.times-festival',
+      kind: 'webpage',
+      name: 'Humble Times: Harvest Festival',
+      meta: { url: 'www.humbletimes.com/news/festival', siteTitle: 'The Humble Times — Harvest Festival Guide' },
+      searchText: 'harvest festival parking pie contest fairgrounds quarters',
+      body: {
+        style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Harvest Festival: what to know' },
+          { t: 'small', text: 'Saturday at the fairgrounds, rain or shine (it will not rain, see Weather).' },
+          { t: 'hr' },
+          { t: 'list', items: [
+            'PARKING: the school lot, 50 cents. BRING QUARTERS. The change box situation has not improved since last year.',
+            'PIE: judging at 2 PM. Categories: apple, "other fruit," and the controversial open division.',
+            'MUSIC: the high school band at noon; the Willett Brothers at 4, same set as always, and God bless them for it.',
+            'The festival committee asks that this year, nobody enters the tractor pull twice under two names. Dale.',
+          ] },
+          { t: 'hr' },
+          { t: 'link', text: 'Back to front page', url: 'www.humbletimes.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.times-archive',
+      kind: 'webpage',
+      name: 'Humble Times: Archive',
+      meta: { url: 'www.humbletimes.com/archive', siteTitle: 'The Humble Times — Recent Editions' },
+      searchText: 'archive back issues september editions value-med expands internet policy',
+      body: {
+        style: { bg: '#ffffff', fg: '#111111', link: '#0000aa', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Recent editions' },
+          { t: 'small', text: 'Headlines from the print edition. Full text at the library on microfilm (ask for Carol).' },
+          { t: 'hr' },
+          { t: 'list', items: [
+            'OCT. 8 — School board adopts "acceptable use" policy for the new computer lab; students required to sign.',
+            'OCT. 1 — Value-Med opens third county location on Rt. 3; ribbon cut by two board members and a man in a pill costume.',
+            'SEPT. 24 — Volunteer fire department pancake feed raises record $1,840.',
+            'SEPT. 17 — WestWind Online adds second dial-in number after "the busy signal summer."',
+            'SEPT. 10 — Bear seen at the fairgrounds; bear declines interview.',
+          ] },
+          { t: 'hr' },
+          { t: 'link', text: 'Back to front page', url: 'www.humbletimes.com' },
         ],
       },
     },
@@ -2544,6 +2934,295 @@ then open CASE FILES.
           { t: 'img', caption: '[ map tile: the river, fire road switchbacks past mile marker 6, a marked pull-off at the bend. one residence nearby: a parcel on the ridge above the road. ]' },
           { t: 'p', text: 'Access via the county fire road off Route 9, past mile marker 6. Gate closed to vehicles after dusk; foot access is not patrolled. Approx. 20 minutes by bicycle from downtown Humble.' },
           { t: 'small', text: 'MapFinder cannot verify current road conditions. Print this page before traveling.' },
+        ],
+      },
+    },
+
+    // =====================================================================
+    // PURDONT PHARMACEUTICAL — the corporate site, RESTORED (canon: Casey
+    // defaced the homepage; by Oct 14 the company had it back up — the
+    // footer line is the one quiet trace). Mundane on the surface; the
+    // history menu shows Casey circling it.
+    // =====================================================================
+    {
+      id: 'web.purdont',
+      kind: 'webpage',
+      name: 'Purdont Pharmaceutical',
+      meta: { url: 'www.purdontpharma.com', siteTitle: 'Purdont Pharmaceutical — Committed to a Pain-Free Tomorrow' },
+      searchText: 'purdont pharmaceutical pharma oxytera pain medicine company',
+      body: {
+        style: { bg: '#ffffff', fg: '#10213a', link: '#123c8a', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'PURDONT PHARMACEUTICAL' },
+          { t: 'small', text: 'Committed to a Pain-Free Tomorrow \u2122' },
+          { t: 'hr' },
+          { t: 'img', caption: '[ photograph: a sunlit laboratory, a researcher holding a beaker toward the window ]' },
+          { t: 'p', text: 'For nearly half a century, Purdont Pharmaceutical has stood at the forefront of therapeutic innovation. From our family of trusted medicines to our pioneering work in the treatment of persistent pain, one belief guides us: no one should have to live with suffering that medicine can relieve.' },
+          { t: 'sub', text: 'LEARN MORE' },
+          { t: 'link', text: 'About Purdont', url: 'www.purdontpharma.com/about' },
+          { t: 'link', text: 'Our Medicines', url: 'www.purdontpharma.com/products' },
+          { t: 'link', text: 'Board of Directors', url: 'www.purdontpharma.com/board' },
+          { t: 'link', text: 'Careers at Purdont', url: 'www.purdontpharma.com/careers' },
+          { t: 'hr' },
+          { t: 'small', text: 'Site restored October 14, 1997. We thank our visitors for their patience during recent maintenance.' },
+          { t: 'small', text: '\u00a9 1997 Purdont Pharmaceutical Company, Stamford, Connecticut. All rights reserved.' },
+        ],
+      },
+    },
+    {
+      id: 'web.purdont-about',
+      kind: 'webpage',
+      name: 'Purdont: About',
+      meta: { url: 'www.purdontpharma.com/about', siteTitle: 'Purdont Pharmaceutical — About Our Company' },
+      searchText: 'purdont about history stamford founded 1952 mission values',
+      body: {
+        style: { bg: '#ffffff', fg: '#10213a', link: '#123c8a', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'About Purdont' },
+          { t: 'hr' },
+          { t: 'p', text: 'Founded in 1952 by Dr. Raymond E. Purdont, Purdont Pharmaceutical began as a three-person laboratory producing antiseptics and earwax remedies. Today, Purdont medicines reach patients in fourteen countries.' },
+          { t: 'p', text: 'Our modern era began with a simple question: why is pain the last symptom medicine takes seriously? Purdont has invested more than any company in our field in the science of pain relief \u2014 and in helping physicians recognize pain as the fifth vital sign.' },
+          { t: 'sub', text: 'OUR VALUES' },
+          { t: 'list', items: ['Patients first, always', 'Science with compassion', 'Partnership with the physician community', 'Integrity in everything we do'] },
+          { t: 'hr' },
+          { t: 'link', text: 'Home', url: 'www.purdontpharma.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.purdont-products',
+      kind: 'webpage',
+      name: 'Purdont: Our Medicines',
+      meta: { url: 'www.purdontpharma.com/products', siteTitle: 'Purdont Pharmaceutical — Our Medicines' },
+      searchText: 'purdont products oxytera cr controlled release pain cloravex somnase medicines',
+      body: {
+        style: { bg: '#ffffff', fg: '#10213a', link: '#123c8a', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Our Medicines' },
+          { t: 'hr' },
+          { t: 'sub', text: 'OXYTERA CR\u00ae \u2014 extended relief for persistent pain' },
+          { t: 'p', text: 'Our flagship therapy. Oxytera CR\u2019s patented controlled-release system delivers smooth, around-the-clock relief with convenient twice-daily dosing \u2014 freeing patients from the clock-watching of short-acting medications. Increasingly, physicians are finding Oxytera CR appropriate not only for severe pain but for the moderate, persistent pain that keeps ordinary people from ordinary life.' },
+          { t: 'small', text: 'Delayed absorption, as provided by Oxytera CR tablets, is believed to reduce the appeal of the medication to those seeking effects other than relief. When taken as directed, the risk of dependence is reported to be very small.' },
+          { t: 'sub', text: 'ALSO FROM PURDONT' },
+          { t: 'list', items: [
+            'CLORAVEX\u00ae \u2014 non-drowsy seasonal allergy relief (now in cherry)',
+            'SOMNASE\u00ae PM \u2014 gentle, restful sleep without morning fog',
+            'VERAPAX\u00ae \u2014 antiseptic first-aid line, trusted since 1954',
+          ] },
+          { t: 'hr' },
+          { t: 'small', text: 'Ask your doctor whether a Purdont medicine is right for you. Prescribing information available to physicians on request.' },
+          { t: 'link', text: 'Home', url: 'www.purdontpharma.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.purdont-board',
+      kind: 'webpage',
+      name: 'Purdont: Board of Directors',
+      meta: { url: 'www.purdontpharma.com/board', siteTitle: 'Purdont Pharmaceutical — Board of Directors' },
+      searchText: 'purdont board directors leadership chairman executives',
+      body: {
+        style: { bg: '#ffffff', fg: '#10213a', link: '#123c8a', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Board of Directors' },
+          { t: 'hr' },
+          { t: 'list', items: [
+            'RICHARD E. PURDONT II \u2014 Chairman. Son of our founder; with the company since 1961.',
+            'MARGUERITE PURDONT-HALE \u2014 Vice Chairman, Trustee of the Purdont Family Foundation.',
+            'DR. ALAN F. KESSLER \u2014 President & Chief Executive Officer.',
+            'DR. IRA S. BLOOM \u2014 Chief Medical Officer, Head of Pain Franchise.',
+            'THEODORE V. GRANT \u2014 Chief Counsel.',
+            'SUSAN C. WHITFIELD \u2014 Senior Vice President, Sales & Physician Education.',
+            'GEN. HAROLD R. TICE (RET.) \u2014 Independent Director.',
+          ] },
+          { t: 'p', text: 'The Board meets quarterly in Stamford. Shareholder inquiries may be directed to Investor Relations.' },
+          { t: 'hr' },
+          { t: 'link', text: 'Home', url: 'www.purdontpharma.com' },
+        ],
+      },
+    },
+    {
+      id: 'web.purdont-careers',
+      kind: 'webpage',
+      name: 'Purdont: Careers',
+      meta: { url: 'www.purdontpharma.com/careers', siteTitle: 'Purdont Pharmaceutical — Careers' },
+      searchText: 'purdont careers jobs sales representative territory appalachia',
+      body: {
+        style: { bg: '#ffffff', fg: '#10213a', link: '#123c8a', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Careers at Purdont' },
+          { t: 'hr' },
+          { t: 'p', text: 'Purdont people are believers. We hire men and women who wake up wanting to move medicine forward \u2014 and we compensate them like it.' },
+          { t: 'sub', text: 'CURRENT OPENINGS' },
+          { t: 'list', items: [
+            'TERRITORY SALES REPRESENTATIVES \u2014 multiple openings: West Virginia, eastern Kentucky, southwestern Virginia. Industry-leading incentive structure. No pharmaceutical experience required; we train winners.',
+            'PHYSICIAN EDUCATION COORDINATORS \u2014 organize regional pain-management seminars (travel, hospitality budget).',
+            'MAILROOM CLERK \u2014 Stamford HQ.',
+          ] },
+          { t: 'hr' },
+          { t: 'small', text: 'Purdont is an equal opportunity employer. Resumes to: Human Resources, Purdont Pharmaceutical, Stamford, CT.' },
+          { t: 'link', text: 'Home', url: 'www.purdontpharma.com' },
+        ],
+      },
+    },
+
+    // =====================================================================
+    // AROUND TOWN — small sites. Mundane beats suspicious; a few of these
+    // recontextualize later, most mean nothing at all.
+    // =====================================================================
+    {
+      id: 'web.stmarks',
+      kind: 'webpage',
+      name: "St. Mark's, Humble",
+      meta: { url: 'www.stmarks-humble.org', siteTitle: "St. Mark's Church — Humble, WV" },
+      searchText: 'st marks church humble services vigil potluck fellowship',
+      body: {
+        style: { bg: '#fffdf5', fg: '#2a2418', link: '#7a5a10', font: 'serif', centered: true },
+        blocks: [
+          { t: 'h', text: "St. Mark's Church" },
+          { t: 'small', text: 'Humble, West Virginia \u2014 "A porch light left on."' },
+          { t: 'hr' },
+          { t: 'list', items: ['Sunday worship 10 AM (come as you are, Earl)', 'Wednesday supper 6 PM \u2014 bring a dish or bring an appetite', 'Choir practice Thursday. New voices welcome. All voices, honestly.'] },
+          { t: 'p', text: 'THIS WEEK: The fellowship hall opens 8 AM daily for search volunteers. Coffee is on. Friday evening we will hold a vigil for Casey Taylor and her family; bring a candle, we have extras.' },
+          { t: 'hr' },
+          { t: 'small', text: 'This page kept by Ruth B., who is learning HTML from a book.' },
+          { t: 'counter', value: 861 },
+        ],
+      },
+    },
+    {
+      id: 'web.wildcats',
+      kind: 'webpage',
+      name: 'FW Wildcats Boosters',
+      meta: { url: 'www.fwhs-wildcats.net', siteTitle: 'Franklin Walker Wildcats — Booster Club' },
+      searchText: 'franklin walker wildcats boosters football schedule spirit wear school',
+      body: {
+        style: { bg: '#1a1a2e', fg: '#f0e8c8', link: '#ffcc44', font: 'sans', centered: true, accent: '#ffcc44' },
+        blocks: [
+          { t: 'h', text: 'FRANKLIN WALKER WILDCATS' },
+          { t: 'blink', text: 'BEAT LOGAN' },
+          { t: 'divider', kind: 'zigzag' },
+          { t: 'list', items: ['Fri Oct 17 \u2014 LOGAN (home) \u2014 wear navy', 'Fri Oct 24 \u2014 at Chapmanville', 'Fri Oct 31 \u2014 TOLSIA (home, senior night)'] },
+          { t: 'p', text: 'Spirit wear table at the gate: shirts $8, hoodies $15, the good stadium blankets are BACK ($20, one per family, Sharon means it this year).' },
+          { t: 'small', text: 'The counselors\u2019 office reminds students it is open all week, no appointment needed, no questions asked.' },
+          { t: 'counter', value: 4172 },
+        ],
+      },
+    },
+    {
+      id: 'web.valuemed',
+      kind: 'webpage',
+      name: 'Value-Med Pharmacy',
+      meta: { url: 'www.valuemed.com', siteTitle: 'Value-Med Discount Pharmacy — Three County Locations' },
+      searchText: 'value-med pharmacy discount prescriptions locations savings pain management',
+      body: {
+        style: { bg: '#eef6ee', fg: '#143314', link: '#0a5c0a', font: 'sans', centered: true },
+        blocks: [
+          { t: 'h', text: 'VALUE-MED DISCOUNT PHARMACY' },
+          { t: 'small', text: '"Feel better about feeling better." \u2014 Now THREE county locations!' },
+          { t: 'hr' },
+          { t: 'list', items: ['Main St., Humble \u2014 Mon-Sat 8-8, Sun 12-5', 'Rt. 3 Plaza \u2014 NEW! Mon-Sat 8-9', 'Beech Fork Crossroads \u2014 Mon-Fri 9-6'] },
+          { t: 'p', text: 'Ask our pharmacists about the Value-Med Savings Club \u2014 big savings on the medicines you take every month, including our generous pain-management program. Transfers are easy: bring your bottle, we do the rest.' },
+          { t: 'small', text: 'Proud sponsor of the volunteer search effort. Flashlights and batteries free to registered search teams at all locations.' },
+          { t: 'counter', value: 2093 },
+        ],
+      },
+    },
+    {
+      id: 'web.westwind',
+      kind: 'webpage',
+      name: 'WestWind Online',
+      meta: { url: 'www.westwind.net', siteTitle: 'WestWind Online — Your Local Internet' },
+      searchText: 'westwind online internet service provider dial-up support busy signal plans',
+      body: {
+        style: { bg: '#f0f4ff', fg: '#101838', link: '#2233aa', font: 'sans' },
+        blocks: [
+          { t: 'h', text: 'WestWind Online' },
+          { t: 'small', text: 'Your Local Internet \u2014 serving the valley since 1995' },
+          { t: 'hr' },
+          { t: 'sub', text: 'PLANS' },
+          { t: 'list', items: ['Standard: $19.95/mo, 60 hours', 'Family: $24.95/mo, 100 hours, two mailboxes', 'Night Owl: $14.95/mo, unlimited midnight-6 AM (our most popular plan, which tells you something about the valley)'] },
+          { t: 'sub', text: 'SUPPORT' },
+          { t: 'p', text: 'Getting a busy signal? We added a second dial-in number in September and a third is "on the truck." If the modem drops you at 11:58 PM, that is the phone company\u2019s nightly line test, not us, and we have the letter to prove it.' },
+          { t: 'small', text: 'Support desk: weekdays 9-5. After hours, Gary checks the machine when he can. Please stop calling his house.' },
+          { t: 'hr' },
+          { t: 'counter', value: 11430 },
+        ],
+      },
+    },
+    {
+      id: 'web.mapfinder-home',
+      kind: 'webpage',
+      name: 'MapFinder',
+      meta: { url: 'www.mapfinder.net', siteTitle: 'MapFinder — Maps for the Modern Motorist' },
+      searchText: 'mapfinder maps directions route planner motorist',
+      body: {
+        style: { bg: '#f4f4e8', fg: '#222222', link: '#006600', font: 'sans', centered: true },
+        blocks: [
+          { t: 'h', text: 'MapFinder' },
+          { t: 'small', text: 'Maps for the Modern Motorist \u2014 beta' },
+          { t: 'hr' },
+          { t: 'p', text: 'Type a route number and county into the locator and MapFinder will draw you a map, usually of the right place. Coverage: WV, VA, KY, OH (partial), PA (we\u2019re working on it).' },
+          { t: 'img', caption: '[ the locator form, which requires the Kava plug-in you do not have ]' },
+          { t: 'small', text: 'MapFinder is a Meridian Digital Systems experiment. Print your map before traveling; the internet does not come in the car.' },
+          { t: 'counter', value: 78113 },
+        ],
+      },
+    },
+    {
+      id: 'web.fishreport',
+      kind: 'webpage',
+      name: 'Valley Fishing Report',
+      meta: { url: 'www.wvfishreport.net', siteTitle: 'The Valley Fishing Report' },
+      searchText: 'fishing report river bass crappie water level valley',
+      body: {
+        style: { bg: '#e8f0e8', fg: '#1a2a1a', link: '#0a5c3a', font: 'sans' },
+        blocks: [
+          { t: 'h', text: 'The Valley Fishing Report' },
+          { t: 'small', text: 'Updated when the fishing is worth reporting. Managed expectations since 1996.' },
+          { t: 'hr' },
+          { t: 'p', text: 'WEEK OF OCT. 13: Water low and clear, 4.2 on the gauge. Smallmouth active on the rocky banks mornings. The bend below the Route 9 trailhead is CLOSED to fishing while the search continues \u2014 respect the tape, and maybe say a word while you\u2019re out there.' },
+          { t: 'list', items: ['Hot: smallmouth, rock bass', 'Slow: catfish (they know something we don\u2019t)', 'Musky report: one (1) musky, seen, not caught, as usual'] },
+          { t: 'hr' },
+          { t: 'counter', value: 5307 },
+        ],
+      },
+    },
+    {
+      id: 'web.library',
+      kind: 'webpage',
+      name: 'Humble County Library',
+      meta: { url: 'www.humblelibrary.net', siteTitle: 'Humble County Public Library' },
+      searchText: 'library hours internet computer sign up book sale microfilm',
+      body: {
+        style: { bg: '#fffef8', fg: '#332f28', link: '#8a4a10', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Humble County Public Library' },
+          { t: 'small', text: 'Knowledge is free. Late fees are ten cents.' },
+          { t: 'hr' },
+          { t: 'list', items: ['Hours: Mon-Fri 9-7, Sat 9-2', 'INTERNET COMPUTER: 15-minute turns, sign-up sheet at the desk. Yes, fifteen. Yes, even you, Perry.', 'Fall book sale Oct. 25: fill a bag, two dollars.'] },
+          { t: 'p', text: 'The microfilm reader is fixed. The Times back to 1951 is available; ask Carol, and do not adjust the focus knob, it has a temperament.' },
+          { t: 'hr' },
+          { t: 'counter', value: 1666 },
+        ],
+      },
+    },
+    {
+      id: 'web.nightsky',
+      kind: 'webpage',
+      name: 'Night Sky Watch',
+      meta: { url: 'www.nightskywatch.net', siteTitle: 'NIGHT SKY WATCH — what did YOU see' },
+      searchText: 'night sky lights ufo satellite watch sightings log',
+      body: {
+        style: { bg: '#000011', fg: '#aaccee', link: '#66ffcc', font: 'mono', centered: true },
+        blocks: [
+          { t: 'h', text: 'NIGHT SKY WATCH' },
+          { t: 'blink', text: 'THE SKY IS BUSIER THAN THEY ADMIT' },
+          { t: 'divider', kind: 'dots' },
+          { t: 'p', text: 'A civilian log of lights over the valley. I do not say what they are. I say what time they were.' },
+          { t: 'list', items: ['OCT 9, 9:14 PM \u2014 slow orange light, west ridge, 40 seconds. Not a plane. Planes blink.', 'OCT 11, 2 AM-ish \u2014 dogs went off all down the hollow at the same time. No light observed. Logged anyway.', 'OCT 14, 8:51 PM \u2014 the satellite again. I have named him Gerald.'] },
+          { t: 'small', text: 'Send sightings with TIME and DIRECTION. No blurry photos. I have enough blurry photos.' },
+          { t: 'counter', value: 9471 },
         ],
       },
     },

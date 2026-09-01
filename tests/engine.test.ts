@@ -374,7 +374,7 @@ describe('live conversations', () => {
     let s = loggedInState();
     s = saySadie(s, 'intro').state; // -> the-meeting
     s = run(s, { type: 'open', itemId: 'file.gb-log-oct8' }).state; // -> stolen-intimacy
-    s = run(s, { type: 'visit', url: 'www.humbleregister.net/timeline' }).state; // -> chads-window
+    s = run(s, { type: 'visit', url: 'www.humbletimes.com/timeline' }).state; // -> chads-window
     s = saySadie(s, 'frank').state; // -> the-clean-truck
     s = run(s, { type: 'open', itemId: 'email.sam.plain' }).state; // -> the-pipeline
     s = saySadie(s, 'vigil').state; // -> who-shaped
@@ -833,7 +833,9 @@ describe('workspace copies', () => {
     const { state, result } = run(s, { type: 'copyItem', itemId: 'email.chad.sorry' });
     expect(result).toMatchObject({ type: 'document', ok: true });
     const doc = (state.documents ?? [])[0];
-    expect(doc?.name).toBe('Copy of im sorry ok.txt');
+    // Evidence keeps its real filename; sourceId marks it as a copy.
+    expect(doc?.name).toBe('im sorry ok.txt');
+    expect(doc?.sourceId).toBe('email.chad.sorry');
     expect(doc?.text).toContain('From: chad daniels');
     expect(doc?.text).toContain('Subject: im sorry ok');
     const renamed = run(state, { type: 'renameItem', itemId: doc!.id, name: 'chad alibi.txt' });
@@ -997,9 +999,9 @@ describe('save to case files', () => {
     let s = offlineState();
     s = run(s, { type: 'copyItem', itemId: 'file.lists' }).state;
     const desk = run(s, { type: 'getDesktop' }).result;
-    expect(desk.type === 'desktop' && desk.items.some((i) => i.name.startsWith('Copy of'))).toBe(false);
+    expect(desk.type === 'desktop' && desk.items.some((i) => i.id.startsWith('playerdoc.'))).toBe(false);
     const cf = run(s, { type: 'listChildren', parentId: 'casefile' }).result;
-    expect(cf.type === 'children' && cf.items.some((i) => i.name === 'Copy of lists.txt')).toBe(true);
+    expect(cf.type === 'children' && cf.items.some((i) => i.name === 'lists.txt')).toBe(true);
   });
 
   it('notes can be created directly in Case Files', () => {
@@ -1020,8 +1022,11 @@ describe('evidence copy links', () => {
     if (cf.type !== 'children') throw new Error('bad result');
     expect(cf.items[0]?.meta?.sourceId).toBe('file.lists');
 
-    const found = run(s, { type: 'findFiles', query: 'Copy of' }).result;
-    expect(found.type === 'find' && found.items).toHaveLength(0);
+    // Case Files docs never surface in Find — the original does, the copy
+    // (same filename now) never.
+    const found = run(s, { type: 'findFiles', query: 'lists' }).result;
+    if (found.type !== 'find') throw new Error('bad result');
+    expect(found.items.every((i) => !i.id.startsWith('playerdoc.'))).toBe(true);
   });
 });
 
@@ -1130,5 +1135,135 @@ describe('locked-ancestor sealing', () => {
     s = unlock.state;
     const opened = handleAction(TINY, s, { type: 'open', itemId: 'file.inside' }, NOW).result;
     expect(opened).toMatchObject({ type: 'open', ok: true });
+  });
+});
+
+describe('handler announcements', () => {
+  const hasCaseNotice = (r: { result: { wire?: Array<{ kind: string }> } }) =>
+    r.result.wire?.some((w) => w.kind === 'casefile') ?? false;
+
+  it('announces a newly-visible handler message once, after setup, online', () => {
+    let s = loggedInState();
+    // First-run setup completes (and seeds the ledger with the briefing).
+    s = run(s, { type: 'caseFileSync' }).state;
+
+    // Nothing new: quiet sweep.
+    let r = run(s, { type: 'checkMail' });
+    s = r.state;
+    expect(hasCaseNotice(r)).toBe(false);
+
+    // Earn the discovery hm.river reacts to.
+    s = run(s, { type: 'open', itemId: 'email.sadie.please' }).state;
+
+    // The next online sweep announces the handler's reaction — exactly once.
+    r = run(s, { type: 'checkMail' });
+    s = r.state;
+    expect(hasCaseNotice(r)).toBe(true);
+    r = run(s, { type: 'checkMail' });
+    expect(hasCaseNotice(r)).toBe(false);
+  });
+
+  it('never announces before setup, and seeds silently for old saves', () => {
+    // Pre-setup: the discovery lands but no casefile notice ever rides.
+    let s = loggedInState();
+    s = run(s, { type: 'open', itemId: 'email.sadie.please' }).state;
+    const r = run(s, { type: 'checkMail' });
+    expect(hasCaseNotice(r)).toBe(false);
+
+    // An old save that finished setup before this feature existed: the first
+    // sweep seeds the ledger without announcing the backlog.
+    let old = loggedInState();
+    old = run(old, { type: 'caseFileSync' }).state;
+    old = run(old, { type: 'open', itemId: 'email.sadie.please' }).state;
+    delete old.announcedCase;
+    const first = run(old, { type: 'checkMail' });
+    expect(hasCaseNotice(first)).toBe(false);
+    // ...but genuinely NEW reactions after that still announce.
+    let s2 = first.state;
+    // Walk the chain in order up to the ledger (grants 'the-pipeline',
+    // which hm.careful reacts to).
+    s2 = run(s2, { type: 'open', itemId: 'trash.bl-log' }).state;
+    s2 = run(s2, { type: 'open', itemId: 'email.sadie.notchad' }).state;
+    s2 = run(s2, { type: 'open', itemId: 'email.ruth.yourdad' }).state;
+    s2 = run(s2, { type: 'open', itemId: 'file.ledger-copy' }).state;
+    const later = run(s2, { type: 'checkMail' });
+    expect(hasCaseNotice(later)).toBe(true);
+  });
+});
+
+describe('the desktop folder', () => {
+  it('mirrors the desktop at C:\\Windows\\Profiles\\casey\\Desktop', () => {
+    let s = offlineState();
+    const list = run(s, { type: 'listChildren', parentId: 'folder.desktop' }).result;
+    if (list.type !== 'children') throw new Error('bad result');
+    const names = list.items.map((i) => i.name);
+    expect(names).toContain('README.txt');
+    expect(names).toContain('from j.txt');
+    expect(names).toContain('NetVoyager');
+
+    // A document the player saves to the desktop appears in the folder too.
+    s = run(s, { type: 'saveDocument', name: 'my leads.txt', text: 'x' }).state;
+    const after = run(s, { type: 'listChildren', parentId: 'folder.desktop' }).result;
+    expect(after.type === 'children' && after.items.some((i) => i.name === 'my leads.txt')).toBe(true);
+
+    // ...but a Case Files doc does not (it lives in the casefile space).
+    s = run(s, { type: 'saveDocument', name: 'case note.txt', text: 'x', folderId: 'casefile' }).state;
+    const final = run(s, { type: 'listChildren', parentId: 'folder.desktop' }).result;
+    expect(final.type === 'children' && final.items.some((i) => i.name === 'case note.txt')).toBe(false);
+  });
+});
+
+describe('player bookmarks', () => {
+  it('bookmarks an accessible page (title snapshotted), refuses gated ones', () => {
+    let s = loggedInState();
+    // A gated page cannot be bookmarked before it is earned.
+    const denied = run(s, { type: 'saveBookmark', url: 'www.mapfinder.net/maps/route9-bend' });
+    expect(denied.result).toMatchObject({ type: 'document', ok: false });
+
+    const saved = run(s, { type: 'saveBookmark', url: 'www.humbletimes.com' });
+    s = saved.state;
+    if (saved.result.type !== 'casefile') throw new Error('bad result');
+    const bm = saved.result.view.bookmarks?.[0];
+    expect(bm?.title).toContain('Humble Times');
+
+    // Dedup: saving again does not double it.
+    s = run(s, { type: 'saveBookmark', url: 'www.humbletimes.com' }).state;
+    expect(s.bookmarks).toHaveLength(1);
+
+    // Delete removes it.
+    const del = run(s, { type: 'deleteBookmark', bookmarkId: bm!.id });
+    if (del.result.type !== 'casefile') throw new Error('bad result');
+    expect(del.result.view.bookmarks ?? []).toHaveLength(0);
+  });
+});
+
+describe('the locked floppy (a.page)', () => {
+  it('is listed but withholds contents until the passphrase decrypts it', () => {
+    let s = loggedInState();
+    // The floppy has a disk: decoy + the encrypted page are both listed.
+    const floppy = run(s, { type: 'listChildren', parentId: 'drive.a' }).result;
+    if (floppy.type !== 'children') throw new Error('bad result');
+    const ids = floppy.items.map((i) => i.id);
+    expect(ids).toContain('a.decoy');
+    expect(ids).toContain('a.page');
+
+    // Opening the encrypted file is refused (locked), no body leaks.
+    const before = run(s, { type: 'open', itemId: 'a.page' });
+    expect(before.result).toMatchObject({ type: 'open', ok: false, error: 'locked' });
+    expect(JSON.stringify(before.result)).not.toContain('Oxytera');
+    expect(JSON.stringify(before.result)).not.toContain('junebug');
+
+    // Wrong passphrase fails; the right one (junebug) unlocks it.
+    expect(run(s, { type: 'attemptPassword', targetId: 'a.page', password: 'sunflower' }).result)
+      .toMatchObject({ type: 'password', ok: false });
+    const ok = run(s, { type: 'attemptPassword', targetId: 'a.page', password: 'junebug' });
+    s = ok.state;
+    expect(ok.result).toMatchObject({ type: 'password', ok: true });
+
+    // Now it opens, reveals the Purdont material, and grants the discovery.
+    const after = run(s, { type: 'open', itemId: 'a.page' });
+    if (after.result.type !== 'open' || !after.result.item) throw new Error('bad result');
+    expect(after.result.item.body?.text).toContain('PURDONT');
+    expect(after.state.discoveries).toContain('the-source');
   });
 });

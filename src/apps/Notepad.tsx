@@ -7,6 +7,7 @@ import { DOC_MONO, DOC_TEXT } from '../theme';
 import { setCloseGuard, useWindowStore } from '../os/windowStore';
 import { CloseGlyph, TitleBarButton } from '../os/glyphs';
 import { fmtShortStamp } from '../os/fileTypes';
+import { Icon } from '../os/icons';
 import type { AppWindowProps } from '../os/appRegistry';
 
 const Paper = styled.textarea<{ $mono: boolean }>`
@@ -101,6 +102,14 @@ export function Notepad({ windowId, props }: AppWindowProps) {
   const [findText, setFindText] = useState('');
   const [findMiss, setFindMiss] = useState<string | null>(null);
   const [confirmClose, setConfirmClose] = useState(false);
+  // Passphrase gate for an encrypted file (a.page on the floppy): when the
+  // engine reports the item locked, Notepad shows a decrypt prompt instead
+  // of contents; a correct passphrase re-opens it decrypted.
+  const [locked, setLocked] = useState(false);
+  const [lockHint, setLockHint] = useState<string | undefined>();
+  const [pass, setPass] = useState('');
+  const [passNote, setPassNote] = useState<string | null>(null);
+  const [passTries, setPassTries] = useState(0);
   const paperRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -133,6 +142,7 @@ export function Notepad({ windowId, props }: AppWindowProps) {
     void send({ type: 'open', itemId }).then((res) => {
       if (canceled) return;
       if (res.type === 'open' && res.ok && res.item) {
+        setLocked(false);
         setText(res.item.body?.text ?? '');
         setMono(res.item.meta?.mono === true);
         if (res.item.editable) {
@@ -148,6 +158,11 @@ export function Notepad({ windowId, props }: AppWindowProps) {
               .join(' — '),
           );
         }
+      } else if (res.type === 'open' && res.error === 'locked') {
+        setLocked(true);
+        setReadOnly(true);
+        setLockHint(res.lockedHint);
+        setStatus('Encrypted file — passphrase required');
       } else {
         setError('Notepad cannot open this file.');
       }
@@ -200,12 +215,21 @@ export function Notepad({ windowId, props }: AppWindowProps) {
   };
 
   const doSave = async (name: string, id: string | null): Promise<boolean> => {
-    const res = await send({ type: 'saveDocument', docId: id ?? undefined, name, text });
+    // NEW files save into Case Files (the Notes section) — the desktop is
+    // evidence and notes belong in the player's own workspace. An existing
+    // document keeps whatever home it already has.
+    const res = await send({
+      type: 'saveDocument',
+      docId: id ?? undefined,
+      name,
+      text,
+      ...(id ? {} : { folderId: 'casefile' }),
+    });
     if (res.type === 'document' && res.ok && res.item) {
       setDocId(res.item.id);
       setDocName(res.item.name);
       setDirty(false);
-      setStatus(`Saved to Desktop — ${res.item.name}`);
+      setStatus(id ? `Saved — ${res.item.name}` : `Saved to Case Files — ${res.item.name}`);
       setTitle(windowId, `${res.item.name} - Notepad`);
       if (pendingCloseRef.current) closeNow();
       return true;
@@ -213,25 +237,19 @@ export function Notepad({ windowId, props }: AppWindowProps) {
     pendingCloseRef.current = false;
     setStatus(
       res.type === 'document' && res.error === 'too_many'
-        ? 'Cannot save: too many files on the desktop.'
+        ? 'Cannot save: the Case Files workspace is full.'
         : 'Save failed.',
     );
     return false;
   };
 
-  const onSave = () => {
+  const onSaveToCaseFiles = () => {
     setMenuOpen(null);
     if (docId) void doSave(docName, docId);
     else {
       setSaveAsName(docName);
       setSaveAsOpen(true);
     }
-  };
-
-  const onSaveAs = () => {
-    setMenuOpen(null);
-    setSaveAsName(docName);
-    setSaveAsOpen(true);
   };
 
   const onNew = () => {
@@ -245,7 +263,93 @@ export function Notepad({ windowId, props }: AppWindowProps) {
     setTitle(windowId, 'Notepad');
   };
 
+  const tryPassphrase = async () => {
+    if (!itemId || !pass.trim()) return;
+    const res = await send({ type: 'attemptPassword', targetId: itemId, password: pass });
+    if (res.type !== 'password') return;
+    if (res.ok) {
+      // Re-open: now unlocked, this returns the decrypted body (and fires
+      // any onOpen discovery). Reuse the same flow via a state nudge.
+      const opened = await send({ type: 'open', itemId });
+      if (opened.type === 'open' && opened.ok && opened.item) {
+        setLocked(false);
+        setReadOnly(true);
+        setMono(opened.item.meta?.mono === true);
+        setText(opened.item.body?.text ?? '');
+        setStatus('Decrypted');
+      }
+      setPass('');
+      return;
+    }
+    setPass('');
+    setPassTries((n) => n + 1);
+    setPassNote(res.lockedOut ? 'Too many attempts. Locked out briefly.' : 'Wrong passphrase.');
+  };
+
   if (error) return <div style={{ padding: 12 }}>{error}</div>;
+
+  if (locked) {
+    return (
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 20,
+        }}
+      >
+        <Window style={{ width: 340 }}>
+          <WindowHeader style={{ fontSize: 13 }}>Encrypted file</WindowHeader>
+          <WindowContent style={{ fontFamily: 'Arial, Helvetica, sans-serif', fontSize: 13 }}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void tryPassphrase();
+              }}
+            >
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <Icon name="keys" size={32} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ marginBottom: 8 }}>
+                    This file is encrypted. Enter the passphrase to decrypt it.
+                  </div>
+                  <TextInput
+                    value={pass}
+                    onChange={(e) => setPass(e.target.value)}
+                    placeholder="passphrase"
+                    style={{ width: '100%', WebkitTextSecurity: 'disc' } as React.CSSProperties}
+                    autoFocus
+                  />
+                  {passNote && (
+                    <div style={{ color: '#a00', marginTop: 6, fontSize: 12 }}>{passNote}</div>
+                  )}
+                  {passTries >= 2 && lockHint && (
+                    <div style={{ color: '#555', marginTop: 6, fontSize: 12, fontStyle: 'italic' }}>
+                      Hint: {lockHint}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
+                <Button type="submit" disabled={!pass.trim()} style={{ width: 90 }}>
+                  Decrypt
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => useWindowStore.getState().close(windowId)}
+                  style={{ width: 80 }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </WindowContent>
+        </Window>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -279,11 +383,17 @@ export function Notepad({ windowId, props }: AppWindowProps) {
             <MenuListItem size="sm" onClick={onNew}>
               New
             </MenuListItem>
-            <MenuListItem size="sm" disabled={readOnly} onClick={readOnly ? undefined : onSave}>
-              Save
-            </MenuListItem>
-            <MenuListItem size="sm" disabled={readOnly} onClick={readOnly ? undefined : onSaveAs}>
-              Save As...
+            {/* The machine is evidence: writing to its disk is off the
+                table, so the stock Save entries sit grayed like Print does.
+                The player's one write path is their own workspace. */}
+            <MenuListItem size="sm" disabled>Save</MenuListItem>
+            <MenuListItem size="sm" disabled>Save As...</MenuListItem>
+            <MenuListItem
+              size="sm"
+              disabled={readOnly}
+              onClick={readOnly ? undefined : onSaveToCaseFiles}
+            >
+              Save to Case Files
             </MenuListItem>
             <Separator />
             <MenuListItem size="sm" disabled>Page Setup...</MenuListItem>
@@ -424,9 +534,9 @@ export function Notepad({ windowId, props }: AppWindowProps) {
       {saveAsOpen && (
         <DialogOverlay>
           <Window style={{ width: 300 }}>
-            <WindowHeader>Save As</WindowHeader>
+            <WindowHeader>Save to Case Files</WindowHeader>
             <WindowContent>
-              <div style={{ fontSize: 13, marginBottom: 6 }}>File name (saves to Desktop):</div>
+              <div style={{ fontSize: 13, marginBottom: 6 }}>File name:</div>
               <TextInput
                 value={saveAsName}
                 onChange={(e) => setSaveAsName(e.target.value)}

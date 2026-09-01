@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { getApp } from './appRegistry';
-import { beginLaunchBusy, endLaunchBusy, launchDelayMs } from './launchBusy';
+import { beginLaunchBusy, endLaunchBusy, launchProfile } from './launchBusy';
 import { maybeCrashOnLaunch } from './crash';
 
 export interface OSWindow {
@@ -55,6 +55,8 @@ let idCounter = 0;
 /** Singleton launches already in their load delay — a second double-click
  * must not spawn a twin. (Non-singletons duplicate, exactly like Win95.) */
 const pendingSingletons = new Set<string>();
+/** True while a splash launch holds the machine busy (chatter + surge). */
+let splashBusy = false;
 
 /**
  * Close guards: an app may veto a close request (Notepad's unsaved-changes
@@ -86,8 +88,17 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
     // Fresh launch of an app with a startup splash: show the splash first,
     // open the window when it finishes. Refocusing an existing singleton
     // window (or re-targeting it with new props) skips the splash.
+    // The machine WORKS the whole way through — fan surge and disk chatter
+    // start at the click and run across the splash until the window lands
+    // (completeLaunch ends them).
     const existing = def.singleton ? windows.find((w) => w.appId === appId) : undefined;
     if (def.splash && !existing && !opts?.props?.skipSplash) {
+      if (!splashBusy) {
+        splashBusy = true;
+        const area = def.defaultSize.w * def.defaultSize.h;
+        const weight = Math.max(0, Math.min(1, (area - 100_000) / 460_000));
+        beginLaunchBusy(launchProfile(appId, weight).intensity);
+      }
       set({
         pendingLaunch: {
           appId,
@@ -167,18 +178,28 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       if (pendingSingletons.has(appId)) return;
       pendingSingletons.add(appId);
     }
-    beginLaunchBusy();
+    // The program's footprint (0..1) from its window area — the closest
+    // thing the shell has to an executable size. Bigger program = more fan.
+    const area = def.defaultSize.w * def.defaultSize.h;
+    const sizeWeight = Math.max(0, Math.min(1, (area - 100_000) / 460_000));
+    const profile = launchProfile(appId, sizeWeight);
+    beginLaunchBusy(profile.intensity);
     window.setTimeout(() => {
       endLaunchBusy();
       pendingSingletons.delete(appId);
       spawn();
-    }, launchDelayMs(appId));
+    }, profile.ms);
   },
 
   completeLaunch() {
     const { pendingLaunch } = get();
     if (!pendingLaunch) return;
     set({ pendingLaunch: null });
+    // The splash is done and the window lands now — the machine settles.
+    if (splashBusy) {
+      splashBusy = false;
+      endLaunchBusy();
+    }
     get().open(pendingLaunch.appId, {
       ...pendingLaunch.opts,
       props: { ...pendingLaunch.opts?.props, skipSplash: true },

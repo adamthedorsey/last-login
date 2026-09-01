@@ -101,7 +101,11 @@ const MenuButton = styled.button<{ $open: boolean }>`
 
 const DropMenu = styled(MenuList)`
   position: absolute;
-  top: 20px;
+  /* Anchor to the menu button's left edge, flush under the bar — without
+     an explicit left, the drop resolves to its static in-flow position
+     and hangs ~20px right of its button. */
+  left: 0;
+  top: 19px;
   z-index: 6000;
   min-width: 180px;
   font-size: 13px;
@@ -251,6 +255,78 @@ function PendingGlyph() {
       <rect x={11} y={5} width={5} height={5} fill="#3050b0" />
       <rect x={4} y={11} width={12} height={5} fill="#2a8a2a" />
     </svg>
+  );
+}
+
+/**
+ * A real image "coming down the wire," 1997-style: progressive-JPEG passes.
+ * The first paint is a blocky 1/10-resolution pass, then 1/4, then the full
+ * picture — each pass SNAPS in on a stepped clock (no fades, no easing).
+ * Mounted the moment the staged loader delivers the image ordinal.
+ */
+/** Sharpening ladder: divisor per pass — four looks before the real one. */
+const PASSES = [16, 8, 4, 1];
+
+function ProgressiveImg({ src, alt }: { src: string; alt: string }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
+  const [pass, setPass] = useState(0);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      imgRef.current = img;
+      setDims({ w: img.naturalWidth, h: img.naturalHeight });
+    };
+    return () => {
+      img.onload = null;
+    };
+  }, [src]);
+
+  useEffect(() => {
+    if (!dims || pass >= PASSES.length - 1) return;
+    // Slow wire: each sharpening pass takes a beat, a touch different
+    // every time, ~2-2.7s for the full picture.
+    const t = window.setTimeout(() => setPass((p) => p + 1), 620 + Math.random() * 280);
+    return () => window.clearTimeout(t);
+  }, [dims, pass]);
+
+  useEffect(() => {
+    const img = imgRef.current;
+    const cv = canvasRef.current;
+    if (!img || !cv || !dims) return;
+    const div = PASSES[Math.min(pass, PASSES.length - 1)];
+    const w = Math.max(1, Math.floor(dims.w / div));
+    const h = Math.max(1, Math.floor(dims.h / div));
+    const off = document.createElement('canvas');
+    off.width = w;
+    off.height = h;
+    const octx = off.getContext('2d');
+    if (!octx) return;
+    octx.drawImage(img, 0, 0, w, h);
+    cv.width = dims.w;
+    cv.height = dims.h;
+    const ctx = cv.getContext('2d');
+    if (!ctx) return;
+    ctx.imageSmoothingEnabled = false; // blocky, the way partial JPEGs looked
+    ctx.drawImage(off, 0, 0, dims.w, dims.h);
+  }, [dims, pass]);
+
+  if (!dims) {
+    return (
+      <ImgPending>
+        <PendingGlyph />
+      </ImgPending>
+    );
+  }
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-label={alt}
+      style={{ maxWidth: '100%', margin: '4px 0', imageRendering: 'pixelated' }}
+    />
   );
 }
 
@@ -572,7 +648,7 @@ function Block({
       return <hr style={{ margin: '14px 0', borderStyle: 'inset' }} />;
     case 'img':
       return b.src ? (
-        <img src={b.src} alt={b.caption} style={{ maxWidth: '100%', margin: '4px 0' }} />
+        <ProgressiveImg src={b.src} alt={b.caption} />
       ) : (
         <ImgPlaceholder>{b.caption}</ImgPlaceholder>
       );
@@ -846,7 +922,7 @@ export function Browser({ windowId, props }: AppWindowProps) {
   useEffect(() => {
     void navigate(requestedUrl ?? homeUrl, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requestedUrl]);
+  }, [requestedUrl, props.urlNonce]);
 
   useEffect(() => {
     void send({ type: 'listChildren', parentId: 'folder.bookmarks' }).then((res) => {
@@ -934,6 +1010,19 @@ export function Browser({ windowId, props }: AppWindowProps) {
         { label: 'Back', action: goBack, disabled: backStack.current.length === 0 },
         { label: 'Forward', action: goForward, disabled: fwdStack.current.length === 0 },
         { label: 'Home', action: () => void navigate(homeUrl) },
+        // The history below is the machine's, not the player's: what Casey
+        // browsed before she went missing, frozen — served by the engine,
+        // exactly where Netscape kept it. Entries may point at pages that
+        // "won't load" (the server enforces its own gating).
+        ...(gameView?.browserHistory?.length
+          ? ([
+              'sep',
+              ...gameView.browserHistory.map((h) => ({
+                label: `${h.title}  (${h.at})`,
+                action: () => void navigate(h.url),
+              })),
+            ] as MenuSpec['items'])
+          : []),
       ],
     },
     {
@@ -1113,6 +1202,21 @@ export function Browser({ windowId, props }: AppWindowProps) {
           onClick={() => setOpenMenu(openMenu === '@bookmarks' ? null : '@bookmarks')}
         >
           🔖 Bookmarks
+        </Button>
+        <Button
+          size="sm"
+          disabled={viewState.kind !== 'page'}
+          title="Save this page's address to Case Files"
+          onClick={() => {
+            if (viewState.kind !== 'page' || !address) return;
+            // Success throws the Case Files receipt toast (GameProvider);
+            // only surface a status line if it could NOT be filed.
+            void send({ type: 'saveBookmark', url: address }).then((res) => {
+              if (res.type !== 'casefile') setStatus('This page could not be bookmarked.');
+            });
+          }}
+        >
+          Bookmark
         </Button>
         {openMenu === '@bookmarks' && (
           <div ref={menuRef} style={{ position: 'relative' }}>

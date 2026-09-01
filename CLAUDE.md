@@ -17,7 +17,7 @@ something should behave, the answer is "whatever Windows 95 actually did."
 as the boundary, Win95 exactness as the reference — not the law.** When a
 playability, legibility, or fun improvement conflicts with Win95 fidelity,
 take the improvement if a consumer PC of 1997 could plausibly have shipped
-it (precedents: the discovery toasts, Arial reading surfaces, the earned
+it (precedents: Arial reading surfaces, the earned
 login hint). What never bends: nothing post-1997 in concept, aesthetic, or
 interaction idiom.
 
@@ -171,10 +171,18 @@ If not, don't build it that way.
   cuts it at runtime (Shut Down from the login dialog excepted); entering
   MT-DOS mode plays beep -> boot chatter, then the fan holds a
   SEAMLESS WebAudio loop (HTMLAudio's loop gap was audible — never go
-  back to it) with the disk reading layered on top, stopped on exit;
-  and every program launch plays the disk seek under the flickering
-  pointer (launchBusy), cut when the window lands. All quiet
-  (0.12–0.35), mute-aware, deduped (sounds.ts machine section).
+  back to it) with the disk reading layered on top, stopped on exit.
+  All quiet (0.12–0.35), mute-aware, deduped (sounds.ts machine
+  section). SEPARATE from the samples, the machine's ambient voice is
+  SYNTHESIZED (sounds.ts, "machine's voice" section — pure WebAudio,
+  no samples, no noise floor): a constant low fan hum while the
+  desktop is up (filtered noise + a faint motor tone, started/stopped
+  by DesktopShell), a fan SURGE on every launch — spin up quick, wind
+  down slow, intensity scaled by the program's size (window area, cold
+  vs warm — bigger program = more fan), and hard-disk seek CHATTER
+  (irregular synthesized click clusters) under launches and under any
+  engine call slow enough to show the hourglass. Mute kills the hum
+  instantly; unmute brings it back.
   sfx_chime, sfx_notification and sfx_empty_bin are shipped but
   unwired. No other samples. Sound Recorder is a stock Win95 accessory (1995) —
   no story-year change needed for any of this.
@@ -191,9 +199,25 @@ If not, don't build it that way.
 - Dialogue/writing style: era-authentic and human — typos, abbreviations,
   chain letters, guestbooks. Mundane beats suspicious; never add game-y UI
   (no glowing clues, no objective markers).
-- The one sanctioned fourth-wall surface is quiet system feedback: the small
-  discovery toast and the end-of-demo dialog. Player note-taking is diegetic:
-  Notepad edits and saves real player documents to the desktop (saveDocument).
+- Discoveries are SILENT — no toast, no chirp, ever (owner call; the old
+  discovery toast is retired). The world responding IS the feedback: new
+  mail arrives, a page loads, a buddy's status shifts. The reward channel
+  is DIEGETIC — the handler reacts in Case Files: a handler message that
+  becomes visible while the line is up announces itself once via a
+  'casefile' wire notice (engine `sweepCaseFile`, announce ledger in
+  PlayerState.announcedCase, seeded at caseFileSync so the wizard's own
+  memos never blink), and the client's tell is an ICQ-style blinking tray
+  glyph + a quiet chirp — never a toast, never text in client code.
+  ONE action-confirmation toast exists (owner call — "ahead of its time
+  but the acknowledgment matters"): the Case Files RECEIPT when the
+  player saves evidence (copyItem) — black->teal band, sheriff seal,
+  click opens Case Files at the saved copy (revealDocId prop). No other
+  action gets a confirmation toast. The one remaining fourth-wall
+  surface is the end-of-demo dialog. Player note-taking is diegetic:
+  Notepad edits real player documents, and NEW notes save into Case
+  Files' Notes section — the desktop is evidence, so Notepad's Save As
+  shows Desktop grayed out with Case Files as the only writable home.
+  Existing player docs keep whatever home they already have.
 - NO first-boot welcome/tips box: this is Casey's long-lived account, not a
   fresh install — the machine greets nobody. Mechanical teaching belongs to
   the Case Files setup wizard (server content) and period-true affordances.
@@ -310,6 +334,15 @@ If not, don't build it that way.
   server-authored later (story/canon.md, "Solitaire as a front"). The
   knock lives in Solitaire.tsx; keep any future hidden-knock the same
   shape — client detects a pattern, engine holds the secret.
+- Encrypted files: a content item may carry a `password` (engine-checked,
+  same as any standalone target). Opening it returns `error:'locked'` (no
+  body, no hint until earned) and Notepad shows a passphrase prompt →
+  `attemptPassword` → re-open reveals the decrypted body and fires its
+  `onOpen`. The floppy's `A:\PDNT-RAW.PGP` is the first: "the page"
+  nightshift wanted, the stolen Purdont material, locked with `junebug`
+  (Casey's own word — the screen saver, Sadie's childhood sketch, and the
+  word nightshift stole all point at it). NEVER ship a passphrase or a
+  decrypted body client-side; the engine holds both.
 
 ### MT-DOS mode & system mortality
 - The MT-DOS Prompt (Start → Programs, or COMMAND in Run) opens WINDOWED
@@ -349,8 +382,10 @@ If not, don't build it that way.
   for important moments — routine handler traffic is text; the message
   lines double as the transcript and playback must degrade to them
   gracefully). The app's four sections: Messages (handler), Notes and
-  Evidence Copies (both are the player's own documents — copies carry the
-  "Copy of " name prefix; deleteDocument works ONLY on player documents),
+  Evidence Copies (both are the player's own documents — evidence copies
+  KEEP the original filename, `sourceId` is the copy marker; only
+  duplicating a player doc adds "Copy of "; deleteDocument works ONLY on
+  player documents),
   and Case Summary — handler content, OFFICIAL BACKGROUND ONLY: facts the
   case already gave the player, never conclusions, never clue-tracking.
 - Workspace copies (`copyItem`) snapshot only the REDACTED text the player

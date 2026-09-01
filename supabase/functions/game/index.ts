@@ -53,6 +53,7 @@ const FIELD_LIMITS: Record<string, number> = {
   docId: 100,
   folderId: 100,
   noteId: 100,
+  bookmarkId: 100,
   name: 100,
   screenname: 100,
   promptId: 100,

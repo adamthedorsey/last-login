@@ -83,6 +83,18 @@ const TrayButton = styled.button`
  * The Win95 tray clock: time only, the date lives in the hover tooltip,
  * and only a DOUBLE-click opens Date/Time — a single click does nothing.
  */
+/** The handler wrote back: an ICQ-style tray blinker (1996-97 idiom) on
+ * the Case Files glyph — snapping, never fading. Click opens the app. */
+const CaseBlink = styled.span`
+  display: inline-flex;
+  animation: case-blink 0.9s steps(1) infinite;
+  @keyframes case-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+`;
+
 const TrayClock = styled.button`
   border: none;
   background: none;
@@ -238,7 +250,7 @@ export function Taskbar({
   onScreenSaver: () => void;
 }) {
   const { windows, focus, minimize, open, cascade, tile, minimizeAll } = useWindowStore();
-  const { view, send, netActivity } = useGame();
+  const { view, send, netActivity, caseAlert } = useGame();
   // The TX light: blinks on the tray phone whenever the machine talks to
   // the outside world. Stepped, never faded.
   const [txLit, setTxLit] = useState(false);
@@ -801,6 +813,13 @@ export function Taskbar({
                   <rect x={6} y={11} width={3} height={1} fill="#404040" />
                   <rect x={13} y={4} width={2} height={2} fill="#d04000" />
                 </svg>
+              </TrayButton>
+            )}
+            {caseAlert && (
+              <TrayButton onClick={() => open('casefile')} title="New case message">
+                <CaseBlink>
+                  <Icon name="notes" size={16} />
+                </CaseBlink>
               </TrayButton>
             )}
             <TrayButton

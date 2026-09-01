@@ -100,6 +100,31 @@ function isUnlocked(state: PlayerState, item: ContentItem): boolean {
 }
 
 /**
+ * The handler notices the player's work: once first-run setup is done, any
+ * handler message that becomes VISIBLE while the line is up announces
+ * itself exactly once — a 'casefile' wire notice, the client's cue to blink
+ * the tray (no text ever rides in it; the memo itself is the message).
+ * A state from before this field seeds silently, so old progress doesn't
+ * arrive as a burst of news.
+ */
+function sweepCaseFile(content: SeasonContent, state: PlayerState, wire: WireNotice[]): void {
+  const handler = content.handler;
+  if (!handler || !state.online || !state.flags[CASE_SETUP_FLAG]) return;
+  const visible = handler.messages
+    .filter((m) => meetsRequirement(state, m.requires))
+    .map((m) => m.id);
+  const announced = state.announcedCase;
+  if (!announced) {
+    state.announcedCase = visible;
+    return;
+  }
+  const fresh = visible.filter((id) => !announced.includes(id));
+  if (fresh.length === 0) return;
+  announced.push(...fresh);
+  wire.push({ kind: 'casefile' });
+}
+
+/**
  * A locked ANCESTOR seals everything inside it. Explorer and Find never
  * hand out ids from locked folders, but shortcuts (the Documents menu)
  * can — so `open` checks the whole chain, not just the item.
@@ -246,6 +271,8 @@ export const CASE_SETUP_FLAG = 'case-setup-done';
 /** The pseudo-folder where Case Files keeps the player's notes and saved
  * evidence copies — "Save to Case Files" lands here, off the desktop. */
 export const CASE_DOCS_FOLDER = 'casefile';
+/** The desktop's real home on disk: C:\Windows\Profiles\casey\Desktop. */
+const DESKTOP_FOLDER = 'folder.desktop';
 
 /** Audio-note guardrails: a note is a short memo, not a podcast. */
 const MAX_AUDIO_NOTES = 12;
@@ -273,6 +300,7 @@ function caseFileView(content: SeasonContent, state: PlayerState): CaseFileView 
   if (handler.setup) view.guide = handler.setup;
   if (handler.summary) view.summary = handler.summary;
   if (state.audioNotes?.length) view.audioNotes = state.audioNotes;
+  if (state.bookmarks?.length) view.bookmarks = state.bookmarks;
   return view;
 }
 
@@ -311,6 +339,7 @@ export function toStateView(
     dosVolume: content.computer.dosVolume,
     wallpaper: content.wallpaper,
     homeUrl: content.homeUrl,
+    browserHistory: content.browserHistory,
     loggedIn: state.loggedIn,
     ended: state.ended,
     discoveries: state.discoveries
@@ -780,6 +809,7 @@ export function handleAction(
   sweepSchedule(content, state, nowMs, wire, events);
   sweepRemote(content, state, nowMs, wire, events);
   const arrived = state.online ? deliverPending(content, state) : 0;
+  sweepCaseFile(content, state, wire);
 
   switch (action.type) {
     case 'connect': {
@@ -792,6 +822,7 @@ export function handleAction(
       sweepSchedule(content, state, nowMs, wire, events);
       sweepRemote(content, state, nowMs, wire, events);
       const newMail = deliverPending(content, state);
+      sweepCaseFile(content, state, wire);
       return done({ type: 'net', online: true, newMail });
     }
 
@@ -860,6 +891,14 @@ export function handleAction(
       const items = content.items
         .filter((i) => i.parentId === action.parentId && isAccessible(content, state, i))
         .map((i) => toSummary(content, state, i));
+      // The desktop IS a folder (C:\Windows\Profiles\casey\Desktop), so the
+      // player's own desktop-saved documents appear in it too — the mirror
+      // is exact, like real Win95.
+      if (action.parentId === DESKTOP_FOLDER) {
+        (state.documents ?? []).forEach((d, i) => {
+          if (!d.folderId) items.push(docSummary(d, i));
+        });
+      }
       return done({ type: 'children', items });
     }
 
@@ -1108,6 +1147,8 @@ export function handleAction(
           createdAt: nowDate,
           modifiedAt: nowDate,
           folderId: source.folderId,
+          // A duplicate of an evidence copy is still an evidence copy.
+          sourceId: source.sourceId,
         };
         docs.push(copy);
         events.push({ type: 'copy_item', payload: { source: source.id, docId: copy.id } });
@@ -1131,7 +1172,9 @@ export function handleAction(
       const { newDiscoveries, ended } = applyOpenEffects(content, state, item, events);
       const copy: PlayerDocument = {
         id: `playerdoc.${nextDoc()}`,
-        name: copyDocName(item.name),
+        // Evidence keeps its REAL filename in Case Files — sourceId is the
+        // marker that it's a copy, not a "Copy of " prefix.
+        name: sanitizeDocName(item.name),
         text: text.slice(0, MAX_DOC_TEXT),
         createdAt: nowDate,
         modifiedAt: nowDate,
@@ -1312,6 +1355,44 @@ export function handleAction(
       return done({ type: 'casefile', view: caseFileView(content, state) });
     }
 
+    case 'saveBookmark': {
+      // Only pages the player can currently visit; the TITLE is snapshotted
+      // server-side from the page, never trusted from the client.
+      const url = normalizeUrl(action.url);
+      const page = content.items.find(
+        (i) => i.kind === 'webpage' && i.meta?.url && normalizeUrl(i.meta.url) === url,
+      );
+      if (!page || !isAccessible(content, state, page)) {
+        return done({ type: 'document', ok: false, error: 'not_found' });
+      }
+      const marks = (state.bookmarks ??= []);
+      if (marks.length >= 40) {
+        return done({ type: 'document', ok: false, error: 'too_many' });
+      }
+      if (!marks.some((b) => normalizeUrl(b.url) === url)) {
+        const seq = (state.bookmarkSeq ?? 0) + 1;
+        state.bookmarkSeq = seq;
+        marks.unshift({
+          id: `bm.player.${seq}`,
+          url: page.meta!.url!,
+          title: page.meta?.siteTitle ?? page.name,
+          addedAt: content.clock.now.slice(0, 10),
+        });
+        events.push({ type: 'bookmark_saved', payload: { url: page.meta!.url! } });
+      }
+      return done({ type: 'casefile', view: caseFileView(content, state) });
+    }
+
+    case 'deleteBookmark': {
+      const marks = state.bookmarks ?? [];
+      if (!marks.some((b) => b.id === action.bookmarkId)) {
+        return done({ type: 'document', ok: false, error: 'not_found' });
+      }
+      state.bookmarks = marks.filter((b) => b.id !== action.bookmarkId);
+      events.push({ type: 'bookmark_deleted', payload: { bookmarkId: action.bookmarkId } });
+      return done({ type: 'casefile', view: caseFileView(content, state) });
+    }
+
     case 'getCaseFile': {
       return done({ type: 'casefile', view: caseFileView(content, state) });
     }
@@ -1325,6 +1406,11 @@ export function handleAction(
       }
       if (!state.flags[CASE_SETUP_FLAG]) {
         state.flags[CASE_SETUP_FLAG] = true;
+        // Everything visible at setup is what the wizard itself lands on —
+        // seed the announce ledger so none of it blinks the tray later.
+        state.announcedCase = (content.handler?.messages ?? [])
+          .filter((m) => meetsRequirement(state, m.requires))
+          .map((m) => m.id);
         events.push({ type: 'case_setup_done' });
       }
       return done({ type: 'casefile', view: caseFileView(content, state) });

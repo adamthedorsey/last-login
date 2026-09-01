@@ -6,6 +6,7 @@ import { useGame } from './game/gameContext';
 import { BootSequence } from './os/BootSequence';
 import { DesktopShell } from './os/DesktopShell';
 import { MainMenu } from './os/MainMenu';
+import { preloadAssets } from './os/preload';
 import { CRASH_BOOT_FLAG } from './os/crash';
 import { registerAllApps } from './apps/registerApps';
 
@@ -91,6 +92,11 @@ function Screen() {
 }
 
 export default function App() {
+  // Warm the timed sounds/images (boot tones, disk seeks, splash art) so
+  // their first real play never waits on the network.
+  useEffect(() => {
+    preloadAssets();
+  }, []);
   return (
     <Chrome>
       <AuthGate>

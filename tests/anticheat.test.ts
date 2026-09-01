@@ -123,7 +123,7 @@ describe('DTO redaction', () => {
     record({ type: 'getBuddies' });
     record({ type: 'getConversation', screenname: 'nightshift' });
     record({ type: 'say', screenname: 'nightshift', promptId: 'junebug' });
-    record({ type: 'visit', url: 'www.humbleregister.net' });
+    record({ type: 'visit', url: 'www.humbletimes.com' });
     record({ type: 'search', query: 'humble' });
     record({ type: 'getState' });
 

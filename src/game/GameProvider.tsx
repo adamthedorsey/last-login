@@ -2,7 +2,15 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { ActionResult, DiscoveryView, GameAction, StateView, WireNotice } from '@gamecore/types.ts';
 import { createGameClient, type GameClient } from './client';
 import { GameContext, type GameContextValue, type Toast } from './gameContext';
-import { playBuddyOff, playBuddyOn, playImMsg, playMailSound, playNotify } from '../os/sounds';
+import {
+  playBuddyOff,
+  playBuddyOn,
+  playImMsg,
+  playMailSound,
+  playNotify,
+  startDiskChatter,
+  stopDiskChatter,
+} from '../os/sounds';
 import { openIm } from '../os/messenger';
 
 /** Generic per-kind toast copy — deliberately spoiler-free client strings.
@@ -34,6 +42,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [netActivity, setNetActivity] = useState(0);
   const [lineDropSignal, setLineDropSignal] = useState(0);
   const [showEndCard, setShowEndCard] = useState(false);
+  // The handler wrote back: the tray blinks until Case Files shows it.
+  const [caseAlert, setCaseAlert] = useState(false);
+  const clearCaseAlert = useCallback(() => setCaseAlert(false), []);
   // Whether the player is actually at the desktop (set by DesktopShell). Until
   // then — evidence-room menu, boot, login — ambient mail/chat notifications
   // stay silent and the wire heartbeat doesn't tick.
@@ -79,17 +90,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const noteDiscoveries = useCallback(
     (discoveries: DiscoveryView[] | undefined, ended: boolean | undefined) => {
+      // Discoveries are deliberately SILENT — no toast, no chirp. The world
+      // responding (new mail, a page that loads now, the handler reacting in
+      // Case Files) is the feedback. The refetch makes that response appear.
       if (discoveries && discoveries.length > 0) {
-        playNotify();
-        setToasts((prev) => [
-          ...prev,
-          ...discoveries.map((d) => ({
-            id: ++toastId,
-            title: d.title,
-            description: d.description,
-            icon: 'notes',
-          })),
-        ]);
         setContentEpoch((e) => e + 1);
         void refreshView();
       }
@@ -128,6 +132,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
           case 'buddy-off':
             playBuddyOff();
             break;
+          case 'casefile':
+            // The handler reacted: a quiet chirp and the tray blinker —
+            // never a toast. The memo itself is the message.
+            playNotify();
+            setCaseAlert(true);
+            break;
           case 'roster':
           case 'remote':
             break; // silent — the refetch below tells the shell/roster
@@ -163,8 +173,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       // flips EVERY cursor to the pixel hourglass after a beat, exactly
       // like 1997 did (the .busy rule lives in the global styles).
       pendingSends += 1;
+      // A slow call is the machine THINKING HARD: the hourglass comes with
+      // dense disk chatter under it (stopped the moment the call lands).
+      let chatterId: number | null = null;
       const hourglass = window.setTimeout(() => {
         document.documentElement.classList.add('busy');
+        chatterId = startDiskChatter(0.85);
       }, 150);
       let res: ActionResult;
       try {
@@ -172,6 +186,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       } finally {
         pendingSends -= 1;
         window.clearTimeout(hourglass);
+        if (chatterId !== null) stopDiskChatter(chatterId);
         if (pendingSends === 0) document.documentElement.classList.remove('busy');
       }
       if (viewRef.current?.online) setNetActivity((n) => n + 1);
@@ -217,9 +232,48 @@ export function GameProvider({ children }: { children: ReactNode }) {
       ) {
         setContentEpoch((e) => e + 1);
       }
+      // Bookmarking a page files it with the case — same sheriff-sealed
+      // receipt as an evidence copy, click-through to the Bookmarks tab.
+      if (action.type === 'saveBookmark' && res.type === 'casefile') {
+        const key = action.url.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '');
+        const filed =
+          res.view.bookmarks?.find(
+            (b) => b.url.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '') === key,
+          ) ?? res.view.bookmarks?.[0];
+        if (filed) {
+          playNotify();
+          setToasts((prev) => [
+            ...prev,
+            {
+              id: ++toastId,
+              variant: 'case' as const,
+              title: 'CASE FILES',
+              description: `Filed to Bookmarks:\n"${filed.title}"`,
+              bookmarkId: filed.id,
+            },
+          ]);
+        }
+      }
       if (res.type === 'document' && res.ok) {
         // A player file was created/renamed — desktop views should refetch.
         setContentEpoch((e) => e + 1);
+        // Saving evidence to Case Files gets a RECEIPT (owner call — the
+        // acknowledgment matters): the sheriff-sealed toast, click-through
+        // to where the copy landed. The only action-confirmation toast.
+        const filed = res.item;
+        if (action.type === 'copyItem' && filed) {
+          playNotify();
+          setToasts((prev) => [
+            ...prev,
+            {
+              id: ++toastId,
+              variant: 'case' as const,
+              title: 'CASE FILES',
+              description: `Filed to Evidence Copies:\n"${filed.name}"`,
+              docId: filed.id,
+            },
+          ]);
+        }
       }
       if (res.type === 'login' && res.ok && res.view) setView(res.view);
       if (res.type === 'reset') {
@@ -263,9 +317,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       showEndCard,
       setShowEndCard,
       setInGame,
+      caseAlert,
+      clearCaseAlert,
       client: clientRef.current,
     }),
-    [ready, view, send, refreshView, toasts, dismissToast, contentEpoch, netActivity, lineDropSignal, showEndCard, setInGame],
+    [ready, view, send, refreshView, toasts, dismissToast, contentEpoch, netActivity, lineDropSignal, showEndCard, setInGame, caseAlert, clearCaseAlert],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

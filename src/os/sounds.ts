@@ -42,6 +42,10 @@ export function setMuted(muted: boolean): void {
   } catch {
     /* ignore */
   }
+  // The ambient machine voice reacts immediately: muting kills the hum,
+  // unmuting brings it back if a surface still wants it.
+  if (muted) killFanHum();
+  else if (humWanted) startFanHum();
 }
 
 function tone(freq: number, startMs: number, durMs: number, type: OscillatorType = 'square', gain = 0.03) {
@@ -158,14 +162,6 @@ function playMachine(
   }
 }
 
-function stopMachine(src: string): void {
-  const a = machineSounds.get(src);
-  if (a) {
-    a.pause();
-    machineSounds.delete(src);
-  }
-}
-
 /** The power button: the fan spins up. */
 export function playPowerOn(): void {
   playMachine(fanSfx, 0.35);
@@ -239,19 +235,357 @@ export function playDosBoot(): void {
   });
 }
 
-/** Program launch: the disk seeks under the flickering pointer. */
-export function playLaunchSeek(): void {
-  playMachine(diskSfx, 0.16);
-}
-
-export function stopLaunchSeek(): void {
-  stopMachine(diskSfx);
-}
-
 export function stopMachineSounds(): void {
   machineSounds.forEach((a) => a.pause());
   machineSounds.clear();
   stopFanLoop();
+  killFanHum();
+  humWanted = false;
+}
+
+// ---------------------------------------------------------------------------
+// The machine's voice, SYNTHESIZED (no samples, no noise floor): a constant
+// low fan hum while the desktop is up, a spin-up surge when the machine
+// works (bigger program = more fan), and hard-disk seek chatter — rapid
+// irregular clicking — under launches and long thinks. All WebAudio, so the
+// hum loops seamlessly and every chatter burst is different.
+// ---------------------------------------------------------------------------
+
+/** One shared 2s white-noise buffer: the fan's air AND the disk's clicks. */
+let noiseBuf: AudioBuffer | null = null;
+function noise(ac: AudioContext): AudioBuffer {
+  if (!noiseBuf) {
+    noiseBuf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  return noiseBuf;
+}
+
+// --- The fan: filtered air noise + a faint motor fundamental -------------
+const FAN_BASE_GAIN = 0.008;
+const FAN_BASE_HZ = 240;
+// A second, fixed lowpass keeps the air DARK even when the surge opens the
+// first filter — brightness is what reads as synthetic.
+const FAN_CAP_HZ = 600;
+const MOTOR_HZ = 118;
+// Low but present: with no motor body at all, filtered noise reads as
+// wind over a plain, not a machine in a box.
+const MOTOR_GAIN = 0.0016;
+
+interface FanHum {
+  src: AudioBufferSourceNode;
+  filter: BiquadFilterNode;
+  gain: GainNode;
+  motor: OscillatorNode;
+  motorGain: GainNode;
+  motor2: OscillatorNode;
+  motor2Gain: GainNode;
+  lfo: OscillatorNode;
+  lfoDepth: GainNode;
+}
+let hum: FanHum | null = null;
+/** A surface asked for the hum (survives a mute/unmute round trip). */
+let humWanted = false;
+// The idle disk EPISODES: the disk is silent by default — but every so
+// often, while the machine sits there, it wakes for a short unprompted
+// burst of housekeeping (a second or two of chatter), then goes quiet
+// again. Scheduled alongside the hum, torn down with it.
+let idleDiskTimer: number | null = null;
+let idleEpisodeId: number | null = null;
+let idleEpisodeStop: number | null = null;
+
+function scheduleIdleDisk(): void {
+  idleDiskTimer = window.setTimeout(() => {
+    // Light housekeeping only: a few sparse grains, then quiet again.
+    idleEpisodeId = startDiskChatter(0.12 + Math.random() * 0.15);
+    idleEpisodeStop = window.setTimeout(() => {
+      if (idleEpisodeId !== null) stopDiskChatter(idleEpisodeId);
+      idleEpisodeId = null;
+      idleEpisodeStop = null;
+    }, 500 + Math.random() * 900);
+    scheduleIdleDisk();
+  }, 25_000 + Math.random() * 45_000);
+}
+
+function stopIdleDisk(): void {
+  if (idleDiskTimer !== null) window.clearTimeout(idleDiskTimer);
+  if (idleEpisodeStop !== null) window.clearTimeout(idleEpisodeStop);
+  if (idleEpisodeId !== null) stopDiskChatter(idleEpisodeId);
+  idleDiskTimer = null;
+  idleEpisodeStop = null;
+  idleEpisodeId = null;
+}
+
+export function startFanHum(): void {
+  humWanted = true;
+  if (isMuted() || hum) return;
+  const ac = audio();
+  if (!ac) return;
+  try {
+    const src = ac.createBufferSource();
+    src.buffer = noise(ac);
+    src.loop = true;
+    const filter = ac.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = FAN_BASE_HZ;
+    filter.Q.value = 0.4;
+    const cap = ac.createBiquadFilter();
+    cap.type = 'lowpass';
+    cap.frequency.value = FAN_CAP_HZ;
+    cap.Q.value = 0.3;
+    const gain = ac.createGain();
+    gain.gain.value = 0;
+    src.connect(filter).connect(cap).connect(gain).connect(ac.destination);
+    // A high-pass floor keeps outdoor rumble out of the box.
+    const hpf = ac.createBiquadFilter();
+    hpf.type = 'highpass';
+    hpf.frequency.value = 90;
+    src.disconnect();
+    src.connect(hpf).connect(filter);
+    const motor = ac.createOscillator();
+    motor.type = 'triangle';
+    motor.frequency.value = MOTOR_HZ;
+    const motorGain = ac.createGain();
+    motorGain.gain.value = 0;
+    motor.connect(motorGain).connect(ac.destination);
+    // The motor's second partial — the enclosure singing along, faintly.
+    const motor2 = ac.createOscillator();
+    motor2.type = 'sine';
+    motor2.frequency.value = MOTOR_HZ * 2;
+    const motor2Gain = ac.createGain();
+    motor2Gain.gain.value = 0;
+    motor2.connect(motor2Gain).connect(ac.destination);
+    // Mechanical roughness: a slow flutter on the air (blade wobble), so
+    // the noise reads as a fan in a box, not wind over a plain.
+    const lfo = ac.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 43;
+    const lfoDepth = ac.createGain();
+    lfoDepth.gain.value = FAN_BASE_GAIN * 0.22;
+    lfo.connect(lfoDepth).connect(gain.gain);
+    src.start();
+    motor.start();
+    motor2.start();
+    lfo.start();
+    // Settle in over a beat rather than snapping on.
+    gain.gain.setTargetAtTime(FAN_BASE_GAIN, ac.currentTime, 0.4);
+    motorGain.gain.setTargetAtTime(MOTOR_GAIN, ac.currentTime, 0.4);
+    motor2Gain.gain.setTargetAtTime(MOTOR_GAIN * 0.45, ac.currentTime, 0.4);
+    hum = { src, filter, gain, motor, motorGain, motor2, motor2Gain, lfo, lfoDepth };
+    applyFanLevel();
+    // The disk sits SILENT at idle — but wakes now and then for a short
+    // unprompted housekeeping burst (the ambient life of an old PC).
+    if (idleDiskTimer === null) scheduleIdleDisk();
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Tear the nodes down without clearing the "wanted" flag (mute path). */
+function killFanHum(): void {
+  stopIdleDisk();
+  if (!hum) return;
+  try {
+    hum.src.stop();
+    hum.motor.stop();
+    hum.motor2.stop();
+    hum.lfo.stop();
+  } catch {
+    /* ignore */
+  }
+  hum = null;
+}
+
+export function stopFanHum(): void {
+  humWanted = false;
+  killFanHum();
+}
+
+// --- The spin-up: work makes the fan louder, brighter, slightly faster ---
+let surgeSeq = 0;
+const surges = new Map<number, number>();
+
+function applyFanLevel(): void {
+  if (!hum || !ctx) return;
+  let level = 0;
+  surges.forEach((v) => {
+    if (v > level) level = v;
+  });
+  // A fan spinning up is just MORE AIR: a slow swell of the same dark
+  // noise — no brightening, no pitch shift, the motor tone untouched
+  // (any tonal movement reads as an engine revving). The fixed cap
+  // filter keeps the character identical at every level.
+  const tc = level > 0 ? 0.45 : 0.6;
+  const t = ctx.currentTime;
+  hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 140 * level, t, tc);
+  // The AIR rises only modestly — a big noise swell reads as a wind gust.
+  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 0.95 * level), t, tc);
+  // The MOTOR carries the spin-up: markedly louder, a touch higher, with
+  // the blade flutter speeding up — RPM rising, not weather arriving.
+  hum.motor.frequency.setTargetAtTime(MOTOR_HZ * (1 + 0.08 * level), t, tc);
+  hum.motor2.frequency.setTargetAtTime(MOTOR_HZ * 2 * (1 + 0.08 * level), t, tc);
+  hum.motorGain.gain.setTargetAtTime(MOTOR_GAIN * (1 + 3.2 * level), t, tc);
+  hum.motor2Gain.gain.setTargetAtTime(MOTOR_GAIN * 0.45 * (1 + 3.2 * level), t, tc);
+  hum.lfo.frequency.setTargetAtTime(43 * (1 + 0.4 * level), t, tc);
+  hum.lfoDepth.gain.setTargetAtTime(FAN_BASE_GAIN * 0.30 * (1 + 2.2 * level), t, tc);
+}
+
+/** Start a spin-up at the given intensity (0..1). Returns a handle. The
+ * fan holds for the LIFE of the job (endFanSurge releases it and the fan
+ * winds down over a couple of seconds on its own). */
+export function beginFanSurge(intensity: number): number {
+  const id = ++surgeSeq;
+  surges.set(id, Math.max(0, Math.min(1, intensity)));
+  applyFanLevel();
+  return id;
+}
+
+export function endFanSurge(id: number): void {
+  surges.delete(id);
+  applyFanLevel();
+}
+
+// --- The hard disk: irregular clusters of tiny clicks --------------------
+// Chatter is VARIABLE: how hard the machine is thinking sets the density.
+// Thinking hard = long busy click runs with short settles; a light read =
+// a few clicks, then a long spaced-out pause before the heads move again.
+let chatterSeq = 0;
+const chatters = new Map<number, number>();
+let chatterTimer: number | null = null;
+
+function chatterLevel(): number {
+  let level = 0;
+  chatters.forEach((v) => {
+    if (v > level) level = v;
+  });
+  return level;
+}
+
+/**
+ * One head CHIRP, tuned against a real drive recording
+ * (src/assets/source-audio/real-computer-loading.m4a — never bundled):
+ * a tonal ping around 3.1-4.3 kHz lasting 12-35 ms with a slight downward
+ * bend, plus a faint 3 ms contact tick at the onset. Filtered-noise clicks
+ * read as shuffled cards; the real thing SINGS a little.
+ */
+/** Everything the disk says passes through the case panel: one shared
+ * lowpass bus that muddles the chirps — lower, softer, a little distant,
+ * a machine heard through its own enclosure. */
+let diskBus: BiquadFilterNode | null = null;
+function getDiskBus(ac: AudioContext): BiquadFilterNode {
+  if (!diskBus) {
+    diskBus = ac.createBiquadFilter();
+    diskBus.type = 'lowpass';
+    diskBus.frequency.value = 7200;
+    diskBus.Q.value = 0.4;
+    // dry straight out...
+    diskBus.connect(ac.destination);
+    // ...plus a short generated-IR reverb tail: the room around the box.
+    const IR_SECONDS = 0.45;
+    const len = Math.floor(ac.sampleRate * IR_SECONDS);
+    const ir = ac.createBuffer(1, len, ac.sampleRate);
+    const d = ir.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      d[i] = (Math.random() * 2 - 1) * Math.exp(-4.5 * (i / len));
+    }
+    const verb = ac.createConvolver();
+    verb.buffer = ir;
+    const wet = ac.createGain();
+    wet.gain.value = 0.35;
+    diskBus.connect(verb).connect(wet).connect(ac.destination);
+  }
+  return diskBus;
+}
+
+function diskChirp(ac: AudioContext, at: number): void {
+  const bus = getDiskBus(ac);
+  // NOISE through a resonant bandpass — static's texture with a chirp's
+  // contour. A pure tone sings like a bird; the real thing crackles.
+  const f0 = 3800 + Math.random() * 2600;
+  const dur = 0.006 + Math.random() * 0.008;
+  const src = ac.createBufferSource();
+  src.buffer = noise(ac);
+  const bp = ac.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.setValueAtTime(f0, at);
+  bp.frequency.exponentialRampToValueAtTime(f0 * 0.8, at + dur);
+  bp.Q.value = 2.2;
+  const g = ac.createGain();
+  // soft attack (nothing "lands" right at your ear), then decay
+  const peak = 0.0029 + Math.random() * 0.0025;
+  g.gain.setValueAtTime(0.0006, at);
+  g.gain.linearRampToValueAtTime(peak, at + 0.004);
+  g.gain.exponentialRampToValueAtTime(0.0005, at + dur);
+  src.connect(bp).connect(g).connect(bus);
+  src.start(at, Math.random() * 1.5, dur + 0.01);
+}
+
+/** Grains left in the run currently being played out. Runs are scheduled
+ * in SHORT SLICES (a few grains at a time) so a stop takes effect within
+ * ~half a second — never minutes of pre-scheduled audio. */
+let runRemaining = 0;
+
+function chatterBurst(): void {
+  if (chatters.size === 0) {
+    chatterTimer = null;
+    runRemaining = 0;
+    return;
+  }
+  const level = chatterLevel();
+  const ac = ctx;
+  if (!ac || isMuted()) {
+    chatterTimer = window.setTimeout(chatterBurst, 300);
+    return;
+  }
+  if (runRemaining <= 0) {
+    // Start a new run. Measured from the boot take: usually a handful of
+    // grains; every so often the heads just GO for a sustained crackle.
+    const longRun = Math.random() < 0.12 + 0.15 * level;
+    runRemaining = longRun
+      ? 30 + Math.floor(Math.random() * 70 * level + Math.random() * 15)
+      : 3 + Math.floor((2 + Math.random() * 5) * level);
+  }
+  // Play one SLICE of the run (≤5 grains, ~half a second at most).
+  const slice = Math.min(runRemaining, 5);
+  runRemaining -= slice;
+  let at = ac.currentTime + 0.01;
+  for (let i = 0; i < slice; i++) {
+    diskChirp(ac, at);
+    at += 0.028 + Math.random() * 0.075;
+  }
+  const sliceMs = (at - ac.currentTime) * 1000;
+  if (runRemaining > 0) {
+    // The run continues — next slice lands right on the tail of this one.
+    chatterTimer = window.setTimeout(chatterBurst, sliceMs);
+    return;
+  }
+  // Run finished: rest. ~100-250ms under load, stretching to multi-second
+  // lazy gaps at idle (quadratic, so busy stays tight).
+  const idle = (1 - level) * (1 - level);
+  const pause = sliceMs + 90 + Math.random() * 130 + idle * (1500 + Math.random() * 3500);
+  chatterTimer = window.setTimeout(chatterBurst, pause);
+}
+
+/** The disk starts reading at the given think-hardness (0..1). Returns a
+ * handle for stopDiskChatter. Overlapping readers stack; density follows
+ * the busiest one. */
+export function startDiskChatter(intensity = 0.6): number {
+  const id = ++chatterSeq;
+  chatters.set(id, Math.max(0.1, Math.min(1, intensity)));
+  if (chatterTimer === null && audio()) chatterBurst();
+  return id;
+}
+
+export function stopDiskChatter(id: number): void {
+  chatters.delete(id);
+  if (chatters.size === 0) {
+    runRemaining = 0;
+    if (chatterTimer !== null) {
+      window.clearTimeout(chatterTimer);
+      chatterTimer = null;
+    }
+  }
 }
 
 
