@@ -469,26 +469,45 @@ function chatterLevel(): number {
  * bend, plus a faint 3 ms contact tick at the onset. Filtered-noise clicks
  * read as shuffled cards; the real thing SINGS a little.
  */
+/** Everything the disk says passes through the case panel: one shared
+ * lowpass bus that muddles the chirps — lower, softer, a little distant,
+ * a machine heard through its own enclosure. */
+let diskBus: BiquadFilterNode | null = null;
+function getDiskBus(ac: AudioContext): BiquadFilterNode {
+  if (!diskBus) {
+    diskBus = ac.createBiquadFilter();
+    diskBus.type = 'lowpass';
+    diskBus.frequency.value = 1700;
+    diskBus.Q.value = 0.4;
+    diskBus.connect(ac.destination);
+  }
+  return diskBus;
+}
+
 function diskChirp(ac: AudioContext, at: number): void {
-  const f0 = 3100 + Math.random() * 1200;
-  const dur = 0.012 + Math.random() * 0.023;
+  const bus = getDiskBus(ac);
+  const f0 = 1900 + Math.random() * 900;
+  const dur = 0.014 + Math.random() * 0.024;
   const osc = ac.createOscillator();
   osc.type = 'sine';
   osc.frequency.setValueAtTime(f0, at);
-  osc.frequency.exponentialRampToValueAtTime(f0 * 0.82, at + dur);
+  osc.frequency.exponentialRampToValueAtTime(f0 * 0.8, at + dur);
   const g = ac.createGain();
-  g.gain.setValueAtTime(0.0046 + Math.random() * 0.0042, at);
+  // soft attack (nothing "lands" right at your ear), then decay
+  const peak = 0.0046 + Math.random() * 0.0042;
+  g.gain.setValueAtTime(0.0004, at);
+  g.gain.linearRampToValueAtTime(peak, at + 0.004);
   g.gain.exponentialRampToValueAtTime(0.0004, at + dur);
-  osc.connect(g).connect(ac.destination);
+  osc.connect(g).connect(bus);
   osc.start(at);
   osc.stop(at + dur + 0.01);
   // the mechanical edge: a whisper of a tick as the head lands
   const tick = ac.createBufferSource();
   tick.buffer = noise(ac);
   const tg = ac.createGain();
-  tg.gain.setValueAtTime(0.002, at);
+  tg.gain.setValueAtTime(0.0016, at);
   tg.gain.exponentialRampToValueAtTime(0.0003, at + 0.004);
-  tick.connect(tg).connect(ac.destination);
+  tick.connect(tg).connect(bus);
   tick.start(at, Math.random() * 1.5, 0.003);
 }
 
