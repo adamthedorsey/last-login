@@ -171,17 +171,6 @@ const Agency = styled.div`
   white-space: nowrap;
 `;
 
-/** Small institutional label over each sidebar list. */
-const SideLabel = styled.div`
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 10px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  color: #6a6552;
-  padding: 2px 2px 3px;
-  flex-shrink: 0;
-`;
-
 /** The section tabs, folder-tab style. */
 const NavRow = styled.div`
   display: flex;
@@ -924,25 +913,15 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
           Edit
         </Button>
         <Button
-          disabled={multiSelected.length === 0}
-          onClick={multiSelected.length > 0 ? () => setConfirmDelete(true) : undefined}
+          disabled={multiSelected.length === 0 && !singleDoc}
+          onClick={multiSelected.length > 0 || singleDoc ? () => setConfirmDelete(true) : undefined}
           style={{ width: 70 }}
         >
           Delete
         </Button>
       </div>
-      <TitleBand style={{ marginTop: 4 }}>
-        {multiSelected.length > 1
-          ? `${multiSelected.length} items selected`
-          : singleDoc
-            ? docName
-            : section === 'notes'
-              ? 'No note selected'
-              : 'No copy selected'}
-      </TitleBand>
       <Layout $wide={section === 'evidence'}>
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          <SideLabel>{section === 'notes' ? 'MY NOTES' : 'SAVED COPIES'}</SideLabel>
           {section === 'evidence' ? (
             <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
               <Table>
@@ -1167,7 +1146,6 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
       {section === 'messages' && (
         <Layout>
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <SideLabel>MESSAGES ON FILE</SideLabel>
           <MemoList>
             {file.messages
               .slice()
@@ -1304,10 +1282,8 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
                     Delete
                   </Button>
                 </div>
-                <TitleBand style={{ marginTop: 4 }}>{bm ? bm.title : 'No bookmark selected'}</TitleBand>
                 <Layout>
                   <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                    <SideLabel>SAVED ADDRESSES</SideLabel>
                     <MemoList>
                       {(file.bookmarks ?? []).map((b) => (
                         <MemoRow
