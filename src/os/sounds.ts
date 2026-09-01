@@ -499,10 +499,10 @@ function diskChirp(ac: AudioContext, at: number): void {
   bp.type = 'bandpass';
   bp.frequency.setValueAtTime(f0, at);
   bp.frequency.exponentialRampToValueAtTime(f0 * 0.8, at + dur);
-  bp.Q.value = 3.2;
+  bp.Q.value = 2.2;
   const g = ac.createGain();
   // soft attack (nothing "lands" right at your ear), then decay
-  const peak = 0.013 + Math.random() * 0.011; // wider band + deeper muffle need more drive
+  const peak = 0.009 + Math.random() * 0.007;
   g.gain.setValueAtTime(0.0006, at);
   g.gain.linearRampToValueAtTime(peak, at + 0.004);
   g.gain.exponentialRampToValueAtTime(0.0005, at + dur);
