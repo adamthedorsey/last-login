@@ -645,9 +645,8 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
               ))}
             </div>
           )}
-          {items.length === 0 && (
-            <div style={{ padding: 12, color: '#666' }}>(empty folder)</div>
-          )}
+          {/* An empty folder shows a blank pane, like the real thing —
+              the status bar's "0 object(s)" does the talking. */}
         </div>
       </ScrollView>
       {marquee && (
