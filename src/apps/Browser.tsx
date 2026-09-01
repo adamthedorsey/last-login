@@ -850,7 +850,7 @@ export function Browser({ windowId, props }: AppWindowProps) {
   useEffect(() => {
     void navigate(requestedUrl ?? homeUrl, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requestedUrl]);
+  }, [requestedUrl, props.urlNonce]);
 
   useEffect(() => {
     void send({ type: 'listChildren', parentId: 'folder.bookmarks' }).then((res) => {
@@ -1130,6 +1130,23 @@ export function Browser({ windowId, props }: AppWindowProps) {
           onClick={() => setOpenMenu(openMenu === '@bookmarks' ? null : '@bookmarks')}
         >
           🔖 Bookmarks
+        </Button>
+        <Button
+          size="sm"
+          disabled={viewState.kind !== 'page'}
+          title="Save this page's address to Case Files"
+          onClick={() => {
+            if (viewState.kind !== 'page' || !address) return;
+            void send({ type: 'saveBookmark', url: address }).then((res) => {
+              setStatus(
+                res.type === 'casefile'
+                  ? 'Bookmarked to Case Files.'
+                  : 'This page could not be bookmarked.',
+              );
+            });
+          }}
+        >
+          Bookmark
         </Button>
         {openMenu === '@bookmarks' && (
           <div ref={menuRef} style={{ position: 'relative' }}>

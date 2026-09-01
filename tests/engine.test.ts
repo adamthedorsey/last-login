@@ -1212,3 +1212,27 @@ describe('the desktop folder', () => {
     expect(final.type === 'children' && final.items.some((i) => i.name === 'case note.txt')).toBe(false);
   });
 });
+
+describe('player bookmarks', () => {
+  it('bookmarks an accessible page (title snapshotted), refuses gated ones', () => {
+    let s = loggedInState();
+    // A gated page cannot be bookmarked before it is earned.
+    const denied = run(s, { type: 'saveBookmark', url: 'www.mapfinder.net/maps/route9-bend' });
+    expect(denied.result).toMatchObject({ type: 'document', ok: false });
+
+    const saved = run(s, { type: 'saveBookmark', url: 'www.humbletimes.com' });
+    s = saved.state;
+    if (saved.result.type !== 'casefile') throw new Error('bad result');
+    const bm = saved.result.view.bookmarks?.[0];
+    expect(bm?.title).toContain('Humble Times');
+
+    // Dedup: saving again does not double it.
+    s = run(s, { type: 'saveBookmark', url: 'www.humbletimes.com' }).state;
+    expect(s.bookmarks).toHaveLength(1);
+
+    // Delete removes it.
+    const del = run(s, { type: 'deleteBookmark', bookmarkId: bm!.id });
+    if (del.result.type !== 'casefile') throw new Error('bad result');
+    expect(del.result.view.bookmarks ?? []).toHaveLength(0);
+  });
+});

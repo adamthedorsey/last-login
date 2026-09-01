@@ -300,6 +300,7 @@ function caseFileView(content: SeasonContent, state: PlayerState): CaseFileView 
   if (handler.setup) view.guide = handler.setup;
   if (handler.summary) view.summary = handler.summary;
   if (state.audioNotes?.length) view.audioNotes = state.audioNotes;
+  if (state.bookmarks?.length) view.bookmarks = state.bookmarks;
   return view;
 }
 
@@ -1351,6 +1352,44 @@ export function handleAction(
       }
       state.audioNotes = notes.filter((n) => n.id !== action.noteId);
       events.push({ type: 'audio_note_deleted', payload: { noteId: action.noteId } });
+      return done({ type: 'casefile', view: caseFileView(content, state) });
+    }
+
+    case 'saveBookmark': {
+      // Only pages the player can currently visit; the TITLE is snapshotted
+      // server-side from the page, never trusted from the client.
+      const url = normalizeUrl(action.url);
+      const page = content.items.find(
+        (i) => i.kind === 'webpage' && i.meta?.url && normalizeUrl(i.meta.url) === url,
+      );
+      if (!page || !isAccessible(content, state, page)) {
+        return done({ type: 'document', ok: false, error: 'not_found' });
+      }
+      const marks = (state.bookmarks ??= []);
+      if (marks.length >= 40) {
+        return done({ type: 'document', ok: false, error: 'too_many' });
+      }
+      if (!marks.some((b) => normalizeUrl(b.url) === url)) {
+        const seq = (state.bookmarkSeq ?? 0) + 1;
+        state.bookmarkSeq = seq;
+        marks.unshift({
+          id: `bm.player.${seq}`,
+          url: page.meta!.url!,
+          title: page.meta?.siteTitle ?? page.name,
+          addedAt: content.clock.now.slice(0, 10),
+        });
+        events.push({ type: 'bookmark_saved', payload: { url: page.meta!.url! } });
+      }
+      return done({ type: 'casefile', view: caseFileView(content, state) });
+    }
+
+    case 'deleteBookmark': {
+      const marks = state.bookmarks ?? [];
+      if (!marks.some((b) => b.id === action.bookmarkId)) {
+        return done({ type: 'document', ok: false, error: 'not_found' });
+      }
+      state.bookmarks = marks.filter((b) => b.id !== action.bookmarkId);
+      events.push({ type: 'bookmark_deleted', payload: { bookmarkId: action.bookmarkId } });
       return done({ type: 'casefile', view: caseFileView(content, state) });
     }
 

@@ -469,7 +469,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   }, [send, windowId]);
 
   // --- The four sections ---
-  type Section = 'messages' | 'notes' | 'evidence' | 'summary';
+  type Section = 'messages' | 'notes' | 'evidence' | 'bookmarks' | 'summary';
   const [section, setSection] = useState<Section>('messages');
 
   // --- The player's own documents (notes + evidence copies) ---
@@ -482,6 +482,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   const [docText, setDocText] = useState('');
   const [docName, setDocName] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [bmId, setBmId] = useState<string | null>(null);
 
   // An evidence copy keeps its REAL filename — sourceId is the marker.
   const isCopy = (d: import('@gamecore/types.ts').ItemSummary) => !!d.meta?.sourceId;
@@ -807,7 +808,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
   const sectionDocs = docs.filter((d) => (section === 'evidence') === isCopy(d));
   const online = gameView?.online === true;
 
-  const switchSection = (to: 'messages' | 'notes' | 'evidence' | 'summary') => {
+  const switchSection = (to: Section) => {
     setMenuOpen(null);
     setSelIds([]);
     selAnchor.current = null;
@@ -951,6 +952,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
             <MenuListItem size="sm" onClick={() => switchSection('messages')}>Messages</MenuListItem>
             <MenuListItem size="sm" onClick={() => switchSection('notes')}>Notes</MenuListItem>
             <MenuListItem size="sm" onClick={() => switchSection('evidence')}>Evidence Copies</MenuListItem>
+            <MenuListItem size="sm" onClick={() => switchSection('bookmarks')}>Bookmarks</MenuListItem>
             <MenuListItem size="sm" onClick={() => switchSection('summary')}>Case Summary</MenuListItem>
             <Separator />
             <MenuListItem size="sm" onClick={() => void checkServer()}>
@@ -1027,6 +1029,7 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
             ['messages', 'Messages'],
             ['notes', 'Notes'],
             ['evidence', 'Evidence Copies'],
+            ['bookmarks', 'Bookmarks'],
             ['summary', 'Case Summary'],
           ] as const
         ).map(([id, label]) => (
@@ -1132,6 +1135,81 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
 
       {(section === 'notes' || section === 'evidence') && docsPane}
 
+      {section === 'bookmarks' && (
+        <Layout>
+          <MemoList>
+            {(file.bookmarks ?? []).map((b) => (
+              <MemoRow key={b.id} $active={b.id === bmId} $unread={false} onClick={() => setBmId(b.id)}>
+                <span>{b.title}</span>
+                <small>{b.url}</small>
+              </MemoRow>
+            ))}
+            {(file.bookmarks ?? []).length === 0 && (
+              <div style={{ padding: 8, color: '#777', fontSize: 13 }}>
+                (nothing bookmarked yet — use the Bookmark button in NetVoyager)
+              </div>
+            )}
+          </MemoList>
+          {(() => {
+            const bm = (file.bookmarks ?? []).find((b) => b.id === bmId);
+            return bm ? (
+              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: 4 }}>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      fontFamily: 'Arial, Helvetica, sans-serif',
+                      fontSize: 13,
+                      fontWeight: 'bold',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {bm.title}
+                  </div>
+                  <Button
+                    onClick={() =>
+                      useWindowStore.getState().open('browser', {
+                        props: { url: bm.url, urlNonce: Date.now() },
+                      })
+                    }
+                    style={{ padding: '0 12px' }}
+                  >
+                    Open in NetVoyager
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      void send({ type: 'deleteBookmark', bookmarkId: bm.id }).then((res) => {
+                        if (res.type === 'casefile') {
+                          setFile(res.view);
+                          setBmId(null);
+                          setNotice('Bookmark removed.');
+                        }
+                      });
+                    }}
+                    style={{ width: 70 }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+                <Reading>
+                  <span style={{ color: '#555' }}>
+                    {bm.url}
+                    {'\n'}Saved {bm.addedAt}
+                  </span>
+                </Reading>
+              </div>
+            ) : (
+              <Reading>
+                <span style={{ color: '#777' }}>Select a bookmark.</span>
+              </Reading>
+            );
+          })()}
+        </Layout>
+      )}
+
       {section === 'summary' && (
         <Reading style={{ flex: 1, minHeight: 0, marginTop: 4 }}>
           {(file.summary ?? ['(no summary on file)']).join('\n')}
@@ -1148,7 +1226,9 @@ export function CaseFile({ windowId, props }: { windowId: string; props?: Record
               ? `${file.messages.length} message(s) on file`
               : section === 'summary'
                 ? file.title
-                : `${sectionDocs.length} item(s)`)}
+                : section === 'bookmarks'
+                  ? `${(file.bookmarks ?? []).length} bookmark(s)`
+                  : `${sectionDocs.length} item(s)`)}
         </span>
         <span style={{ flexShrink: 0, padding: '0 14px 0 12px', borderLeft: '1px solid #888' }}>
           Case Server: {online ? 'Connected' : 'Offline'}

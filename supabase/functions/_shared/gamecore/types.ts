@@ -489,6 +489,10 @@ export interface PlayerState {
   documents?: PlayerDocument[];
   /** Microphone notes recorded through Sound Recorder / Case Files. */
   audioNotes?: PlayerAudioNote[];
+  /** Web pages the player bookmarked into Case Files (title snapshotted
+   * server-side from the page — the client never supplies it). */
+  bookmarks?: Array<{ id: string; url: string; title: string; addedAt: string }>;
+  bookmarkSeq?: number;
   docSeq?: number;
   folders?: PlayerFolder[];
   folderSeq?: number;
@@ -570,6 +574,10 @@ export type GameAction =
   /** Save a microphone recording as a Case Files audio note. */
   | { type: 'saveAudioNote'; name?: string; dataUrl: string }
   | { type: 'deleteAudioNote'; noteId: string }
+  /** Bookmark the page at `url` into Case Files (only pages the player can
+   * currently visit; the engine snapshots the title). */
+  | { type: 'saveBookmark'; url: string }
+  | { type: 'deleteBookmark'; bookmarkId: string }
   | { type: 'resetSeason' };
 
 /**
@@ -615,6 +623,8 @@ export const ACTION_TYPES = [
   'deleteDocument',
   'saveAudioNote',
   'deleteAudioNote',
+  'saveBookmark',
+  'deleteBookmark',
   'resetSeason',
 ] as const;
 
@@ -748,6 +758,8 @@ export interface CaseFileView {
     text: string;
     audioSrc?: string;
   }>;
+  /** The player's saved web bookmarks (the Bookmarks tab). */
+  bookmarks?: Array<{ id: string; url: string; title: string; addedAt: string }>;
   /** Present (with the wizard pages) until first-run setup completes. */
   setup?: HandlerSetupPage[];
   /** The same pages, always served — the Help menu's Getting Started. */
