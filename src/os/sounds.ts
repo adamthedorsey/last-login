@@ -492,7 +492,7 @@ function diskChirp(ac: AudioContext, at: number): void {
   // NOISE through a resonant bandpass — static's texture with a chirp's
   // contour. A pure tone sings like a bird; the real thing crackles.
   const f0 = 1500 + Math.random() * 800;
-  const dur = 0.010 + Math.random() * 0.016;
+  const dur = 0.006 + Math.random() * 0.008;
   const src = ac.createBufferSource();
   src.buffer = noise(ac);
   const bp = ac.createBiquadFilter();
@@ -520,11 +520,11 @@ function chatterBurst(): void {
   if (ac && !isMuted()) {
     // One seek run, timed like the reference: chirps ~20-60ms apart, more
     // of them (and slightly tighter) the harder the machine thinks.
-    const chirps = 3 + Math.floor((2 + Math.random() * 8) * level);
+    const chirps = 8 + Math.floor((8 + Math.random() * 22) * level);
     let at = ac.currentTime + 0.01;
     for (let i = 0; i < chirps; i++) {
       diskChirp(ac, at);
-      at += 0.014 + Math.random() * (0.045 - 0.02 * level);
+      at += 0.010 + Math.random() * (0.032 - 0.014 * level);
     }
   }
   // Rests between runs: ~100-300ms under load, stretching to multi-second
