@@ -22,6 +22,7 @@ import wizardArt from '../assets/images/humble-county-wizard.jpg';
 import sealArt from '../assets/images/sheriff-seal.png';
 import { OfflineAlert } from '../os/OfflineAlert';
 import { openCaseNote } from './CaseNote';
+import { CASE_TINT } from '../os/caseTheme';
 import { CloseGlyph, TitleBarButton } from '../os/glyphs';
 import { DOC_TEXT } from '../theme';
 
@@ -136,19 +137,24 @@ const NavRow = styled.div`
   padding: 0 2px;
 `;
 
+/** Manila folder tabs — the active one sits taller, bold, and fuses into
+ * the sheet below; inactive tabs tuck behind, a shade deeper. */
 const NavTab = styled.button<{ $active: boolean }>`
   border: 2px solid;
-  border-color: #fff #404040 ${(p) => (p.$active ? '#d4d0c8' : '#404040')} #fff;
+  border-color: #fbf8ee #6a6552 ${(p) => (p.$active ? CASE_TINT : '#6a6552')} #fbf8ee;
   border-bottom-width: ${(p) => (p.$active ? 0 : 2)}px;
-  background: #d4d0c8;
-  padding: ${(p) => (p.$active ? '4px 14px 6px' : '3px 12px')};
+  background: ${(p) => (p.$active ? CASE_TINT : '#d0c9ad')};
+  padding: ${(p) => (p.$active ? '5px 16px 8px' : '4px 13px 2px')};
   font-size: 13px;
   /* Owner call: Case Files CONTENT and NAV read in Arial (app chrome —
      menus, ribbon, status — stays bitmap). */
   font-family: Arial, Helvetica, sans-serif;
-  margin-top: ${(p) => (p.$active ? 0 : 2)}px;
+  font-weight: ${(p) => (p.$active ? 'bold' : 'normal')};
+  color: ${(p) => (p.$active ? '#000' : '#3d3a30')};
+  margin-top: ${(p) => (p.$active ? 0 : 4)}px;
   position: relative;
   top: 2px;
+  z-index: ${(p) => (p.$active ? 2 : 1)};
 `;
 
 const AboutOverlay = styled.div`
@@ -218,6 +224,10 @@ const Reading = styled(Frame).attrs({ variant: 'field' })`
   user-select: text;
   ${DOC_TEXT}
   white-space: pre-wrap;
+  /* In a flex column (the doc pane) the sheet fills the window and scrolls
+     when the text runs long; as a grid cell this is inert. */
+  flex: 1;
+  min-height: 0;
 `;
 
 const MemoHead = styled.div`

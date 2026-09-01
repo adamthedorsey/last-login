@@ -33,6 +33,7 @@ import { CdRom } from './CdRom';
 import { SolBackdoor } from './SolBackdoor';
 import { CaseFile } from './CaseFile';
 import { CaseNote } from './CaseNote';
+import { caseTheme } from '../os/caseTheme';
 
 export function registerAllApps(): void {
   registerApp({
@@ -131,8 +132,10 @@ export function registerAllApps(): void {
     defaultSize: { w: 880, h: 640 },
     singleton: true,
     center: true,
-    // Title bar matches the wizard banner: black into its teal.
+    // Title bar matches the wizard banner: black into its teal — and the
+    // whole window wears the county-issue manila tint.
     titleBar: { from: '#000000', to: '#14636a' },
+    theme: caseTheme,
   });
   registerApp({
     id: 'casenote',
@@ -144,6 +147,7 @@ export function registerAllApps(): void {
     defaultSize: { w: 520, h: 420 },
     hidden: true,
     titleBar: { from: '#000000', to: '#14636a' },
+    theme: caseTheme,
   });
   // --- Accessories (the Win95-style default apps) ---
   registerApp({

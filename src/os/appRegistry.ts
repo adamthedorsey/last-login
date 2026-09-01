@@ -23,6 +23,9 @@ export interface AppDefinition {
    * or a left-to-right gradient (`from` -> `to`). Inactive windows keep
    * the standard gray. */
   titleBar?: { from: string; to?: string };
+  /** A react95 theme override for the WHOLE window (frame, buttons, wells,
+   * scrollbars) — how the Case Files family wears its manila tint. */
+  theme?: Record<string, string>;
   /**
    * Startup splash shown BEFORE the window opens (a fresh launch only —
    * refocusing an existing singleton window skips it). Call onDone to
