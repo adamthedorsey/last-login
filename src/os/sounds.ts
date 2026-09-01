@@ -263,10 +263,13 @@ function noise(ac: AudioContext): AudioBuffer {
 }
 
 // --- The fan: filtered air noise + a faint motor fundamental -------------
-const FAN_BASE_GAIN = 0.013;
+const FAN_BASE_GAIN = 0.008;
 const FAN_BASE_HZ = 240;
+// A second, fixed lowpass keeps the air DARK even when the surge opens the
+// first filter — brightness is what reads as synthetic.
+const FAN_CAP_HZ = 600;
 const MOTOR_HZ = 118;
-const MOTOR_GAIN = 0.004;
+const MOTOR_GAIN = 0.0025;
 
 interface FanHum {
   src: AudioBufferSourceNode;
@@ -278,6 +281,8 @@ interface FanHum {
 let hum: FanHum | null = null;
 /** A surface asked for the hum (survives a mute/unmute round trip). */
 let humWanted = false;
+/** The idle disk tick that lives alongside the hum (see chatter below). */
+let humChatterId: number | null = null;
 
 export function startFanHum(): void {
   humWanted = true;
@@ -292,9 +297,13 @@ export function startFanHum(): void {
     filter.type = 'lowpass';
     filter.frequency.value = FAN_BASE_HZ;
     filter.Q.value = 0.4;
+    const cap = ac.createBiquadFilter();
+    cap.type = 'lowpass';
+    cap.frequency.value = FAN_CAP_HZ;
+    cap.Q.value = 0.3;
     const gain = ac.createGain();
     gain.gain.value = 0;
-    src.connect(filter).connect(gain).connect(ac.destination);
+    src.connect(filter).connect(cap).connect(gain).connect(ac.destination);
     const motor = ac.createOscillator();
     motor.type = 'triangle';
     motor.frequency.value = MOTOR_HZ;
@@ -308,6 +317,9 @@ export function startFanHum(): void {
     motorGain.gain.setTargetAtTime(MOTOR_GAIN, ac.currentTime, 0.4);
     hum = { src, filter, gain, motor, motorGain };
     applyFanLevel();
+    // While the machine is on, the disk is never fully quiet: a sparse idle
+    // tick that user action densifies (the ambient life of an old PC).
+    if (humChatterId === null) humChatterId = startDiskChatter(0.1);
   } catch {
     /* ignore */
   }
@@ -315,6 +327,10 @@ export function startFanHum(): void {
 
 /** Tear the nodes down without clearing the "wanted" flag (mute path). */
 function killFanHum(): void {
+  if (humChatterId !== null) {
+    stopDiskChatter(humChatterId);
+    humChatterId = null;
+  }
   if (!hum) return;
   try {
     hum.src.stop();
@@ -340,15 +356,14 @@ function applyFanLevel(): void {
   surges.forEach((v) => {
     if (v > level) level = v;
   });
-  // A fan spinning up is mostly MORE AIR — a swell of noise, slightly
-  // brighter, with barely any tonal shift (a pitch rise reads as an engine
-  // revving, which this is not). Swell in over a beat, wind down slower.
-  const tc = level > 0 ? 0.32 : 0.6;
+  // A fan spinning up is just MORE AIR: a slow swell of the same dark
+  // noise — no brightening, no pitch shift, the motor tone untouched
+  // (any tonal movement reads as an engine revving). The fixed cap
+  // filter keeps the character identical at every level.
+  const tc = level > 0 ? 0.45 : 0.6;
   const t = ctx.currentTime;
-  hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 420 * level, t, tc);
-  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 1.1 * level), t, tc);
-  hum.motor.frequency.setTargetAtTime(MOTOR_HZ * (1 + 0.05 * level), t, tc);
-  hum.motorGain.gain.setTargetAtTime(MOTOR_GAIN * (1 + 0.5 * level), t, tc);
+  hum.filter.frequency.setTargetAtTime(FAN_BASE_HZ + 180 * level, t, tc);
+  hum.gain.gain.setTargetAtTime(FAN_BASE_GAIN * (1 + 0.7 * level), t, tc);
 }
 
 /** Start a spin-up at the given intensity (0..1). Returns a handle. */
@@ -411,9 +426,10 @@ function chatterBurst(): void {
       at += 0.008 + Math.random() * (0.014 + 0.02 * (1 - level));
     }
   }
-  // Heads settle before the next seek — briefly under load, with long
-  // lazy gaps when the machine is barely working.
-  const pause = 60 + Math.random() * 120 + (1 - level) * (300 + Math.random() * 500);
+  // Heads settle before the next seek — brief under load, stretching to
+  // multi-second lazy gaps at idle (quadratic, so busy stays tight).
+  const idle = (1 - level) * (1 - level);
+  const pause = 60 + Math.random() * 140 + idle * (1500 + Math.random() * 3500);
   chatterTimer = window.setTimeout(chatterBurst, pause);
 }
 
