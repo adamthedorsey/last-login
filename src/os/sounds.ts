@@ -427,7 +427,7 @@ function diskClick(ac: AudioContext, at: number): void {
   bp.frequency.value = 2200 + Math.random() * 2400;
   bp.Q.value = 2.5;
   const g = ac.createGain();
-  g.gain.setValueAtTime(0.012 + Math.random() * 0.018, at);
+  g.gain.setValueAtTime(0.0114 + Math.random() * 0.0171, at);
   g.gain.exponentialRampToValueAtTime(0.0006, at + 0.012);
   src.connect(bp).connect(g).connect(ac.destination);
   src.start(at, Math.random() * 1.5, 0.004 + Math.random() * 0.004);
