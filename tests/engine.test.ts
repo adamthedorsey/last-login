@@ -1190,3 +1190,25 @@ describe('handler announcements', () => {
     expect(hasCaseNotice(later)).toBe(true);
   });
 });
+
+describe('the desktop folder', () => {
+  it('mirrors the desktop at C:\\Windows\\Profiles\\casey\\Desktop', () => {
+    let s = offlineState();
+    const list = run(s, { type: 'listChildren', parentId: 'folder.desktop' }).result;
+    if (list.type !== 'children') throw new Error('bad result');
+    const names = list.items.map((i) => i.name);
+    expect(names).toContain('README.txt');
+    expect(names).toContain('from j.txt');
+    expect(names).toContain('NetVoyager');
+
+    // A document the player saves to the desktop appears in the folder too.
+    s = run(s, { type: 'saveDocument', name: 'my leads.txt', text: 'x' }).state;
+    const after = run(s, { type: 'listChildren', parentId: 'folder.desktop' }).result;
+    expect(after.type === 'children' && after.items.some((i) => i.name === 'my leads.txt')).toBe(true);
+
+    // ...but a Case Files doc does not (it lives in the casefile space).
+    s = run(s, { type: 'saveDocument', name: 'case note.txt', text: 'x', folderId: 'casefile' }).state;
+    const final = run(s, { type: 'listChildren', parentId: 'folder.desktop' }).result;
+    expect(final.type === 'children' && final.items.some((i) => i.name === 'case note.txt')).toBe(false);
+  });
+});

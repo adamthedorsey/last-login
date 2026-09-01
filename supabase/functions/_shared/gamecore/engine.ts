@@ -271,6 +271,8 @@ export const CASE_SETUP_FLAG = 'case-setup-done';
 /** The pseudo-folder where Case Files keeps the player's notes and saved
  * evidence copies — "Save to Case Files" lands here, off the desktop. */
 export const CASE_DOCS_FOLDER = 'casefile';
+/** The desktop's real home on disk: C:\Windows\Profiles\casey\Desktop. */
+const DESKTOP_FOLDER = 'folder.desktop';
 
 /** Audio-note guardrails: a note is a short memo, not a podcast. */
 const MAX_AUDIO_NOTES = 12;
@@ -887,6 +889,14 @@ export function handleAction(
       const items = content.items
         .filter((i) => i.parentId === action.parentId && isAccessible(content, state, i))
         .map((i) => toSummary(content, state, i));
+      // The desktop IS a folder (C:\Windows\Profiles\casey\Desktop), so the
+      // player's own desktop-saved documents appear in it too — the mirror
+      // is exact, like real Win95.
+      if (action.parentId === DESKTOP_FOLDER) {
+        (state.documents ?? []).forEach((d, i) => {
+          if (!d.folderId) items.push(docSummary(d, i));
+        });
+      }
       return done({ type: 'children', items });
     }
 

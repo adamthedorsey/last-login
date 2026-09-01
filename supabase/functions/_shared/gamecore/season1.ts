@@ -730,6 +730,43 @@ export const SEASON1: SeasonContent = {
       parentId: 'folder.computer',
       meta: { appId: 'dialup' },
     },
+    // --- C:\Windows\Profiles\casey\Desktop — the desktop IS a folder, like
+    // real Win95 with user profiles enabled (the machine has a logon). The
+    // items whose home is the desktop live here; browsing to it mirrors the
+    // desktop exactly. (My Computer / Recycle Bin were virtual namespace
+    // objects and correctly do NOT appear.)
+    {
+      id: 'folder.windows',
+      kind: 'folder',
+      name: 'Windows',
+      icon: 'folder',
+      parentId: 'folder.c',
+      meta: { path: 'C:\\Windows' },
+    },
+    {
+      id: 'folder.profiles',
+      kind: 'folder',
+      name: 'Profiles',
+      icon: 'folder',
+      parentId: 'folder.windows',
+      meta: { path: 'C:\\Windows\\Profiles' },
+    },
+    {
+      id: 'folder.profile-casey',
+      kind: 'folder',
+      name: 'casey',
+      icon: 'folder',
+      parentId: 'folder.profiles',
+      meta: { path: 'C:\\Windows\\Profiles\\casey' },
+    },
+    {
+      id: 'folder.desktop',
+      kind: 'folder',
+      name: 'Desktop',
+      icon: 'folder',
+      parentId: 'folder.profile-casey',
+      meta: { path: 'C:\\Windows\\Profiles\\casey\\Desktop' },
+    },
     {
       // A real Control Panel folder of applets — all machine chrome.
       id: 'folder.cpanel',
@@ -1332,7 +1369,7 @@ he boy arrived on a Tuesday, soaked through, holding a shoebox.
       // filename stays personal on purpose (re-read it after the end).
       name: 'from j.txt',
       icon: 'doc',
-      parentId: 'folder.c',
+      parentId: 'folder.desktop',
       meta: {
         createdAt: '1997-06-30',
         modifiedAt: '1997-06-30',
@@ -2279,6 +2316,7 @@ and things go back to nor
     {
       id: 'shortcut.mail',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'Mail',
       icon: 'mail-app',
       meta: { appId: 'mail', desktop: { x: 120, y: 120 } },
@@ -2286,6 +2324,7 @@ and things go back to nor
     {
       id: 'shortcut.buddyline',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'Messenger',
       icon: 'im-app',
       meta: { appId: 'buddyline', desktop: { x: 120, y: 216 } },
@@ -2293,6 +2332,7 @@ and things go back to nor
     {
       id: 'shortcut.browser',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'NetVoyager',
       icon: 'browser',
       meta: { appId: 'browser', desktop: { x: 120, y: 24 } },
@@ -2300,6 +2340,7 @@ and things go back to nor
     {
       id: 'shortcut.notepad',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'Notepad',
       icon: 'notepad',
       meta: { appId: 'notepad', desktop: { x: 216, y: 24 } },
@@ -2307,6 +2348,7 @@ and things go back to nor
     {
       id: 'shortcut.solitaire',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'Solitaire',
       icon: 'game',
       meta: { appId: 'solitaire', desktop: { x: 216, y: 120 } },
@@ -2314,6 +2356,7 @@ and things go back to nor
     {
       id: 'shortcut.dialup',
       kind: 'shortcut',
+      parentId: 'folder.desktop',
       name: 'WestWind Online',
       icon: 'dialup',
       meta: { appId: 'dialup', desktop: { x: 216, y: 216 } },
@@ -2325,6 +2368,7 @@ and things go back to nor
       kind: 'document',
       name: 'README.txt',
       icon: 'doc',
+      parentId: 'folder.desktop',
       meta: {
         createdAt: '1997-10-18',
         modifiedAt: '1997-10-18',
