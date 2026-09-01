@@ -264,6 +264,9 @@ function PendingGlyph() {
  * picture — each pass SNAPS in on a stepped clock (no fades, no easing).
  * Mounted the moment the staged loader delivers the image ordinal.
  */
+/** Sharpening ladder: divisor per pass — four looks before the real one. */
+const PASSES = [16, 8, 4, 1];
+
 function ProgressiveImg({ src, alt }: { src: string; alt: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -283,8 +286,10 @@ function ProgressiveImg({ src, alt }: { src: string; alt: string }) {
   }, [src]);
 
   useEffect(() => {
-    if (!dims || pass >= 2) return;
-    const t = window.setTimeout(() => setPass((p) => p + 1), 420);
+    if (!dims || pass >= PASSES.length - 1) return;
+    // Slow wire: each sharpening pass takes a beat, a touch different
+    // every time, ~2-2.7s for the full picture.
+    const t = window.setTimeout(() => setPass((p) => p + 1), 620 + Math.random() * 280);
     return () => window.clearTimeout(t);
   }, [dims, pass]);
 
@@ -292,7 +297,7 @@ function ProgressiveImg({ src, alt }: { src: string; alt: string }) {
     const img = imgRef.current;
     const cv = canvasRef.current;
     if (!img || !cv || !dims) return;
-    const div = pass === 0 ? 10 : pass === 1 ? 4 : 1;
+    const div = PASSES[Math.min(pass, PASSES.length - 1)];
     const w = Math.max(1, Math.floor(dims.w / div));
     const h = Math.max(1, Math.floor(dims.h / div));
     const off = document.createElement('canvas');
