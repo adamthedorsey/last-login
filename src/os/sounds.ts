@@ -281,8 +281,34 @@ interface FanHum {
 let hum: FanHum | null = null;
 /** A surface asked for the hum (survives a mute/unmute round trip). */
 let humWanted = false;
-/** The idle disk tick that lives alongside the hum (see chatter below). */
-let humChatterId: number | null = null;
+// The idle disk EPISODES: the disk is silent by default — but every so
+// often, while the machine sits there, it wakes for a short unprompted
+// burst of housekeeping (a second or two of chatter), then goes quiet
+// again. Scheduled alongside the hum, torn down with it.
+let idleDiskTimer: number | null = null;
+let idleEpisodeId: number | null = null;
+let idleEpisodeStop: number | null = null;
+
+function scheduleIdleDisk(): void {
+  idleDiskTimer = window.setTimeout(() => {
+    idleEpisodeId = startDiskChatter(0.35 + Math.random() * 0.3);
+    idleEpisodeStop = window.setTimeout(() => {
+      if (idleEpisodeId !== null) stopDiskChatter(idleEpisodeId);
+      idleEpisodeId = null;
+      idleEpisodeStop = null;
+    }, 800 + Math.random() * 1700);
+    scheduleIdleDisk();
+  }, 15_000 + Math.random() * 35_000);
+}
+
+function stopIdleDisk(): void {
+  if (idleDiskTimer !== null) window.clearTimeout(idleDiskTimer);
+  if (idleEpisodeStop !== null) window.clearTimeout(idleEpisodeStop);
+  if (idleEpisodeId !== null) stopDiskChatter(idleEpisodeId);
+  idleDiskTimer = null;
+  idleEpisodeStop = null;
+  idleEpisodeId = null;
+}
 
 export function startFanHum(): void {
   humWanted = true;
@@ -317,9 +343,9 @@ export function startFanHum(): void {
     motorGain.gain.setTargetAtTime(MOTOR_GAIN, ac.currentTime, 0.4);
     hum = { src, filter, gain, motor, motorGain };
     applyFanLevel();
-    // While the machine is on, the disk is never fully quiet: a sparse idle
-    // tick that user action densifies (the ambient life of an old PC).
-    if (humChatterId === null) humChatterId = startDiskChatter(0.1);
+    // The disk sits SILENT at idle — but wakes now and then for a short
+    // unprompted housekeeping burst (the ambient life of an old PC).
+    if (idleDiskTimer === null) scheduleIdleDisk();
   } catch {
     /* ignore */
   }
@@ -327,10 +353,7 @@ export function startFanHum(): void {
 
 /** Tear the nodes down without clearing the "wanted" flag (mute path). */
 function killFanHum(): void {
-  if (humChatterId !== null) {
-    stopDiskChatter(humChatterId);
-    humChatterId = null;
-  }
+  stopIdleDisk();
   if (!hum) return;
   try {
     hum.src.stop();
