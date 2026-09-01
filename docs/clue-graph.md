@@ -2,9 +2,9 @@
 
 > GENERATED — do not edit. Source of truth: `season1.ts`. Regenerate: `npm run graph`
 >
-> In-world date: 1997-10-18 · 199 items
-> (12 gated · 11 granting · ~176 mundane camouflage) ·
-> 8 discoveries
+> In-world date: 1997-10-18 · 201 items
+> (12 gated · 12 granting · ~177 mundane camouflage) ·
+> 9 discoveries
 
 ```mermaid
 flowchart TD
@@ -21,8 +21,11 @@ flowchart TD
   d_the_clean_truck(["The clean dark truck"]):::discovery
   d_the_pipeline(["The pipeline"]):::discovery
   d_the_watcher(["The watcher"]):::discovery
+  d_the_source(["The source"]):::discovery
   d_who_shaped(["A familiar shape"]):::discovery
   d_the_house(["The house<br/><b>END OF SEASON</b>"]):::finale
+  i_a_page["PDNT-RAW.PGP<br/><i>file</i>"]:::locked
+  i_a_page ==>|grants| d_the_source
   i_file_ledger_copy["wv history extra notes.txt<br/><i>file</i>"]:::item
   i_file_ledger_copy ==>|grants| d_the_pipeline
   d_the_clean_truck -->|requires| i_file_ledger_copy

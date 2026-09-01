@@ -181,6 +181,12 @@ export const SEASON1: SeasonContent = {
         'Someone just dialed into this machine like they’d done it a hundred times — no guessing, no fumbling, straight to her private folder, looking for one file that is no longer there. That is how you know things nobody posted, and quote files that live nowhere else. It was never magic. It was access.',
     },
     {
+      id: 'the-source',
+      title: 'The source',
+      description:
+        'The floppy wasn’t homework. Behind her own secret word sat Purdont’s own paper — a field bulletin naming Dr. Sparks a top prescriber to be rewarded, and a memo telling reps not to say the word "addiction" out loud. The pipeline doesn’t start at the pharmacy. It starts at the company that makes the pills, and Casey had it in their own words.',
+    },
+    {
       id: 'who-shaped',
       title: 'A familiar shape',
       description:
@@ -718,8 +724,91 @@ export const SEASON1: SeasonContent = {
       name: '3½ Floppy (A:)',
       icon: 'floppy',
       parentId: 'folder.computer',
-      // No disk in the drive — the Explorer shows the classic refusal.
+      // There IS a disk in the drive: her cover homework and, behind a
+      // passphrase, "the page" nightshift kept asking about (trash.bl-log).
       meta: { path: 'A:\\' },
+    },
+    {
+      // The cover. A real, dull essay so the disk looks like nothing — the
+      // way you hide a floppy is you make it boring. Free to open.
+      id: 'a.decoy',
+      kind: 'document',
+      name: 'HIST-CH7.doc',
+      icon: 'doc',
+      parentId: 'drive.a',
+      meta: { createdAt: '1997-09-29', modifiedAt: '1997-09-29', sizeKb: 6, path: 'A:\\HIST-CH7.doc' },
+      searchText: 'history homework essay industrial revolution casey decoy floppy',
+      body: {
+        text: `Chapter 7 — The Industrial Revolution
+Casey Taylor, 3rd period
+
+The Industrial Revolution changed how people worked. Before, most
+people made things at home or on farms. After, they went to factories
+where machines did the work faster. This was good for making cheap
+goods but bad for the workers, who worked long hours for low pay in
+dangerous conditions.
+
+[the rest is three more paragraphs of the same, copied mostly from the
+textbook, with one doodle in the margin: a junebug, six legs, the way a
+kid draws one. under it, small, in her hand: "for S. — jbug 4ever"]`,
+      },
+    },
+    {
+      // "The page." Purdont's own material — the raw dump nightshift walked
+      // her through pulling from their web infrastructure (story/canon.md).
+      // Locked with the one word that was ever really hers. junebug is her
+      // secret with Sadie (web.sadie-page, the childhood sketch), the word
+      // nightshift stole to prove himself (trash.bl-log), and the word that
+      // drifts across her screen saver the whole time (saverText). Opening
+      // it is the gut-punch: her safe word is what she used as a vault.
+      id: 'a.page',
+      kind: 'document',
+      name: 'PDNT-RAW.PGP',
+      icon: 'doc',
+      parentId: 'drive.a',
+      password: 'junebug',
+      passwordHint: 'A word only two people on Earth were ever supposed to know.',
+      onOpen: { discover: ['the-source'] },
+      meta: { createdAt: '1997-10-09', modifiedAt: '1997-10-09', sizeKb: 214, path: 'A:\\PDNT-RAW.PGP', mono: true },
+      searchText: 'purdont pgp encrypted the page oxytera internal nightshift stolen source',
+      body: {
+        text: `-----BEGIN PGP MESSAGE-----
+[decrypted 10/09/97 — contents of PDNT-RAW]
+
+>> PURDONT PHARMACEUTICAL — FIELD SALES BULLETIN
+>> NOT FOR DISTRIBUTION OUTSIDE THE SALES ORGANIZATION
+>> Region 4 (Appalachia) — Q3 1996
+
+Representatives are reminded that Oxytera CR is indicated for
+moderate to severe persistent pain. "Persistent" is the operative
+word. A patient who has hurt for three weeks has persistent pain.
+Do not let a physician's caution about "just a back" cost that
+patient relief — or cost you the script.
+
+TOP DECILE PRESCRIBERS, REGION 4 (partial):
+  ...
+  SPARKS, R. — Humble, WV .......... 412 scripts (Q3) ...... ^ 71%
+  ...
+Rep servicing this territory: note the growth. Reward it. Dr.
+Sparks is a believer. Believers get the speaker-program invitations,
+the honoraria, the trip to the Scottsdale meeting. Keep him close.
+
+>> INTERNAL MEMO — excerpt (do NOT forward)
+Re: the "abuse" question at the Charleston dinner
+
+We are hearing the addiction word more this year, mostly from
+pharmacists and a few ER people. Guidance has not changed. The
+delayed-release language is approved; the "less than one percent"
+figure is approved. Field staff are NOT to volunteer the county
+overdose numbers. If a prescriber raises them, redirect to
+undertreated pain. We do not have a Humble problem. We have an
+undertreatment problem that happens to be visible in Humble.
+
+>> and there's a spreadsheet under this, casey. numbers by county.
+>> ours is not the worst one. ours is just the one you live in.
+>> — the note in her own hand, at the bottom
+-----END PGP MESSAGE-----`,
+      },
     },
     {
       id: 'folder.c',

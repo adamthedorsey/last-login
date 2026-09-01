@@ -334,6 +334,15 @@ If not, don't build it that way.
   server-authored later (story/canon.md, "Solitaire as a front"). The
   knock lives in Solitaire.tsx; keep any future hidden-knock the same
   shape — client detects a pattern, engine holds the secret.
+- Encrypted files: a content item may carry a `password` (engine-checked,
+  same as any standalone target). Opening it returns `error:'locked'` (no
+  body, no hint until earned) and Notepad shows a passphrase prompt →
+  `attemptPassword` → re-open reveals the decrypted body and fires its
+  `onOpen`. The floppy's `A:\PDNT-RAW.PGP` is the first: "the page"
+  nightshift wanted, the stolen Purdont material, locked with `junebug`
+  (Casey's own word — the screen saver, Sadie's childhood sketch, and the
+  word nightshift stole all point at it). NEVER ship a passphrase or a
+  decrypted body client-side; the engine holds both.
 
 ### MT-DOS mode & system mortality
 - The MT-DOS Prompt (Start → Programs, or COMMAND in Run) opens WINDOWED

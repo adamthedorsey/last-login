@@ -247,7 +247,6 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
   const marqueeRef = useRef<{ startX: number; startY: number } | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [ghost, setGhost] = useState<{ item: ItemSummary; x: number; y: number } | null>(null);
-  const [floppyError, setFloppyError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const noticeTimer = useRef(0);
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; item: ItemSummary } | null>(null);
@@ -428,11 +427,6 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
   };
 
   const enter = (item: ItemSummary) => {
-    // No disk in the drive. There was never a disk in the drive.
-    if (item.meta?.path === 'A:\\') {
-      setFloppyError(true);
-      return;
-    }
     if (item.meta?.path === 'D:\\') {
       launchItem(item); // the disc opens its spatial window
       return;
@@ -706,39 +700,7 @@ export function FileExplorer({ windowId, props }: AppWindowProps) {
           onClose={() => setPropsItem(null)}
         />
       )}
-      {floppyError && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 100007,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0, 0, 0, 0.2)',
-          }}
-          data-no-deskmenu
-        >
-          <Window shadow style={{ width: 340 }}>
-            <WindowHeader style={{ fontSize: 13 }}>A:\</WindowHeader>
-            <WindowContent style={{ fontSize: 13 }}>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                <Icon name="warning" size={32} />
-                <p style={{ margin: 0 }}>
-                  A:\ is not accessible.
-                  <br />
-                  <br />
-                  The device is not ready.
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
-                <Button onClick={() => setFloppyError(false)} style={{ width: 80 }}>
-                  Retry
-                </Button>
-                <Button onClick={() => setFloppyError(false)} style={{ width: 80 }}>
-                  Cancel
-                </Button>
-              </div>
-            </WindowContent>
-          </Window>
-        </div>
-      )}
+
       {ghost && (
         <DragGhost style={{ left: ghost.x - 20, top: ghost.y - 24 }}>
           <Icon name={ghost.item.icon ?? 'doc'} size={32} />

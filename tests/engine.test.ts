@@ -1236,3 +1236,34 @@ describe('player bookmarks', () => {
     expect(del.result.view.bookmarks ?? []).toHaveLength(0);
   });
 });
+
+describe('the locked floppy (a.page)', () => {
+  it('is listed but withholds contents until the passphrase decrypts it', () => {
+    let s = loggedInState();
+    // The floppy has a disk: decoy + the encrypted page are both listed.
+    const floppy = run(s, { type: 'listChildren', parentId: 'drive.a' }).result;
+    if (floppy.type !== 'children') throw new Error('bad result');
+    const ids = floppy.items.map((i) => i.id);
+    expect(ids).toContain('a.decoy');
+    expect(ids).toContain('a.page');
+
+    // Opening the encrypted file is refused (locked), no body leaks.
+    const before = run(s, { type: 'open', itemId: 'a.page' });
+    expect(before.result).toMatchObject({ type: 'open', ok: false, error: 'locked' });
+    expect(JSON.stringify(before.result)).not.toContain('Oxytera');
+    expect(JSON.stringify(before.result)).not.toContain('junebug');
+
+    // Wrong passphrase fails; the right one (junebug) unlocks it.
+    expect(run(s, { type: 'attemptPassword', targetId: 'a.page', password: 'sunflower' }).result)
+      .toMatchObject({ type: 'password', ok: false });
+    const ok = run(s, { type: 'attemptPassword', targetId: 'a.page', password: 'junebug' });
+    s = ok.state;
+    expect(ok.result).toMatchObject({ type: 'password', ok: true });
+
+    // Now it opens, reveals the Purdont material, and grants the discovery.
+    const after = run(s, { type: 'open', itemId: 'a.page' });
+    if (after.result.type !== 'open' || !after.result.item) throw new Error('bad result');
+    expect(after.result.item.body?.text).toContain('PURDONT');
+    expect(after.state.discoveries).toContain('the-source');
+  });
+});
