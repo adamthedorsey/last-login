@@ -24,7 +24,7 @@ flowchart TD
   d_the_source(["The source"]):::discovery
   d_who_shaped(["A familiar shape"]):::discovery
   d_the_house(["The house<br/><b>END OF SEASON</b>"]):::finale
-  i_a_page["PDNT-RAW.PGP<br/><i>file</i>"]:::locked
+  i_a_page["PRSC-RAW.PGP<br/><i>file</i>"]:::locked
   i_a_page ==>|grants| d_the_source
   i_file_ledger_copy["wv history extra notes.txt<br/><i>file</i>"]:::item
   i_file_ledger_copy ==>|grants| d_the_pipeline

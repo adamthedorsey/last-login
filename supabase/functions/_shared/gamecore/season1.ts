@@ -80,12 +80,12 @@ export const SEASON1: SeasonContent = {
   // home, and online, hours after she was "last seen." The 1:52 AM MapFinder
   // entry points at a gated page — it simply won't load until earned.
   browserHistory: [
-    { url: 'www.purdontpharma.com/board', title: 'Purdont — Board of Directors', at: '10/11 2:19 AM' },
-    { url: 'www.purdontpharma.com/products', title: 'Purdont — Our Medicines', at: '10/11 2:08 AM' },
+    { url: 'www.prescottpharma.com/board', title: 'Prescott Pharma — Board of Directors', at: '10/11 2:19 AM' },
+    { url: 'www.prescottpharma.com/products', title: 'Prescott Pharma — Our Medicines', at: '10/11 2:08 AM' },
     { url: 'www.mapfinder.net/maps/route9-bend', title: 'MapFinder — Route 9 River Bend', at: '10/11 1:52 AM' },
     { url: 'www.citypages.net/~sadiedraws77', title: 'sadie draws (sometimes)', at: '10/10 11:34 PM' },
     { url: 'www.solarflareband.net', title: 'SOLAR FLARE — official site', at: '10/10 11:21 PM' },
-    { url: 'www.purdontpharma.com', title: 'Purdont Pharmaceutical', at: '10/10 10:58 PM' },
+    { url: 'www.prescottpharma.com', title: 'Prescott Pharmaceuticals', at: '10/10 10:58 PM' },
     { url: 'www.searchhound.net', title: 'SearchHound — Fetch the Web!', at: '10/10 10:41 PM' },
     { url: 'www.humbletimes.com', title: 'The Humble Times — Online Edition', at: '10/9 8:12 PM' },
     { url: 'www.valuemed.com', title: 'Value-Med Discount Pharmacy', at: '10/9 7:58 PM' },
@@ -184,7 +184,7 @@ export const SEASON1: SeasonContent = {
       id: 'the-source',
       title: 'The source',
       description:
-        'The floppy wasn’t homework. Behind her own secret word sat Purdont’s own paper — a field bulletin naming Dr. Sparks a top prescriber to be rewarded, and a memo telling reps not to say the word "addiction" out loud. The pipeline doesn’t start at the pharmacy. It starts at the company that makes the pills, and Casey had it in their own words.',
+        'The floppy wasn’t homework. Behind her own secret word sat Prescott’s own paper — a field bulletin naming Dr. Sparks a top prescriber to be rewarded, and a memo telling reps not to say the word "addiction" out loud. The pipeline doesn’t start at the pharmacy. It starts at the company that makes the pills, and Casey had it in their own words.',
     },
     {
       id: 'who-shaped',
@@ -754,7 +754,7 @@ kid draws one. under it, small, in her hand: "for S. — jbug 4ever"]`,
       },
     },
     {
-      // "The page." Purdont's own material — the raw dump nightshift walked
+      // "The page." Prescott's own material — the raw dump nightshift walked
       // her through pulling from their web infrastructure (story/canon.md).
       // Locked with the one word that was ever really hers. junebug is her
       // secret with Sadie (web.sadie-page, the childhood sketch), the word
@@ -763,19 +763,19 @@ kid draws one. under it, small, in her hand: "for S. — jbug 4ever"]`,
       // it is the gut-punch: her safe word is what she used as a vault.
       id: 'a.page',
       kind: 'document',
-      name: 'PDNT-RAW.PGP',
+      name: 'PRSC-RAW.PGP',
       icon: 'doc',
       parentId: 'drive.a',
       password: 'junebug',
       passwordHint: 'A word only two people on Earth were ever supposed to know.',
       onOpen: { discover: ['the-source'] },
-      meta: { createdAt: '1997-10-09', modifiedAt: '1997-10-09', sizeKb: 214, path: 'A:\\PDNT-RAW.PGP', mono: true },
-      searchText: 'purdont pgp encrypted the page oxytera internal nightshift stolen source',
+      meta: { createdAt: '1997-10-09', modifiedAt: '1997-10-09', sizeKb: 214, path: 'A:\\PRSC-RAW.PGP', mono: true },
+      searchText: 'prescott pgp encrypted the page oxytera internal nightshift stolen source',
       body: {
         text: `-----BEGIN PGP MESSAGE-----
-[decrypted 10/09/97 — contents of PDNT-RAW]
+[decrypted 10/09/97 — contents of PRSC-RAW]
 
->> PURDONT PHARMACEUTICAL — FIELD SALES BULLETIN
+>> PRESCOTT PHARMACEUTICALS — FIELD SALES BULLETIN
 >> NOT FOR DISTRIBUTION OUTSIDE THE SALES ORGANIZATION
 >> Region 4 (Appalachia) — Q3 1996
 
@@ -1164,7 +1164,7 @@ voice: "again. i wasn't ready."`,
       meta: { path: 'D:\\drivers', at: { x: 736, y: 452 } },
     },
     {
-      // One downloaded Purdont fragment — deliberately mundane corporate
+      // One downloaded Prescott fragment — deliberately mundane corporate
       // paper (canon: the truth emerges from many ordinary documents,
       // never one absurd confession).
       id: 'cd.q3',
@@ -1174,7 +1174,7 @@ voice: "again. i wasn't ready."`,
       parentId: 'cd.drivers',
       meta: { createdAt: '1997-09-14', sizeKb: 4, mono: true },
       body: {
-        text: `PURDONT PHARMACEUTICAL - FIELD SALES
+        text: `PRESCOTT PHARMACEUTICALS - FIELD SALES
 Q3 1997 TERRITORY SUMMARY (EXCERPT)      INTERNAL USE ONLY
 
 RANK  TERRITORY            RX GROWTH   NOTE
@@ -1202,7 +1202,7 @@ ACTION ITEMS (REGIONAL)
       parentId: 'cd.drivers',
       meta: { createdAt: '1997-09-21', sizeKb: 3 },
       body: {
-        text: `purdont. the oxytera people.
+        text: `prescott pharma. the oxytera people.
 
 what i can prove from the library alone:
 - humble co filled more oxytera scrips last year than
@@ -2939,62 +2939,62 @@ then open CASE FILES.
     },
 
     // =====================================================================
-    // PURDONT PHARMACEUTICAL — the corporate site, RESTORED (canon: Casey
+    // PRESCOTT PHARMACEUTICALS — the corporate site, RESTORED (canon: Casey
     // defaced the homepage; by Oct 14 the company had it back up — the
     // footer line is the one quiet trace). Mundane on the surface; the
     // history menu shows Casey circling it.
     // =====================================================================
     {
-      id: 'web.purdont',
+      id: 'web.prescott',
       kind: 'webpage',
-      name: 'Purdont Pharmaceutical',
-      meta: { url: 'www.purdontpharma.com', siteTitle: 'Purdont Pharmaceutical — Committed to a Pain-Free Tomorrow' },
-      searchText: 'purdont pharmaceutical pharma oxytera pain medicine company',
+      name: 'Prescott Pharmaceuticals',
+      meta: { url: 'www.prescottpharma.com', siteTitle: 'Prescott Pharmaceuticals — Committed to a Pain-Free Tomorrow' },
+      searchText: 'prescott pharmaceutical pharma oxytera pain medicine company',
       body: {
         style: { bg: '#ffffff', fg: '#10213a', link: '#123c8a', font: 'serif' },
         blocks: [
-          { t: 'h', text: 'PURDONT PHARMACEUTICAL' },
+          { t: 'h', text: 'PRESCOTT PHARMACEUTICALS' },
           { t: 'small', text: 'Committed to a Pain-Free Tomorrow \u2122' },
           { t: 'hr' },
           { t: 'img', caption: '[ photograph: a sunlit laboratory, a researcher holding a beaker toward the window ]' },
-          { t: 'p', text: 'For nearly half a century, Purdont Pharmaceutical has stood at the forefront of therapeutic innovation. From our family of trusted medicines to our pioneering work in the treatment of persistent pain, one belief guides us: no one should have to live with suffering that medicine can relieve.' },
+          { t: 'p', text: 'For nearly half a century, Prescott Pharmaceuticals has stood at the forefront of therapeutic innovation. From our family of trusted medicines to our pioneering work in the treatment of persistent pain, one belief guides us: no one should have to live with suffering that medicine can relieve.' },
           { t: 'sub', text: 'LEARN MORE' },
-          { t: 'link', text: 'About Purdont', url: 'www.purdontpharma.com/about' },
-          { t: 'link', text: 'Our Medicines', url: 'www.purdontpharma.com/products' },
-          { t: 'link', text: 'Board of Directors', url: 'www.purdontpharma.com/board' },
-          { t: 'link', text: 'Careers at Purdont', url: 'www.purdontpharma.com/careers' },
+          { t: 'link', text: 'About Prescott', url: 'www.prescottpharma.com/about' },
+          { t: 'link', text: 'Our Medicines', url: 'www.prescottpharma.com/products' },
+          { t: 'link', text: 'Board of Directors', url: 'www.prescottpharma.com/board' },
+          { t: 'link', text: 'Careers at Prescott', url: 'www.prescottpharma.com/careers' },
           { t: 'hr' },
           { t: 'small', text: 'Site restored October 14, 1997. We thank our visitors for their patience during recent maintenance.' },
-          { t: 'small', text: '\u00a9 1997 Purdont Pharmaceutical Company, Stamford, Connecticut. All rights reserved.' },
+          { t: 'small', text: '\u00a9 1997 Prescott Pharmaceuticals, Inc., Stamford, Connecticut. All rights reserved.' },
         ],
       },
     },
     {
-      id: 'web.purdont-about',
+      id: 'web.prescott-about',
       kind: 'webpage',
-      name: 'Purdont: About',
-      meta: { url: 'www.purdontpharma.com/about', siteTitle: 'Purdont Pharmaceutical — About Our Company' },
-      searchText: 'purdont about history stamford founded 1952 mission values',
+      name: 'Prescott: About',
+      meta: { url: 'www.prescottpharma.com/about', siteTitle: 'Prescott Pharmaceuticals — About Our Company' },
+      searchText: 'prescott about history stamford founded 1952 mission values',
       body: {
         style: { bg: '#ffffff', fg: '#10213a', link: '#123c8a', font: 'serif' },
         blocks: [
-          { t: 'h', text: 'About Purdont' },
+          { t: 'h', text: 'About Prescott' },
           { t: 'hr' },
-          { t: 'p', text: 'Founded in 1952 by Dr. Raymond E. Purdont, Purdont Pharmaceutical began as a three-person laboratory producing antiseptics and earwax remedies. Today, Purdont medicines reach patients in fourteen countries.' },
-          { t: 'p', text: 'Our modern era began with a simple question: why is pain the last symptom medicine takes seriously? Purdont has invested more than any company in our field in the science of pain relief \u2014 and in helping physicians recognize pain as the fifth vital sign.' },
+          { t: 'p', text: 'Founded in 1952 by Dr. Raymond E. Prescott, Prescott Pharmaceuticals began as a three-person laboratory producing antiseptics and earwax remedies. Today, Prescott medicines reach patients in fourteen countries.' },
+          { t: 'p', text: 'Our modern era began with a simple question: why is pain the last symptom medicine takes seriously? Prescott has invested more than any company in our field in the science of pain relief \u2014 and in helping physicians recognize pain as the fifth vital sign.' },
           { t: 'sub', text: 'OUR VALUES' },
           { t: 'list', items: ['Patients first, always', 'Science with compassion', 'Partnership with the physician community', 'Integrity in everything we do'] },
           { t: 'hr' },
-          { t: 'link', text: 'Home', url: 'www.purdontpharma.com' },
+          { t: 'link', text: 'Home', url: 'www.prescottpharma.com' },
         ],
       },
     },
     {
-      id: 'web.purdont-products',
+      id: 'web.prescott-products',
       kind: 'webpage',
-      name: 'Purdont: Our Medicines',
-      meta: { url: 'www.purdontpharma.com/products', siteTitle: 'Purdont Pharmaceutical — Our Medicines' },
-      searchText: 'purdont products oxytera cr controlled release pain cloravex somnase medicines',
+      name: 'Prescott: Our Medicines',
+      meta: { url: 'www.prescottpharma.com/products', siteTitle: 'Prescott Pharmaceuticals — Our Medicines' },
+      searchText: 'prescott products oxytera cr controlled release pain cloravex somnase medicines',
       body: {
         style: { bg: '#ffffff', fg: '#10213a', link: '#123c8a', font: 'serif' },
         blocks: [
@@ -3003,32 +3003,32 @@ then open CASE FILES.
           { t: 'sub', text: 'OXYTERA CR\u00ae \u2014 extended relief for persistent pain' },
           { t: 'p', text: 'Our flagship therapy. Oxytera CR\u2019s patented controlled-release system delivers smooth, around-the-clock relief with convenient twice-daily dosing \u2014 freeing patients from the clock-watching of short-acting medications. Increasingly, physicians are finding Oxytera CR appropriate not only for severe pain but for the moderate, persistent pain that keeps ordinary people from ordinary life.' },
           { t: 'small', text: 'Delayed absorption, as provided by Oxytera CR tablets, is believed to reduce the appeal of the medication to those seeking effects other than relief. When taken as directed, the risk of dependence is reported to be very small.' },
-          { t: 'sub', text: 'ALSO FROM PURDONT' },
+          { t: 'sub', text: 'ALSO FROM PRESCOTT' },
           { t: 'list', items: [
             'CLORAVEX\u00ae \u2014 non-drowsy seasonal allergy relief (now in cherry)',
             'SOMNASE\u00ae PM \u2014 gentle, restful sleep without morning fog',
             'VERAPAX\u00ae \u2014 antiseptic first-aid line, trusted since 1954',
           ] },
           { t: 'hr' },
-          { t: 'small', text: 'Ask your doctor whether a Purdont medicine is right for you. Prescribing information available to physicians on request.' },
-          { t: 'link', text: 'Home', url: 'www.purdontpharma.com' },
+          { t: 'small', text: 'Ask your doctor whether a Prescott medicine is right for you. Prescribing information available to physicians on request.' },
+          { t: 'link', text: 'Home', url: 'www.prescottpharma.com' },
         ],
       },
     },
     {
-      id: 'web.purdont-board',
+      id: 'web.prescott-board',
       kind: 'webpage',
-      name: 'Purdont: Board of Directors',
-      meta: { url: 'www.purdontpharma.com/board', siteTitle: 'Purdont Pharmaceutical — Board of Directors' },
-      searchText: 'purdont board directors leadership chairman executives',
+      name: 'Prescott: Board of Directors',
+      meta: { url: 'www.prescottpharma.com/board', siteTitle: 'Prescott Pharmaceuticals — Board of Directors' },
+      searchText: 'prescott board directors leadership chairman executives',
       body: {
         style: { bg: '#ffffff', fg: '#10213a', link: '#123c8a', font: 'serif' },
         blocks: [
           { t: 'h', text: 'Board of Directors' },
           { t: 'hr' },
           { t: 'list', items: [
-            'RICHARD E. PURDONT II \u2014 Chairman. Son of our founder; with the company since 1961.',
-            'MARGUERITE PURDONT-HALE \u2014 Vice Chairman, Trustee of the Purdont Family Foundation.',
+            'RICHARD E. PRESCOTT II \u2014 Chairman. Son of our founder; with the company since 1961.',
+            'MARGUERITE PRESCOTT-HALE \u2014 Vice Chairman, Trustee of the Prescott Family Foundation.',
             'DR. ALAN F. KESSLER \u2014 President & Chief Executive Officer.',
             'DR. IRA S. BLOOM \u2014 Chief Medical Officer, Head of Pain Franchise.',
             'THEODORE V. GRANT \u2014 Chief Counsel.',
@@ -3037,22 +3037,22 @@ then open CASE FILES.
           ] },
           { t: 'p', text: 'The Board meets quarterly in Stamford. Shareholder inquiries may be directed to Investor Relations.' },
           { t: 'hr' },
-          { t: 'link', text: 'Home', url: 'www.purdontpharma.com' },
+          { t: 'link', text: 'Home', url: 'www.prescottpharma.com' },
         ],
       },
     },
     {
-      id: 'web.purdont-careers',
+      id: 'web.prescott-careers',
       kind: 'webpage',
-      name: 'Purdont: Careers',
-      meta: { url: 'www.purdontpharma.com/careers', siteTitle: 'Purdont Pharmaceutical — Careers' },
-      searchText: 'purdont careers jobs sales representative territory appalachia',
+      name: 'Prescott: Careers',
+      meta: { url: 'www.prescottpharma.com/careers', siteTitle: 'Prescott Pharmaceuticals — Careers' },
+      searchText: 'prescott careers jobs sales representative territory appalachia',
       body: {
         style: { bg: '#ffffff', fg: '#10213a', link: '#123c8a', font: 'serif' },
         blocks: [
-          { t: 'h', text: 'Careers at Purdont' },
+          { t: 'h', text: 'Careers at Prescott' },
           { t: 'hr' },
-          { t: 'p', text: 'Purdont people are believers. We hire men and women who wake up wanting to move medicine forward \u2014 and we compensate them like it.' },
+          { t: 'p', text: 'Prescott people are believers. We hire men and women who wake up wanting to move medicine forward \u2014 and we compensate them like it.' },
           { t: 'sub', text: 'CURRENT OPENINGS' },
           { t: 'list', items: [
             'TERRITORY SALES REPRESENTATIVES \u2014 multiple openings: West Virginia, eastern Kentucky, southwestern Virginia. Industry-leading incentive structure. No pharmaceutical experience required; we train winners.',
@@ -3060,8 +3060,8 @@ then open CASE FILES.
             'MAILROOM CLERK \u2014 Stamford HQ.',
           ] },
           { t: 'hr' },
-          { t: 'small', text: 'Purdont is an equal opportunity employer. Resumes to: Human Resources, Purdont Pharmaceutical, Stamford, CT.' },
-          { t: 'link', text: 'Home', url: 'www.purdontpharma.com' },
+          { t: 'small', text: 'Prescott is an equal opportunity employer. Resumes to: Human Resources, Prescott Pharmaceuticals, Stamford, CT.' },
+          { t: 'link', text: 'Home', url: 'www.prescottpharma.com' },
         ],
       },
     },

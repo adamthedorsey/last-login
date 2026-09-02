@@ -43,11 +43,11 @@ The central question of the game is:
 
 Casey's birth mother was **June Taylor**.
 
-June had been prescribed **Oxytera CR**, a controlled-release opioid manufactured by Purdont Pharmaceutical Company.
+June had been prescribed **Oxytera CR**, a controlled-release opioid manufactured by Prescott Pharmaceuticals, Inc.
 
 She became dependent on the medication and ultimately died from an overdose.
 
-Her death deeply affected Casey and is a major reason Casey becomes interested in Purdont.
+Her death deeply affected Casey and is a major reason Casey becomes interested in Prescott.
 
 This is not an abstract cause for Casey.
 
@@ -95,9 +95,9 @@ Casey sees something larger happening.
 
 ---
 
-## Purdont Pharmaceutical Company
+## Prescott Pharmaceuticals, Inc.
 
-**Purdont Pharmaceutical Company**, commonly called **Purdont Pharma**, is the fictional analogue for Purdue Pharma.
+**Prescott Pharmaceuticals, Inc.**, commonly called **Prescott Pharma**, is the fictional analogue for Purdue Pharma.
 
 Its major new product is:
 
@@ -107,19 +107,19 @@ Its major new product is:
 
 Oxytera is a powerful controlled-release opioid pain medication.
 
-Purdont publicly presents Oxytera as an important advancement in the treatment of persistent pain.
+Prescott publicly presents Oxytera as an important advancement in the treatment of persistent pain.
 
 The company is experiencing enormous commercial success.
 
 Prescriptions are growing extremely quickly.
 
-Purdont is aggressively expanding the market beyond severe or terminal pain and encouraging broader treatment of chronic pain.
+Prescott is aggressively expanding the market beyond severe or terminal pain and encouraging broader treatment of chronic pain.
 
 ---
 
-## What Purdont Knows
+## What Prescott Knows
 
-Purdont is not a cartoon organization secretly plotting to addict people.
+Prescott is not a cartoon organization secretly plotting to addict people.
 
 The internal reality is more believable and more disturbing.
 
@@ -145,7 +145,7 @@ At the same time:
 
 The important point is:
 
-> **Purdont possesses information suggesting a serious problem is developing and continues pushing aggressively anyway.**
+> **Prescott possesses information suggesting a serious problem is developing and continues pushing aggressively anyway.**
 
 There should not be one absurd document saying "we know we're killing people."
 
@@ -153,7 +153,7 @@ The truth emerges from many ordinary corporate documents viewed together.
 
 ---
 
-## Casey's Initial Attack on Purdont
+## Casey's Initial Attack on Prescott
 
 Casey is angry.
 
@@ -161,13 +161,13 @@ Her mother is dead.
 
 People around Humble are suffering.
 
-Purdont continues presenting itself publicly as a company helping people.
+Prescott continues presenting itself publicly as a company helping people.
 
-Casey decides to deface Purdont's public website.
+Casey decides to deface Prescott's public website.
 
 This begins primarily as teenage anger and protest, not a sophisticated investigation.
 
-She succeeds in altering or replacing content on Purdont's public homepage with a message criticizing the company and what Oxytera is doing to Humble.
+She succeeds in altering or replacing content on Prescott's public homepage with a message criticizing the company and what Oxytera is doing to Humble.
 
 The exact message is TBD.
 
@@ -175,13 +175,13 @@ The exact message is TBD.
 
 ## The Accidental Discovery
 
-While inside Purdont's poorly secured 1997 web infrastructure, Casey discovers something she was never supposed to see.
+While inside Prescott's poorly secured 1997 web infrastructure, Casey discovers something she was never supposed to see.
 
 The company's public web environment exposes a path into an internal employee/staging/intranet system.
 
 Casey follows it.
 
-She suddenly has access to portions of Purdont's internal network.
+She suddenly has access to portions of Prescott's internal network.
 
 What began as website vandalism becomes something much more serious.
 
@@ -189,7 +189,7 @@ What began as website vandalism becomes something much more serious.
 
 ## What Casey Finds
 
-Casey begins discovering and downloading internal Purdont material.
+Casey begins discovering and downloading internal Prescott material.
 
 Possible canonical categories include:
 
@@ -217,7 +217,7 @@ The player eventually understands the significance by connecting them.
 
 At some point Casey discovers that Humble is not merely suffering coincidentally.
 
-Purdont has specifically identified the Appalachian region as an important growth market.
+Prescott has specifically identified the Appalachian region as an important growth market.
 
 Internal material shows unusual attention being paid to communities like Humble.
 
@@ -238,7 +238,7 @@ Do not invent those answers yet.
 
 ## Why Casey Becomes Dangerous
 
-Purdont quickly discovers that its public website has been compromised.
+Prescott quickly discovers that its public website has been compromised.
 
 Initially, the company believes this may simply be vandalism.
 
@@ -248,7 +248,7 @@ Internal directories were accessed.
 
 Files may have been downloaded.
 
-Purdont does not necessarily know immediately that Casey Taylor is responsible.
+Prescott does not necessarily know immediately that Casey Taylor is responsible.
 
 Meanwhile, Casey realizes she has found something much larger than she expected.
 
@@ -276,7 +276,7 @@ Friends, family, school, photographs, IM conversations, websites, notes, interes
 
 Fragments involving:
 
-- Purdont
+- Prescott
 - Oxytera
 - her mother's death
 - downloaded documents
@@ -287,7 +287,7 @@ Fragments involving:
 - unusual files
 - conversations about what she discovered
 
-The Purdont investigation should initially appear to be only one small part of Casey's life.
+The Prescott investigation should initially appear to be only one small part of Casey's life.
 
 The player should gradually realize its importance.
 
@@ -297,11 +297,11 @@ The player should gradually realize its importance.
 
 The player should NOT begin the game knowing:
 
-> Casey hacked Purdont and uncovered evidence of corporate misconduct.
+> Casey hacked Prescott and uncovered evidence of corporate misconduct.
 
 That is a major discovery.
 
-Early Purdont references should seem like background material connected to Casey's mother's death and anger toward the company.
+Early Prescott references should seem like background material connected to Casey's mother's death and anger toward the company.
 
 The progression should feel more like:
 
@@ -321,7 +321,7 @@ then:
 
 then:
 
-> Purdont knew someone had accessed them.
+> Prescott knew someone had accessed them.
 
 then:
 
@@ -360,7 +360,7 @@ He should not know the solution to Casey's disappearance.
 
 Do not prematurely establish who caused Casey's disappearance.
 
-Purdont's conduct, Casey's intrusion, and the missing-person case are connected, but the exact chain of events remains intentionally unresolved.
+Prescott's conduct, Casey's intrusion, and the missing-person case are connected, but the exact chain of events remains intentionally unresolved.
 
 There should be multiple plausible people or groups who may know more than they admit.
 
@@ -374,17 +374,17 @@ The actual answer should be more human, complicated, and believable.
 
 ## Core Theme
 
-The emotional center of the Purdont storyline is:
+The emotional center of the Prescott storyline is:
 
 > **A sixteen-year-old girl recognized what was happening to her family and her town before the adults around her did. Nobody listened. Then she found proof that someone knew more than they were saying.**
 
-That is the canonical foundation for the Purdont/Oxytera storyline in **Last Login: 1997**.
+That is the canonical foundation for the Prescott/Oxytera storyline in **Last Login: 1997**.
 
 ---
 
 ## Casey's Offline Backup
 
-Once Casey realizes the Purdont material may be important, she becomes increasingly paranoid about keeping only one copy.
+Once Casey realizes the Prescott material may be important, she becomes increasingly paranoid about keeping only one copy.
 
 She begins backing downloaded documents up to **CD-Rs**.
 
@@ -443,7 +443,7 @@ Casey does not know who these people really are.
 
 ## The Hacker / Future Ally — nightshift
 
-**nightshift is this person.** The ominous presence the existing Season 1 chain builds up — the watcher, the remote access, the deleted files — is the IRC friend Casey met during the Purdont investigation.
+**nightshift is this person.** The ominous presence the existing Season 1 chain builds up — the watcher, the remote access, the deleted files — is the IRC friend Casey met during the Prescott investigation.
 
 To the player: ominous for most of the season. The reveal that nightshift was frightened FOR her, not hunting her, is the recontextualization gut-punch — it must re-read earlier threatening behavior, not merely excuse it.
 
@@ -458,7 +458,7 @@ Their handle, technical ability, secrecy, and behavior make them an obvious cand
 They may:
 
 - warn Casey that she has gotten in over her head
-- tell her Purdont may have logs identifying her
+- tell her Prescott may have logs identifying her
 - help her understand what she downloaded
 - encourage her to make offline backups
 - disappear from IRC without explanation
@@ -477,7 +477,7 @@ The player should spend meaningful time wondering whether the mysterious hacker 
 - helping
 - watching
 - manipulating the investigation
-- connected to Purdont
+- connected to Prescott
 - responsible for Casey's disappearance
 
 The eventual reveal that the apparent intruder is an ally should recontextualize earlier threatening behavior rather than simply excuse it.
@@ -491,7 +491,7 @@ The eventual reveal that the apparent intruder is an ally should recontextualize
    Leslie content stands as-is — Casey calls her Mom.
 2. **nightshift is the hacker/future ally** (see that section). The
    existing chain's ominous framing is the intended misdirection;
-   future content work interleaves the Purdont arc and keeps the
+   future content work interleaves the Prescott arc and keeps the
    hostile reading unconfirmed until the reveal.
 3. **junebug is canon**: June is the mother; junebug was her father's
    nickname for Casey; Casey made it her screensaver word and her
@@ -528,7 +528,7 @@ Current state / open threads (do NOT hard-canonize yet):
   RECOVER it from elsewhere on the machine is unresolved.
 - Past a correct login is a holding screen ("no channel is configured")
   — real content is future authoring: this is presumably where
-  downloaded Purdont material was staged, or where nightshift reached
+  downloaded Prescott material was staged, or where nightshift reached
   in. Tie-in to the remote-access set-piece and the CD-R backups is
   intended but unwritten.
 - How the player LEARNS the knock is unresolved (an IM hint from
