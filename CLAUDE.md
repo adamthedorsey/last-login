@@ -338,8 +338,8 @@ If not, don't build it that way.
   same as any standalone target). Opening it returns `error:'locked'` (no
   body, no hint until earned) and Notepad shows a passphrase prompt →
   `attemptPassword` → re-open reveals the decrypted body and fires its
-  `onOpen`. The floppy's `A:\PDNT-RAW.PGP` is the first: "the page"
-  nightshift wanted, the stolen Purdont material, locked with `junebug`
+  `onOpen`. The floppy's `A:\PRSC-RAW.PGP` is the first: "the page"
+  nightshift wanted, the stolen Prescott material, locked with `junebug`
   (Casey's own word — the screen saver, Sadie's childhood sketch, and the
   word nightshift stole all point at it). NEVER ship a passphrase or a
   decrypted body client-side; the engine holds both.

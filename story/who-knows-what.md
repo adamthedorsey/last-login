@@ -151,16 +151,16 @@ the matrix first and the graph second.
   live in the items.
 
 
-## The Purdont thread -> see story/canon.md
+## The Prescott thread -> see story/canon.md
 
 The authoritative story bible for the pharma arc now lives in
-**story/canon.md** (Purdont Pharmaceutical / Oxytera CR, the defacement
+**story/canon.md** (Prescott Pharmaceuticals / Oxytera CR, the defacement
 -> accidental intrusion -> downloads -> disguised CD-R backups -> IRC ->
 the hacker/future-ally). Superseded improvisations from the first disc
 draft: the "porchlight" circle with its creed and handle roster, the
 Averline/Duracet naming, and the friend-burned disc (the CD-R is
 Casey's own). The Summer_97 (D:) disc now carries: six traded mp3s, a
-mundane internal Purdont territory-summary fragment, her
+mundane internal Prescott territory-summary fragment, her
 oxytera notes.txt, and to do.txt. The former open conflicts are now
 resolved canon (see canon.md): Leslie is the stepmother and June, the
 birth mother, died of an Oxytera overdose; nightshift IS the

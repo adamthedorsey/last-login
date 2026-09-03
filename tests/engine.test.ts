@@ -1260,10 +1260,10 @@ describe('the locked floppy (a.page)', () => {
     s = ok.state;
     expect(ok.result).toMatchObject({ type: 'password', ok: true });
 
-    // Now it opens, reveals the Purdont material, and grants the discovery.
+    // Now it opens, reveals the Prescott material, and grants the discovery.
     const after = run(s, { type: 'open', itemId: 'a.page' });
     if (after.result.type !== 'open' || !after.result.item) throw new Error('bad result');
-    expect(after.result.item.body?.text).toContain('PURDONT');
+    expect(after.result.item.body?.text).toContain('PRESCOTT');
     expect(after.state.discoveries).toContain('the-source');
   });
 });
