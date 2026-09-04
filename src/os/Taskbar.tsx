@@ -259,12 +259,12 @@ export function Taskbar({
   // story: while the line is up it pops in for a few seconds and vanishes,
   // more restless when a remote session is pending, and gone the moment
   // you point at it.
-  const [ghost, setGhost] = useState(false);
+  const [glyph, setGlyph] = useState(false);
   const online = view?.online === true;
   const restless = view?.remotePending === true;
   useEffect(() => {
     if (!online) {
-      setGhost(false);
+      setGlyph(false);
       return;
     }
     let alive = true;
@@ -274,10 +274,10 @@ export function Taskbar({
       const idleMs = ((restless ? 12 : 40) + Math.random() * (restless ? 25 : 75)) * 1000;
       t = window.setTimeout(() => {
         if (!alive) return;
-        setGhost(true);
+        setGlyph(true);
         t = window.setTimeout(() => {
           if (!alive) return;
-          setGhost(false);
+          setGlyph(false);
           loop();
         }, 3500 + Math.random() * 5500);
       }, idleMs);
@@ -286,14 +286,14 @@ export function Taskbar({
     return () => {
       alive = false;
       window.clearTimeout(t);
-      setGhost(false);
+      setGlyph(false);
     };
   }, [online, restless]);
   useEffect(() => {
     if (!import.meta.env.DEV) return;
-    const onToggle = () => setGhost((v) => !v);
-    window.addEventListener('lastlogin:ghost', onToggle);
-    return () => window.removeEventListener('lastlogin:ghost', onToggle);
+    const onToggle = () => setGlyph((v) => !v);
+    window.addEventListener('lastlogin:glyph', onToggle);
+    return () => window.removeEventListener('lastlogin:glyph', onToggle);
   }, []);
   useEffect(() => {
     if (netActivity === 0) return;
@@ -797,11 +797,11 @@ export function Taskbar({
                 )}
               </TrayButton>
             )}
-            {ghost && (
+            {glyph && (
               <TrayButton
                 aria-hidden
                 style={{ cursor: 'default' }}
-                onPointerEnter={() => setGhost(false)}
+                onPointerEnter={() => setGlyph(false)}
               >
                 <svg width={16} height={16} viewBox="0 0 16 16" shapeRendering="crispEdges">
                   <rect x={0} y={2} width={8} height={7} fill="#c0c0c0" />

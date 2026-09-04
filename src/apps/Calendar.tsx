@@ -118,11 +118,11 @@ export function Calendar() {
   return (
     <>
       <Toolbar style={{ gap: 6, flexShrink: 0, alignItems: 'center' }}>
-        <Button onClick={() => shift(-1)}>◀</Button>
+        <Button onClick={() => shift(-1)}>◄</Button>
         <span style={{ flex: 1, textAlign: 'center', fontWeight: 'bold' }}>
           {MONTHS[month]} {year}
         </span>
-        <Button onClick={() => shift(1)}>▶</Button>
+        <Button onClick={() => shift(1)}>►</Button>
       </Toolbar>
       <MonthGrid style={{ marginTop: 4 }}>
         {DOW.map((d) => (

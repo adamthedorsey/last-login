@@ -374,7 +374,7 @@ export function SoundRecorder({ windowId, props }: AppWindowProps) {
           }}
           style={TRANSPORT}
         >
-          ◀◀
+          ◄◄
         </Button>
         <Button
           disabled={!length}
@@ -384,10 +384,10 @@ export function SoundRecorder({ windowId, props }: AppWindowProps) {
           }}
           style={TRANSPORT}
         >
-          ▶▶
+          ►►
         </Button>
         <Button disabled={mode === 'recording' || !src} onClick={play} style={TRANSPORT}>
-          ▶
+          ►
         </Button>
         <Button disabled={mode === 'idle'} onClick={stop} style={TRANSPORT}>
           <StopSquare disabled={mode === 'idle'} />

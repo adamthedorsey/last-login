@@ -53,6 +53,10 @@ export type PageBlock =
   | { t: 'list'; items: string[] }
   | { t: 'hr' }
   | { t: 'img'; caption: string; src?: string }
+  /** Preformatted plaintext: whitespace preserved, Courier. The <PRE>
+   * tag, which is how a 1997 agency site dumped a document onto the web
+   * without laying it out. Use for column-aligned material only. */
+  | { t: 'pre'; text: string }
   | { t: 'counter'; value: number }
   | { t: 'marquee'; text: string }
   /** The site's search form, rendered by the in-game browser at this spot. */

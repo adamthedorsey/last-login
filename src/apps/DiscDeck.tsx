@@ -77,12 +77,12 @@ export function DiscDeck() {
     <>
       <Led>
         <span>
-          {playing ? '▶' : '⏸'} TRACK {String(track + 1).padStart(2, '0')}
+          {playing ? '►' : '||'} TRACK {String(track + 1).padStart(2, '0')}
         </span>
         <span>{mmss(pos)}</span>
       </Led>
       <div style={{ display: 'flex', gap: 4, marginBottom: 6, flexShrink: 0 }}>
-        <Button onClick={() => go(track - 1)}>⏮</Button>
+        <Button onClick={() => go(track - 1)}>|◄◄</Button>
         <Button active={playing} onClick={() => setPlaying(true)} style={{ width: 56 }}>
           Play
         </Button>
@@ -95,7 +95,7 @@ export function DiscDeck() {
         >
           Stop
         </Button>
-        <Button onClick={() => go(track + 1)}>⏭</Button>
+        <Button onClick={() => go(track + 1)}>►►|</Button>
       </div>
       <Frame variant="well" style={{ padding: '3px 8px', fontSize: 12, marginBottom: 4, flexShrink: 0 }}>
         Disc: SOLAR FLARE — <i>Static Heart</i> (Meridian Records, 1997)

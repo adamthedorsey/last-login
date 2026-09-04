@@ -373,7 +373,7 @@ describe('live conversations', () => {
   it('walks the whole season on PATH B: chat, file, web, email alternates', () => {
     let s = loggedInState();
     s = saySadie(s, 'intro').state; // -> the-meeting
-    s = run(s, { type: 'open', itemId: 'file.gb-log-oct8' }).state; // -> stolen-intimacy
+    s = run(s, { type: 'open', itemId: 'file.ns-log-oct8' }).state; // -> stolen-intimacy
     s = run(s, { type: 'visit', url: 'www.humbletimes.com/timeline' }).state; // -> chads-window
     s = saySadie(s, 'frank').state; // -> the-clean-truck
     s = run(s, { type: 'open', itemId: 'email.sam.plain' }).state; // -> the-pipeline
@@ -779,7 +779,7 @@ describe('remote access', () => {
   it('does not trigger for a player who lacks the discovery, however long they idle', () => {
     const s = loggedInState();
     const { state } = run(s, { type: 'checkMail' }, NOW + 3_600_000);
-    expect(state.firedEvents ?? []).not.toContain('remote.ghost-checkin');
+    expect(state.firedEvents ?? []).not.toContain('remote.nightshift-checkin');
   });
 });
 

@@ -17,7 +17,7 @@ const FORBIDDEN = [
   'junebug', // the code word (served via StateView, never client code)
   'stolen-intimacy', // discovery id
   'the-house', // final discovery id
-  'bl_log_ghstbrdg', // recovered log filename
+  'bl_log_ntshft', // recovered log filename
   'Ask him about my mail', // Rebecca's reveal line
   'wv history extra notes', // hidden ledger filename
   'SEASON1', // content export name
@@ -27,7 +27,7 @@ const FORBIDDEN = [
   'Simple has an alibi', // Register timeline page (path B, chads-window)
   'a friend of the family', // nightshift's epilogue line
   'sadie-talking', // conversation flag
-  'ghost-signoff', // epilogue flag
+  'nightshift-signoff', // epilogue flag
   'not shut down properly', // boot warning (server-sent story line)
   'Last session ended', // the 2:31 AM stamp that goes with it
   'moms flower', // casey's password hint (earned after failed attempts)

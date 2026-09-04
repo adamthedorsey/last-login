@@ -107,7 +107,7 @@ const SPLASH_LINES = [
   'Initializing network libraries...',
   'Checking system configuration...',
   'Loading plug-ins...',
-  'Starting Kava™...',
+  'Starting Coffee™...',
   'Welcome aboard.',
 ];
 

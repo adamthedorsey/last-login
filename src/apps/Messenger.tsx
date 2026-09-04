@@ -297,7 +297,7 @@ export function Messenger({ windowId, props }: AppWindowProps) {
           return (
             <div key={g}>
               <GroupHead onClick={() => toggle(g)}>
-                <Tri>{isCollapsed ? '▶' : '▼'}</Tri>
+                <Tri>{isCollapsed ? '►' : '▼'}</Tri>
                 {g} ({onCount}/{list.length})
               </GroupHead>
               {!isCollapsed &&

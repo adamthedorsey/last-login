@@ -206,7 +206,7 @@ export function MouseApplet() {
             fontSize: 20, cursor: 'default', userSelect: 'none',
           }}
         >
-          {popped ? '☺' : ''}
+          {popped ? '☺︎' : ''}
         </Frame>
       </div>
     </div>
@@ -217,7 +217,7 @@ export function MouseApplet() {
 
 const INSTALLED = [
   'Messenger 2.4',
-  'Kava Runtime 1.1',
+  'Coffee Runtime 1.1',
   'Minefield',
   'NetVoyager 3.0',
   'Prism Media Viewer',
