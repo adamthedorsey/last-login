@@ -160,7 +160,7 @@ export function Minefield() {
     setBoard(next);
   };
 
-  const face = status === 'lost' ? '☹' : status === 'won' ? '😎' : '☺';
+  const face = status === 'lost' ? '☹︎' : status === 'won' ? '☻︎' : '☺︎';
 
   return (
     <Frame variant="well" style={{ padding: 8, alignSelf: 'center' }}>
@@ -185,10 +185,10 @@ export function Minefield() {
             >
               {cell.revealed
                 ? cell.mine
-                  ? '✸'
+                  ? '●'
                   : cell.adj || ''
                 : cell.flagged
-                  ? '⚑'
+                  ? '⚑︎'
                   : ''}
             </Sq>
           )),

@@ -2,8 +2,8 @@
 
 > GENERATED — do not edit. Source of truth: `season1.ts`. Regenerate: `npm run graph`
 >
-> In-world date: 1997-10-18 · 201 items
-> (12 gated · 12 granting · ~177 mundane camouflage) ·
+> In-world date: 1997-10-18 · 203 items
+> (12 gated · 12 granting · ~179 mundane camouflage) ·
 > 9 discoveries
 
 ```mermaid
@@ -29,9 +29,9 @@ flowchart TD
   i_file_ledger_copy["wv history extra notes.txt<br/><i>file</i>"]:::item
   i_file_ledger_copy ==>|grants| d_the_pipeline
   d_the_clean_truck -->|requires| i_file_ledger_copy
-  i_file_gb_log_oct8["poem drafts 2.txt<br/><i>file</i>"]:::item
-  i_file_gb_log_oct8 ==>|grants| d_stolen_intimacy
-  d_the_meeting -->|requires| i_file_gb_log_oct8
+  i_file_ns_log_oct8["poem drafts 2.txt<br/><i>file</i>"]:::item
+  i_file_ns_log_oct8 ==>|grants| d_stolen_intimacy
+  d_the_meeting -->|requires| i_file_ns_log_oct8
   i_file_modem_log["modem.log<br/><i>file</i>"]:::item
   i_file_modem_log ==>|grants| d_the_house
   d_who_shaped -->|requires| i_file_modem_log
@@ -51,7 +51,7 @@ flowchart TD
   i_email_rebecca["to whoever is going through her things<br/><i>email</i>"]:::item
   i_email_rebecca ==>|grants| d_who_shaped
   d_the_pipeline -->|requires| i_email_rebecca
-  i_trash_bl_log["bl_log_ghstbrdg.txt<br/><i>recycle bin</i>"]:::item
+  i_trash_bl_log["bl_log_ntshft.txt<br/><i>recycle bin</i>"]:::item
   i_trash_bl_log ==>|grants| d_stolen_intimacy
   d_the_meeting -->|requires| i_trash_bl_log
   i_trash_diary["diary.doc<br/><i>recycle bin</i>"]:::item
@@ -72,9 +72,9 @@ flowchart TD
   c_sadiedraws77_vigil["ask sadiedraws77:<br/>“has anyone strange been around since she dis…”<br/><i>live chat</i>"]:::item
   c_sadiedraws77_vigil ==>|grants| d_who_shaped
   d_the_pipeline -->|AND| c_sadiedraws77_vigil
-  r_remote_ghost_checkin["remote.ghost-checkin<br/><i>remote access</i>"]:::item
-  r_remote_ghost_checkin ==>|grants| d_the_watcher
-  d_the_pipeline -->|requires| r_remote_ghost_checkin
+  r_remote_nightshift_checkin["remote.nightshift-checkin<br/><i>remote access</i>"]:::item
+  r_remote_nightshift_checkin ==>|grants| d_the_watcher
+  d_the_pipeline -->|requires| r_remote_nightshift_checkin
 ```
 
 Legend: rectangles are evidence items · stadiums are discoveries · slashed boxes

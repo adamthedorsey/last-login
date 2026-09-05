@@ -6,7 +6,10 @@ import { useWindowStore } from '../os/windowStore';
 // Klondike, draw-one. Click a card to pick it up, click where it should go.
 // Double-click sends a card to its foundation.
 
-const SUITS = ['♠', '♥', '♦', '♣'];
+// Card suits carry the text-presentation selector so no platform ever
+// substitutes a color emoji for them — these are CP437 glyphs, and the
+// red/black comes from CSS, the way a 1997 deck was drawn.
+const SUITS = ['♠︎', '♥︎', '♦︎', '♣︎'];
 const RANKS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 const isRed = (suit: number) => suit === 1 || suit === 2;
 

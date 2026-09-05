@@ -85,13 +85,13 @@ export function PhotoViewer({ windowId, props }: AppWindowProps) {
     <>
       <Toolbar style={{ gap: 6, flexShrink: 0 }}>
         <Button disabled={!canNav || index === 0} onClick={() => setIndex((i) => i - 1)}>
-          ◀ Prev
+          ◄ Prev
         </Button>
         <Button
           disabled={!canNav || index >= siblings.length - 1}
           onClick={() => setIndex((i) => i + 1)}
         >
-          Next ▶
+          Next ►
         </Button>
         <Button
           disabled={!photo}

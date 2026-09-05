@@ -125,7 +125,13 @@ const ZOOM_TICK_MS = 30;
 // once — module-cached so React StrictMode's double-mount can't lose it — to
 // start pulled all the way into the dead glass, then step back out to rest.
 let pendingZoomOut: boolean | null = null;
+// Set once the reverse zoom has actually finished. Without it, ANY remount of
+// the menu (StrictMode's double-mount in dev, or a parent re-render) reads the
+// still-true module cache and slams the photo back to 6.4x to play the whole
+// move again — which is what "the zoom out is broken" looked like.
+let zoomOutPlayed = false;
 function takeZoomOut(): boolean {
+  if (zoomOutPlayed) return false;
   if (pendingZoomOut === null) {
     try {
       pendingZoomOut = sessionStorage.getItem('lastlogin.zoomout') === '1';
@@ -149,6 +155,16 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
   );
   // Blocks power-on while the reverse zoom is still settling.
   const fired = useRef(takeZoomOut());
+  // The reverse zoom must not start until the photo is on screen. It is the
+  // first thing painted after a reload, so on mount it is typically still
+  // decoding: the old code stepped all nine frames into an unpainted <img>
+  // and the move was simply never seen. Cached images can be complete before
+  // React attaches onLoad, so the ref check covers that case too.
+  const photoRef = useRef<HTMLImageElement | null>(null);
+  const [photoReady, setPhotoReady] = useState(false);
+  useEffect(() => {
+    if (photoRef.current?.complete) setPhotoReady(true);
+  }, []);
 
   useEffect(() => {
     const onFs = () => setIsFull(!!document.fullscreenElement);
@@ -185,13 +201,15 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
   useEffect(() => {
     if (stage !== 'zoomout') return;
     if (zoomIdx < 0) {
+      zoomOutPlayed = true; // a later remount must not replay it
       setStage('off');
       fired.current = false; // the menu is live again
       return;
     }
+    if (!photoReady) return; // hold inside the glass until there is something to see
     const t = window.setTimeout(() => setZoomIdx((i) => i - 1), ZOOM_TICK_MS);
     return () => window.clearTimeout(t);
-  }, [stage, zoomIdx]);
+  }, [stage, zoomIdx, photoReady]);
 
   // A beat of black, then the POST takes over.
   useEffect(() => {
@@ -237,9 +255,11 @@ export function MainMenu({ onPower }: { onPower: () => void }) {
       <Title style={hidden}>LAST LOGIN</Title>
       <Tagline style={hidden}>A DESKTOP MYSTERY GAME</Tagline>
       <Photo
+        ref={photoRef}
         src={pcImage}
         alt=""
         draggable={false}
+        onLoad={() => setPhotoReady(true)}
         style={{ transform: `scale(${scale})` }}
       />
       <Hint style={hidden}>Press any key to begin.</Hint>

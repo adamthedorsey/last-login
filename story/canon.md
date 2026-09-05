@@ -445,6 +445,8 @@ Casey does not know who these people really are.
 
 **nightshift is this person.** The ominous presence the existing Season 1 chain builds up — the watcher, the remote access, the deleted files — is the IRC friend Casey met during the Prescott investigation.
 
+How he knew her private world is settled: during the intrusion he kept a **remote console into her machine**, and he read through it — her songs, her journal, the safe word she and Sadie minted. He is an ally who violated her. Separately and at the same time, her stepfather was reading the same machine from the same house. Those two facts are what make the season's misdirection work, and neither is ever stated outright in shipped text. See who-knows-what.md, "The double reading."
+
 To the player: ominous for most of the season. The reveal that nightshift was frightened FOR her, not hunting her, is the recontextualization gut-punch — it must re-read earlier threatening behavior, not merely excuse it.
 
 Current season discovery text was written to be read the wrong way on purpose; a future content pass must make sure nothing states the hostile reading as resolved fact.
@@ -484,53 +486,26 @@ The eventual reveal that the apparent intruder is an ally should recontextualize
 
 ---
 
-## Resolved canon decisions (2026-08-31)
+## Solitaire as a front
 
-1. **Leslie Wright is Casey's stepmother** (see "Casey's Household").
-   The birth mother, June, died of an Oxytera overdose. All shipped
-   Leslie content stands as-is — Casey calls her Mom.
-2. **nightshift is the hacker/future ally** (see that section). The
-   existing chain's ominous framing is the intended misdirection;
-   future content work interleaves the Prescott arc and keeps the
-   hostile reading unconfirmed until the reveal.
-3. **junebug is canon**: June is the mother; junebug was her father's
-   nickname for Casey; Casey made it her screensaver word and her
-   handle. NOTE the shipped beat this powers: Sadie's safe-word pact
-   ("say junebug and i come get u") and Casey's "he knew junebug. HOW.
-   i keep coming back to it. only me and..." — the hostile read is that
-   the watcher stole a childhood-private word; the true read is that
-   Casey WAS junebug to nightshift all along, and in her fear she
-   never connected the two worlds. That line is the reveal's hinge —
-   future content must protect its ambiguity.
+The Solitaire on Casey's machine is a real, working game and a front.
 
+Clicking the empty foundation slots left to right in the order **3, 2, 4, 1**
+with no card in hand is a sequence that cannot occur in normal ascending play,
+so you only ever reach it on purpose. It opens a hidden login: a bare
+green-on-black terminal titled **porthole**, asking for a username and
+password. The engine holds the credentials; nothing secret ships to the
+client.
 
-## Solitaire as a front (seeded 2026-08-31)
+Someone taught Casey to hide it this way. This is how nightshift had her move
+files and stay reachable — a dead drop disguised inside the most innocuous
+program on the machine, so that even someone sitting at her desk would see
+only a card game. "porthole" is a small window into somewhere else, and a
+light left on for the night shift.
 
-The Solitaire on Casey's machine is a real, working game — and a front.
-
-Sending cards of clicking the empty foundation slots
-(left to right positions **3, 2, 4, 1**) with no card in hand — a sequence that cannot occur in normal ascending play, so
-you only ever reach it on purpose — opens a hidden login: a bare
-green-on-black terminal titled **porthole**. It asks for a username and
-password.
-
-Someone taught Casey to hide it this way. The working theory (soft
-canon, to be developed): this is how nightshift had her move
-files/stay reachable — a dead-drop channel disguised inside the most
-innocuous program on the machine, so that even someone sitting at her
-desk would see only a card game. "porthole" = a small window into
-somewhere else; "a light on" for the night shift.
-
-Current state / open threads (do NOT hard-canonize yet):
-- The knock (empty-slot clicks 3,2,4,1) and the backdoor are built.
-- Credentials: placeholder password only (SERVER-side, story/engine).
-  Who set the username, what it is, and whether the player is meant to
-  RECOVER it from elsewhere on the machine is unresolved.
-- Past a correct login is a holding screen ("no channel is configured")
-  — real content is future authoring: this is presumably where
-  downloaded Prescott material was staged, or where nightshift reached
-  in. Tie-in to the remote-access set-piece and the CD-R backups is
-  intended but unwritten.
-- How the player LEARNS the knock is unresolved (an IM hint from
-  nightshift, a margin note, a diary line — authored later, never a
-  glowing tutorial).
+**Open.** Past a correct login is a holding screen reading "no channel is
+configured." What is actually there, who set the username, whether the player
+recovers it from elsewhere on the machine, and how they learn the knock at all
+are unwritten. A hint from nightshift, a margin note, a diary line — never a
+glowing tutorial. The tie-in to the remote console and the CD-R backups is
+intended and unwritten.

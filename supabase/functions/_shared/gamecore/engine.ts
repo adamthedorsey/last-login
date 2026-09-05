@@ -662,34 +662,70 @@ function folderSummary(folder: PlayerFolder, index: number): ItemSummary {
 // ---------------------------------------------------------------------------
 
 function searchPages(content: SeasonContent, state: PlayerState, query: string): SearchResult[] {
-  const terms = query
-    .toLowerCase()
+  // "put their name in quotes" is advertised on SearchHound's own tip line,
+  // so a quoted run of words is one phrase that must appear intact. (The +
+  // operator stays unimplemented on purpose: Rex ignores it, and says so.)
+  const lowered = query.toLowerCase();
+  const phrases = [...lowered.matchAll(/"([^"]+)"/g)].map((m) => m[1].trim()).filter(Boolean);
+  const loose = lowered
+    .replace(/"[^"]*"/g, ' ')
     .split(/\s+/)
+    .map((t) => t.replace(/^\+/, ''))
     .filter((t) => t.length > 1);
+  const terms = [...phrases, ...loose];
   if (terms.length === 0) return [];
 
-  const results: SearchResult[] = [];
+  // Matching stays permissive the way a 1997 engine was — any term will do —
+  // but the ORDER has to reward the page that actually answers the query.
+  // Without this, a two-word search ("humble county") returns the whole town
+  // in authoring order and the one exact page falls off the end of the list.
+  const scored: Array<{ score: number; result: SearchResult }> = [];
   for (const item of content.items) {
     if (item.kind !== 'webpage' || !item.meta?.url) continue;
     if (!isAccessible(content, state, item)) continue;
 
-    const textParts: string[] = [item.name, item.meta.siteTitle ?? '', item.searchText ?? ''];
+    // Title, address and keywords describe what a page IS; body text only
+    // mentions things. Weight them accordingly.
+    const head = [item.name, item.meta.siteTitle ?? '', item.meta.url, item.searchText ?? '']
+      .join(' ')
+      .toLowerCase();
+    const bodyParts: string[] = [];
     for (const b of item.body?.blocks ?? []) {
-      if ('text' in b) textParts.push(b.text);
-      if (b.t === 'list') textParts.push(b.items.join(' '));
+      if ('text' in b) bodyParts.push(b.text);
+      if (b.t === 'list') bodyParts.push(b.items.join(' '));
     }
-    const haystack = textParts.join(' ').toLowerCase();
-    if (!terms.some((t) => haystack.includes(t))) continue;
+    const body = bodyParts.join(' ').toLowerCase();
+
+    let score = 0;
+    let matched = 0;
+    for (const t of terms) {
+      const inHead = head.includes(t);
+      const inBody = body.includes(t);
+      if (!inHead && !inBody) continue;
+      matched += 1;
+      score += inHead ? 10 : 1;
+      // A multi-word phrase that survives intact is a strong signal.
+      if (t.includes(' ')) score += 5;
+    }
+    if (matched === 0) continue;
+    // Covering every term beats covering one, whatever the field weights say.
+    score += matched === terms.length ? 100 : matched * 20;
 
     const firstPara = item.body?.blocks?.find((b) => b.t === 'p');
     const snippetSource = (firstPara && 'text' in firstPara ? firstPara.text : item.name) ?? item.name;
-    results.push({
-      title: item.meta.siteTitle ?? item.name,
-      url: item.meta.url,
-      snippet: snippetSource.slice(0, 140),
+    scored.push({
+      score,
+      result: {
+        title: item.meta.siteTitle ?? item.name,
+        url: item.meta.url,
+        snippet: snippetSource.slice(0, 140),
+      },
     });
   }
-  return results.slice(0, 10);
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10)
+    .map((x) => x.result);
 }
 
 // ---------------------------------------------------------------------------

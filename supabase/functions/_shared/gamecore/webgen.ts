@@ -130,7 +130,7 @@ const PALETTES: Array<Pick<PageStyle, 'bg' | 'fg' | 'link' | 'accent'>> = [
 
 const BADGES = [
   'NetVoyager NOW', '800x600 4EVER', 'MIDI INSIDE', 'FREE SPEECH ONLINE',
-  'KAVA POWERED', 'CITYPAGES MEMBER', 'GET WESTWIND', 'ANTI-FRAME LEAGUE',
+  'COFFEE POWERED', 'CITYPAGES MEMBER', 'GET WESTWIND', 'ANTI-FRAME LEAGUE',
   'Y2K READY (almost)', 'THIS SITE USES TABLES',
 ];
 

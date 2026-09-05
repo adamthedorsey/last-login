@@ -130,7 +130,7 @@ export const SEASON1: SeasonContent = {
   recentDocuments: [
     'file.datebook-1997',
     'file.minewars-report',
-    'file.gb-log-oct8',
+    'file.ns-log-oct8',
     'file.algebra',
     'file.tourdates',
     'file.ledger-copy',
@@ -247,7 +247,7 @@ export const SEASON1: SeasonContent = {
       // Say the word to him and he signs off for good.
       overrides: [
         { requires: { discovery: 'the-house' }, status: 'online' },
-        { requires: { flag: 'ghost-signoff' }, status: 'offline' },
+        { requires: { flag: 'nightshift-signoff' }, status: 'offline' },
       ],
     },
   ],
@@ -312,7 +312,7 @@ export const SEASON1: SeasonContent = {
       // THE EPILOGUE DOORBELL. Minutes after the player learns about the
       // 2:14 AM login, nightshift signs on — someone noticed activity on
       // this machine. (His roster entry is gated on the same discovery.)
-      id: 'evt.ghost-on',
+      id: 'evt.nightshift-on',
       afterOnlineSeconds: 0,
       requires: { discovery: 'the-house' },
       notice: { kind: 'buddy-on' },
@@ -324,13 +324,15 @@ export const SEASON1: SeasonContent = {
   // pipeline (someone's whole crime, sitting in a school folder), the GUI
   // drops and a practiced hand dials in: checks the volume, goes straight
   // to `personal stuff`, asks for one file that is no longer there, says
-  // goodnight, hangs up. This is HOW nightshift always knew — the same
-  // session the modem log has been recording at 11-something every night.
+  // goodnight, hangs up. This is HOW nightshift always knew: a console he
+  // opened during the Prescott job and never closed. (NOT the 11-something
+  // sessions in the modem log — those are outbound dial-ups from this desk,
+  // the house reading her mail every other night. Two different men.)
   // Watching it earns `the-watcher` and costs the connection.
   // =========================================================================
   remoteAccess: [
     {
-      id: 'remote.ghost-checkin',
+      id: 'remote.nightshift-checkin',
       afterOnlineSeconds: 60,
       requires: { discovery: 'the-pipeline' },
       script: [
@@ -385,8 +387,8 @@ export const SEASON1: SeasonContent = {
       '',
       'Residence: Humble, West Virginia.',
       '',
-      'Subject\'s personal computer was recovered from the',
-      'residence and is preserved as evidence. The county',
+      'Subject\'s personal computer remains in the residence,',
+      'sealed in place and preserved as evidence. The county',
       'has authorized a review of its contents.',
       '',
       'Reporting contact: T. Mercer, Sheriff\'s Office.',
@@ -700,7 +702,7 @@ export const SEASON1: SeasonContent = {
           text: 'junebug.',
           replies: [],
           signOff: true,
-          setFlags: { 'ghost-signoff': true },
+          setFlags: { 'nightshift-signoff': true },
         },
       ],
     },
@@ -787,7 +789,7 @@ patient relief — or cost you the script.
 
 TOP DECILE PRESCRIBERS, REGION 4 (partial):
   ...
-  SPARKS, R. — Humble, WV .......... 412 scripts (Q3) ...... ^ 71%
+  SPARKS, W. — Humble, WV .......... 412 scripts (Q3) ...... ^ 71%
   ...
 Rep servicing this territory: note the growth. Reward it. Dr.
 Sparks is a believer. Believers get the speaker-program invitations,
@@ -1200,7 +1202,7 @@ ACTION ITEMS (REGIONAL)
       name: 'oxytera notes.txt',
       icon: 'doc',
       parentId: 'cd.drivers',
-      meta: { createdAt: '1997-09-21', sizeKb: 3 },
+      meta: { createdAt: '1997-09-21', sizeKb: 4 },
       body: {
         text: `prescott pharma. the oxytera people.
 
@@ -1215,7 +1217,22 @@ nobody is going to print any of that. its all "legal."
 you need something INTERNAL. something that shows they
 know what it does and push it anyway.
 
-so. about that.`,
+so. about that.
+
+---
+
+found the ardic site. bulletin 97-14, sept 13. it says
+NOT FOR RELEASE TO THE PUBLIC right at the top and then
+they put it on the internet. it went to every sheriff in
+six counties.
+
+there's a list of the deaths. march, humble county, F, 38,
+prescribed, single-drug.
+
+that's the whole entry. that's all she gets. one line in a
+memo six months ago and nobody did anything with it.
+
+i have read it forty times. it doesn't say her name.`,
       },
     },
     {
@@ -1341,7 +1358,7 @@ metaphor ms. combs, sometimes a bird is a bird]`,
       // PATH B for stolen-intimacy. On Oct 8 nightshift proved himself by
       // quoting her PRIVATE files. She pasted the log here, disguised as
       // more poems — same camouflage instinct as the ledger copy.
-      id: 'file.gb-log-oct8',
+      id: 'file.ns-log-oct8',
       kind: 'document',
       name: 'poem drafts 2.txt',
       icon: 'doc',
@@ -2273,9 +2290,9 @@ Practically Giving It Away (Legal: we are not giving it away.)`,
       meta: { screenname: 'AngelJx', alias: 'angel', logDate: '1997-10-09' },
       body: {
         messages: [
-          { from: 'AngelJx', at: '7:02 PM', text: 'tomorrow after school. my cousin\'s working the back lot at gene\'s 👀' },
+          { from: 'AngelJx', at: '7:02 PM', text: 'tomorrow after school. my cousin\'s working the back lot at gene\'s >:)' },
           { from: 'SunflwrC81', at: '7:04 PM', text: 'angel. it\'s a school night for ur cousin\'s JOB' },
-          { from: 'AngelJx', at: '7:04 PM', text: 'it\'s friday tomorrow. live a little. u need it, u\'ve been a GHOST all week' },
+          { from: 'AngelJx', at: '7:04 PM', text: 'it\'s friday tomorrow. live a little. u need it, u\'ve been MIA all week' },
           { from: 'SunflwrC81', at: '7:06 PM', text: 'ok fine. but i have to be home by 7. i have a thing later' },
           { from: 'AngelJx', at: '7:06 PM', text: 'what thing' },
           { from: 'SunflwrC81', at: '7:07 PM', text: 'a thing thing. tell u after' },
@@ -2329,7 +2346,7 @@ The Mine Wars were a series of wars that happened in the mines
       // ACT 1 FINALE. She was told to delete it. She deleted it HERE.
       id: 'trash.bl-log',
       kind: 'trash_item',
-      name: 'bl_log_ghstbrdg.txt',
+      name: 'bl_log_ntshft.txt',
       icon: 'doc',
       parentId: 'folder.recycle',
       requires: { discovery: 'the-meeting' },
@@ -2402,7 +2419,7 @@ back EXACT. my hands were shak...
 ...8 — he knew junebug. HOW. i keep coming back to it. only me and
 s. on the whole ea...
 
-...doesn't matter. if GB can put sparks away then whoever he is,
+...doesn't matter. if ns can put sparks away then whoever he is,
 he's the only adult actually DOING someth...
 
 ...ay night. after tomorrow i tell sadie everything and it's over
@@ -2521,6 +2538,9 @@ then open CASE FILES.
     { id: 'bm.solarflare', kind: 'bookmark', name: 'SOLAR FLARE official', parentId: 'folder.bookmarks', meta: { url: 'www.solarflareband.net' } },
     { id: 'bm.register', kind: 'bookmark', name: 'Humble Times', parentId: 'folder.bookmarks', meta: { url: 'www.humbletimes.com' } },
     { id: 'bm.citypages', kind: 'bookmark', name: 'CityPages directory', parentId: 'folder.bookmarks', meta: { url: 'www.citypages.net' } },
+    // She read this one forty times (`cd.oxytera`). Of course she kept it.
+    // The plain, careful name is hers: nothing in the bookmark says what it is.
+    { id: 'bm.ardic', kind: 'bookmark', name: '9714', parentId: 'folder.bookmarks', meta: { url: 'www.ardic.state.wv.us/pubs/9714.html' } },
 
     // =====================================================================
     // THE WEB (fictional, rendered by NetVoyager)
@@ -2843,7 +2863,7 @@ then open CASE FILES.
             'TIP LINE: 555-0199, staffed 7 AM to 11 PM. Callers may remain anonymous.',
             'SEARCH VOLUNTEERS: sign up at the St. Mark\u2019s fellowship hall, 8 AM daily. Wear boots. Teams walk in threes.',
             'DO NOT search the riverbank alone or after dark. The sheriff asks this plainly.',
-            'DONATIONS: batteries, bottled water, and coffee to St. Mark\u2019s. No more flashlights — Value-Med has that covered.',
+            'DONATIONS: batteries, bottled water, and something to put in the urn to St. Mark\u2019s. No more flashlights — Value-Med has that covered.',
           ] },
           { t: 'p', text: '"People keep asking what they can do," said volunteer coordinator Ruth Bowen. "Show up at eight. That\u2019s the whole list."' },
           { t: 'hr' },
@@ -2944,6 +2964,112 @@ then open CASE FILES.
     // footer line is the one quiet trace). Mundane on the surface; the
     // history menu shows Casey circling it.
     // =====================================================================
+    {
+      // The bulletin, on the agency's own site. It says NOT FOR RELEASE TO THE
+      // PUBLIC and it is on the public web, because in 1997 somebody's nephew
+      // built the site and nobody thought about it — the same carelessness
+      // that let Casey inside Prescott. It went to every sheriff in six
+      // counties, Purvis included, and nothing happened. The March entry is
+      // June; it does not say her name. Never gated: the horror is that this
+      // was always sitting there in the open.
+      id: 'web.ardic-bulletin',
+      kind: 'webpage',
+      name: 'ARDIC Bulletin 97-14',
+      meta: {
+        url: 'www.ardic.state.wv.us/pubs/9714.html',
+        siteTitle: 'ARDIC — Intelligence Bulletin 97-14',
+      },
+      searchText:
+        'ardic appalachian regional drug intelligence center bulletin oxytera diversion abuse overdose deaths street price humble county sheriff restricted',
+      body: {
+        style: { bg: '#ffffff', fg: '#000000', link: '#0000cc', font: 'serif' },
+        blocks: [
+          { t: 'h', text: 'Appalachian Regional Drug Intelligence Center' },
+          { t: 'small', text: 'Beckley, West Virginia — a joint project of the member counties' },
+          { t: 'hr' },
+          { t: 'sub', text: 'INTELLIGENCE BULLETIN 97-14' },
+          { t: 'p', text: 'OXYTERA CR: DIVERSION AND ABUSE IN DISTRICT 4' },
+          { t: 'small', text: 'September 13, 1997' },
+          {
+            t: 'small',
+            text: 'DISTRIBUTION: Sheriffs and Chiefs of Police, Districts 4-6. State Police detachments. Board of Pharmacy. NOT FOR RELEASE TO THE PUBLIC OR TO THE PRESS.',
+          },
+          { t: 'hr' },
+          { t: 'sub', text: 'ABUSE' },
+          {
+            t: 'p',
+            text: 'Reported abuse of controlled-release oxycodone products has risen sharply in this district over the past eighteen months. Oxytera CR (Prescott Pharmaceuticals), approved in 1995 for moderate to severe persistent pain, now accounts for the majority of diverted narcotic tablets recovered by member agencies.',
+          },
+          {
+            t: 'p',
+            text: 'District pharmacies dispensed an estimated 41,000 Oxytera CR tablets in the first half of 1997, against 9,200 in the same period of 1996. Population in the district is unchanged. Investigators should not read this growth as an increase in injury or illness.',
+          },
+          { t: 'sub', text: 'OPIOIDS, PAIN, AND ADDICTION' },
+          {
+            t: 'p',
+            text: 'Addiction arising from legitimate treatment of pain is uncommon, and this bulletin should not be read to discourage the treatment of pain. Patients taking these medications as directed for genuine injury do not generally report the effects sought by abusers.',
+          },
+          {
+            t: 'p',
+            text: 'The concern of this office is narrower. It is the volume now moving through a small number of practices and counters, the cash basis of those transactions, and the distance patients are traveling to reach them.',
+          },
+          { t: 'sub', text: 'REPORTED DEATHS AND METHODS OF ABUSE' },
+          {
+            t: 'p',
+            text: 'Member agencies and the state medical examiner report twelve deaths in this district since January in which oxycodone was listed as a cause or contributing cause. Eight of the twelve involved a prescription written to the decedent. Selected entries:',
+          },
+          {
+            t: 'pre',
+            text: `  MAR   Humble Co.      F, 38   single-drug toxicity,
+                                prescribed
+  APR   Logan Co.       M, 24   with alcohol
+  APR   Mingo Co.       M, 31   prescribed to another
+  JUN   Humble Co.      M, 19   crushed, insufflated
+  JUL   Wyoming Co.     F, 45   prescribed
+  AUG   McDowell Co.    M, 27   injected`,
+          },
+          {
+            t: 'p',
+            text: 'The controlled-release mechanism is defeated easily. Abusers report chewing the tablet, or crushing it and insufflating the powder, or dissolving the powder for injection. Each method delivers the full twelve-hour dose at once. Agencies encountering tablets that have been scraped free of coating should treat the finding as indicative.',
+          },
+          { t: 'sub', text: 'PRICE AND AVAILABILITY' },
+          {
+            t: 'p',
+            text: 'Tablets are obtained by prescription, by theft from residences during and after funerals, and by purchase from persons holding legitimate prescriptions. Street names reported in this district include "forties," "eighties," and "kickers," the last after the onset described by users.',
+          },
+          {
+            t: 'p',
+            text: 'Illicit price runs approximately one dollar per milligram and is stable across the district, which indicates supply is not scarce.',
+          },
+          {
+            t: 'pre',
+            text: `  STRENGTH      LICIT RETAIL      ILLICIT RETAIL
+  (mg/tablet)   (per tablet)      (per tablet)
+  -----------   ------------      --------------
+      10           $1.25              $10
+      20           $2.00              $20
+      40           $4.00              $40
+      80           $7.75              $80
+     160          $14.50             $160`,
+          },
+          {
+            t: 'p',
+            text: 'A patient filling one hundred 40 mg tablets for $400 may resell them for $4,000. Member agencies are advised that this margin, and not addiction alone, now accounts for a growing share of diversion in District 4.',
+          },
+          { t: 'hr' },
+          {
+            t: 'small',
+            text: 'Prepared by the Analysis Section. This bulletin is intelligence and is not evidence; it is provided to assist member agencies in directing their own investigations.',
+          },
+          { t: 'link', text: 'Other bulletins in this series', url: 'www.ardic.state.wv.us/pubs' },
+          { t: 'updated', date: 'September 15, 1997' },
+          {
+            t: 'small',
+            text: 'This server is maintained for the member counties. Direct questions to the Analysis Section. Do not send case material by electronic mail.',
+          },
+        ],
+      },
+    },
     {
       id: 'web.prescott',
       kind: 'webpage',
@@ -3083,7 +3209,7 @@ then open CASE FILES.
           { t: 'small', text: 'Humble, West Virginia \u2014 "A porch light left on."' },
           { t: 'hr' },
           { t: 'list', items: ['Sunday worship 10 AM (come as you are, Earl)', 'Wednesday supper 6 PM \u2014 bring a dish or bring an appetite', 'Choir practice Thursday. New voices welcome. All voices, honestly.'] },
-          { t: 'p', text: 'THIS WEEK: The fellowship hall opens 8 AM daily for search volunteers. Coffee is on. Friday evening we will hold a vigil for Casey Taylor and her family; bring a candle, we have extras.' },
+          { t: 'p', text: 'THIS WEEK: The fellowship hall opens 8 AM daily for search volunteers. The big urn is on. Friday evening we will hold a vigil for Casey Taylor and her family; bring a candle, we have extras.' },
           { t: 'hr' },
           { t: 'small', text: 'This page kept by Ruth B., who is learning HTML from a book.' },
           { t: 'counter', value: 861 },
@@ -3163,7 +3289,7 @@ then open CASE FILES.
           { t: 'small', text: 'Maps for the Modern Motorist \u2014 beta' },
           { t: 'hr' },
           { t: 'p', text: 'Type a route number and county into the locator and MapFinder will draw you a map, usually of the right place. Coverage: WV, VA, KY, OH (partial), PA (we\u2019re working on it).' },
-          { t: 'img', caption: '[ the locator form, which requires the Kava plug-in you do not have ]' },
+          { t: 'img', caption: '[ the locator form, which requires the Coffee plug-in you do not have ]' },
           { t: 'small', text: 'MapFinder is a Meridian Digital Systems experiment. Print your map before traveling; the internet does not come in the car.' },
           { t: 'counter', value: 78113 },
         ],

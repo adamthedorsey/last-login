@@ -136,7 +136,7 @@ If not, don't build it that way.
   rebrand the OS to 97), WestWind (ISP/email service),
   BuddyLine (the IM network Chat connects to), NetVoyager (browser), SearchHound (search), CityPages,
   MapFinder, Solar Flare (band), Meridian Digital
-  Systems, Kava/Helios, Cosmoid/Prism.
+  Systems, Coffee/Helios, Cosmoid/Prism.
 
 ### Sound
 - Synthesized chip-style tones only (`src/os/sounds.ts`). Short, quiet,

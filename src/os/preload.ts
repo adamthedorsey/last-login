@@ -21,8 +21,13 @@ import startupMp3 from '../assets/sounds/mt_microtech-startup-sound.mp3';
 import dialupMp3 from '../assets/sounds/dial-up-modem.mp3';
 import splashBg from '../assets/images/splash-bg.jpg';
 import splashLogo from '../assets/images/splash-logo.png';
+import menuPc from '../assets/images/main-menu-pc-v2.png';
 
 const ASSETS = [
+  // The evidence-room photo: the very first thing on screen, and what the
+  // reverse zoom animates. Warm it first so the move always has something
+  // to draw.
+  menuPc,
   // The boot chain, in the order the player meets it.
   postToneSfx,
   bootLongSfx,

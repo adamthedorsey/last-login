@@ -410,7 +410,7 @@ function tileCss(tile?: string): React.CSSProperties {
     case 'marble':
       return svg(`<rect width='60' height='60' fill='#d8d8d8'/><path d='M0 20 Q20 8 34 22 T60 18' stroke='#b8b8b8' fill='none'/><path d='M0 44 Q26 34 44 48 T60 40' stroke='#c4c4c4' fill='none'/>`, 60, 60);
     case 'hearts':
-      return svg(`<rect width='44' height='44' fill='#ffe4ee'/><text x='6' y='18' font-size='12'>💗</text><text x='26' y='38' font-size='9'>💗</text>`, 44, 44);
+      return svg(`<rect width='44' height='44' fill='#ffe4ee'/><text x='6' y='18' font-size='12' fill='#e080a0'>♥︎</text><text x='26' y='38' font-size='9' fill='#e8a0b8'>♥︎</text>`, 44, 44);
     case 'grid':
       return svg(`<rect width='24' height='24' fill='#f4f4f4'/><path d='M0 0H24M0 0V24' stroke='#c8d8c8'/>`, 24, 24);
     default:
@@ -462,16 +462,20 @@ function AboutPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 30,
-              fontFamily: FONTS.serif,
-              fontStyle: 'italic',
               marginBottom: 6,
             }}
           >
-            ☕
+            {/* The Coffee steam logo: flat shapes, hard edges, the way a 1997
+                vendor badge was drawn. Never an emoji. */}
+            <svg width="34" height="34" viewBox="0 0 34 34" shapeRendering="crispEdges">
+              <path d="M8 14h15v9a4 4 0 0 1-4 4h-7a4 4 0 0 1-4-4z" fill="#e8c060" />
+              <path d="M23 16h3a3 3 0 0 1 0 6h-3z" fill="none" stroke="#e8c060" strokeWidth="2" />
+              <rect x="6" y="28" width="19" height="2" fill="#e8c060" />
+              <path d="M13 4v3l2 2v3M18 3v4l-2 2v3" fill="none" stroke="#e8c060" strokeWidth="2" />
+            </svg>
           </div>
-          Powered by <span style={link}>Kava™</span> technology from{' '}
-          <span style={link}>Helios Microsystems, Inc.</span> Kava and the Kava steam logo are
+          Powered by <span style={link}>Coffee™</span> technology from{' '}
+          <span style={link}>Helios Microsystems, Inc.</span> Coffee and the Coffee steam logo are
           trademarks of Helios Microsystems, Inc.
         </div>
         <div style={{ width: 220 }}>
@@ -617,6 +621,24 @@ function Block({
       return <h3 style={{ fontSize: 19, margin: '14px 0 6px' }}>{b.text}</h3>;
     case 'p':
       return <p style={{ margin: '8px 0', lineHeight: 1.5 }}>{b.text}</p>;
+    case 'pre':
+      // <PRE>: the column alignment IS the content, so it scrolls inside its
+      // own box rather than wrapping or pushing the page sideways.
+      return (
+        <pre
+          style={{
+            margin: '10px 0',
+            fontFamily: FONTS.mono,
+            fontSize: 13,
+            lineHeight: 1.35,
+            whiteSpace: 'pre',
+            overflowX: 'auto',
+            textAlign: 'left',
+          }}
+        >
+          {b.text}
+        </pre>
+      );
     case 'small':
       return <p style={{ fontSize: 12.5, opacity: 0.8, margin: '6px 0' }}>{b.text}</p>;
     case 'link':
@@ -693,7 +715,7 @@ function Block({
       return (
         <Stripes>
           <span style={{ background: '#111', color: '#f0c000', fontSize: 11, fontWeight: 'bold', padding: '1px 8px', letterSpacing: 2, fontFamily: 'Arial, sans-serif' }}>
-            ⚠ UNDER CONSTRUCTION ⚠
+            ⚠︎ UNDER CONSTRUCTION ⚠︎
           </span>
         </Stripes>
       );
@@ -726,13 +748,13 @@ function Block({
     case 'midi':
       return (
         <div style={{ display: 'inline-block', border: '2px inset #999', padding: '4px 10px', margin: '8px 0', fontFamily: "'Courier New', monospace", fontSize: 12, background: '#e8e8e8', color: '#222' }}>
-          ♪ now playing: {b.file} — [■ stop] (it will not stop)
+          ♪︎ now playing: {b.file} — [■ stop] (it will not stop)
         </div>
       );
     case 'guestbook':
       return (
         <p style={{ margin: '8px 0', fontSize: 14 }}>
-          📖{' '}
+          »{' '}
           <span style={{ textDecoration: 'underline' }}>Sign my Guestbook!</span> ·{' '}
           <span style={{ textDecoration: 'underline' }}>View Guestbook ({b.count} entries)</span>
         </p>
@@ -1201,7 +1223,7 @@ export function Browser({ windowId, props }: AppWindowProps) {
           onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
           onClick={() => setOpenMenu(openMenu === '@bookmarks' ? null : '@bookmarks')}
         >
-          🔖 Bookmarks
+          Bookmarks
         </Button>
         <Button
           size="sm"
